@@ -60,7 +60,7 @@ class arg_check,init_vars,item_check,date_check,reason_check,return_check,stock_
 | --- | ---------------------- | ---------------------- | ------- | -------------------------------- |
 | 1   | ユーザーＩＤ           | ps_user_id             | VARCHAR | ログインＩＤorSYSTEM             |
 | 2   | ログ出力サイン         | ps_log_sign            | VARCHAR | 0:ログ出力しない1:ログ出力       |
-| 3   | 受信ID                 | ps_recieve_id          | VARCHAR | 外部データ：受信ＩＤ             |
+| 3   | 受信ID                 | ps_receive_id          | VARCHAR | 外部データ：受信ＩＤ             |
 | 4   | 相手先システム識別     | ps_request_system_code | VARCHAR | 外部データ：相手先ｼｽﾃﾑコード |
 | 5   | 品目番号               | ps_itemno              | VARCHAR |                                  |
 | 6   | 供給者                 | ps_supplier            | VARCHAR |                                  |
