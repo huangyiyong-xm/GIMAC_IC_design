@@ -99,6 +99,7 @@ class arg_process_and_check,init_process,start_check,due_check,disburse_check pr
 | 4  | テーブル   | 機能オプションパラメータ       | lz_function_parameter  |   | ○ |   |   |      |
 | 5  | テーブル   | 品目マスター                   | la_itemmast            |   | ○ |   |   |      |
 | 6  | テーブル   | MRP情報値                      | le_mst_mrp_information |   | ○ |   |   |      |
+| 7  | 共通関数   | 確定期間検索                   | LEBS0010               |   |    |   |   |      |
 
 ## 2. 詳細処理
 
@@ -108,17 +109,14 @@ class arg_process_and_check,init_process,start_check,due_check,disburse_check pr
   - エラーコード : E.LDP10354
   - エラーメッセージ：'Specify Start Date.';
     - (着手日を指定してください。)
-  - エラー位置： 'startDate'
 - 引数.完了日が　ブランク　又は　 NULL 　の場合、エラーメッセージを出力し処理終了。
   - エラーコード : E.LDP10355
   - エラーメッセージ：'Specify Due Date.';
     - (完了日を指定してください。)
-  - エラー位置： 'dueDate'
 - 引数.払出日が   ブランク　又は　 NULL   の場合、エラーメッセージを出力し処理終了。
   - エラーコード : E.LDP10356
   - エラーメッセージ：'Specify Disburse Date.';
     - (払出日を指定してください。)
-  - エラー位置： 'disburseDate'
 
 ### 2.2. 初期処理
 
@@ -140,7 +138,6 @@ SELECT 現在有効カレンダー
   - エラーコード：'E.LDP10910';
   - エラーメッセージ：'Effective calendar does not exist by the specified Supplier/User.';
     - (指定のＳＵで有効なカレンダーが存在しません。)
-  - エラー位置： 'usercd'
 
 ##### 2.3.1.2. 稼働日でない場合エラー
 
@@ -156,13 +153,11 @@ SELECT 稼働日区分
   - エラーコード：'E.LDP10377';
   - エラーメッセージ：'The day you specified is not a working-day.';
     - (指定した日付が稼働日ではありません。)
-  - エラー位置： 'startDate'
 - データが存在しない場合、エラーメッセージを出力し処理終了
 
   - エラーコード：'E.LDP10106';
   - エラーメッセージ：'Day String does not exist in the common calendar.';
     - (日情報がカレンダーテーブルに存在しません。)
-  - エラー位置： 'startDate'
 
 ##### 2.3.1.3. 確定期間情報取得
 
@@ -191,13 +186,13 @@ SELECT *
 ```sql
 SELECT IC工場処理日
   FROM IC工場処理日
+ WHERE 処理タイプ = 'STD' 
 ```
 
 - データが存在しない場合、エラーメッセージを出力し処理終了。
   - エラーコード：'E.LDP10911';
   - エラーメッセージ：'The IC pymac date is not exist.';
     - (IC工場処理日が存在しません。)
-  - エラー位置： 'pymacDate'
 
 ##### 2.3.1.5. 着手日チェック
 
@@ -208,19 +203,16 @@ SELECT IC工場処理日
       - エラーコード：'E.LDP10367';
       - エラーメッセージ：'For Start Date, specify the date former than the final day of the fixed order period.';
         - (着手日には発注期間最終日以前の日付を指定してください。)
-      - エラー位置： 'startDate'
 - 引数.処理識別が'LD71'の場合
 
   - 引数.着手日 > 2.3.1.3で取得.今回_確定期間最終日の場合、エラーメッセージを出力し処理終了。
     - エラーコード：'E.LDP10367';
     - エラーメッセージ：'For Start Date, specify the date former than the final day of the fixed order period.';
       - (着手日には発注期間最終日以前の日付を指定してください。)
-    - エラー位置： 'startDate'
   - 引数.着手日 <2.3.1.4で取得.IC工場処理日の場合、エラーメッセージを出力し処理終了。
     - エラーコード：'E.LDP10357';
     - エラーメッセージ：'You cannot specify the past date for Start Date.';
       - (着手日には過去日付を指定できません。)
-    - エラー位置： 'startDate'
 
 #### 2.3.2. 完了日チェック
 
@@ -238,7 +230,6 @@ SELECT オプションコード
   - エラーコード：'E.LDP10912';
   - エラーメッセージ：'Target data does not exist in the Function Parameter table.';
     - (機能選択のデータが存在していません。)
-  - エラー位置： ' ' (スペース)
 
 ##### 2.3.2.2. 品目タイプ取得する
 
@@ -254,7 +245,6 @@ SELECT 品目タイプ
   - エラーコード：'E.LDP10726';
   - エラーメッセージ：'Data does not exist in the item master.';
     - (品目マスターに登録されていません。)
-  - エラー位置： 'itemno'
 
 ##### 2.3.2.3. 完了日チェック
 
@@ -263,7 +253,6 @@ SELECT 品目タイプ
   - エラーコード：'E.LDP10398';
   - エラーメッセージ：'You cannot specify the past date for due date.';
     - (完了日には過去日付を指定できません。)
-  - エラー位置： 'dueDate'
 
 ##### 2.3.2.4. 稼働日でない場合エラー
 
@@ -279,13 +268,11 @@ SELECT 稼働日区分
   - エラーコード：'E.LDP10936';
   - エラーメッセージ：'The day you specified is not a working-day.';
     - (指定した日付が稼働日ではありません。)
-  - エラー位置： 'dueDate'
 - データが存在しない場合、エラーメッセージを出力し処理終了。
 
   - エラーコード：'E.LDP10106';
   - エラーメッセージ：'Day String does not exist in the common calendar.';
     - (日情報がカレンダーテーブルに存在しません。)
-  - エラー位置： 'dueDate'
 
 ##### 2.3.2.5. 引数．完了日＜引数．着手日の場合エラー
 
@@ -294,12 +281,10 @@ SELECT 稼働日区分
     - エラーコード：'E.LDP10360';
     - エラーメッセージ：'For Due Date, specify the date later than Start Date.';
       - (完了日には着手日より後の日付を指定してください。)
-    - エラー位置： 'dueDate'
   - 引数.処理識別が'LD71'の場合、エラーメッセージを出力し処理終了。
     - エラーコード：'E.LDP10358';
     - エラーメッセージ：'For Start Date, specify the date former than Due Date.';
       - (着手日には完了日より前の日付を指定してください。)
-    - エラー位置： 'startDate'
 
 #### 2.3.3. 払出日チェック
 
@@ -317,13 +302,11 @@ SELECT 稼働日区分
   - エラーコード：'E.LDP10750';
   - エラーメッセージ：'The day you specified is not a working-day.';
     - (払出日が稼働日ではありません。)
-  - エラー位置： 'disburseDate'
 - データが存在しない場合、エラーメッセージを出力し処理終了。
 
   - エラーコード：'E.LDP10106';
   - エラーメッセージ：'Day String does not exist in the common calendar.';
     - (日情報がカレンダーテーブルに存在しません。)
-  - エラー位置： 'disburseDate'
 
 ##### 2.3.3.2. 引数．払出日＜引数．完了日の場合エラー
 
@@ -331,7 +314,6 @@ SELECT 稼働日区分
   - エラーコード：'E.LDP10361';
   - エラーメッセージ：'For Disburse Date, specify the date later than Due Date.';
     - (払出日には完了日以降の日付を指定してください。)
-  - エラー位置： 'disburseDate'
 
 ##### 2.3.3.3. 着手日と払出日との差が６ヶ月より大きい場合エラー
 
@@ -343,7 +325,6 @@ SELECT 稼働日区分
   - エラーコード：'E.LDP10397';
   - エラーメッセージ：'Make the difference between Start Date and Disburse Date within 6 months.';
     - (着手日と払出日との差は６ヶ月以内に設定してください。)
-  - エラー位置： 'startDate'
 
 ### 2.4. 終了処理
 
@@ -368,4 +349,5 @@ SELECT 稼働日区分
 
 ### 3.2. エラー発生時の対応について
 
+- 戻り値.エラー位置 :'LDAS0301'
 - SQL エラーが発生した場合、エラーログを出力して処理終了

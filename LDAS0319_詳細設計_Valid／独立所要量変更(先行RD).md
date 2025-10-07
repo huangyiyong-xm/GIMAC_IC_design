@@ -95,6 +95,8 @@ class arg_process_and_check,init_process,delete_date_check,requirement_exist_che
 | 3  | テーブル   | IC工場処理日            | ld_mst_slip_date    |   | ○ |   |   |                    |
 | 4  | テーブル   | MRPシステムパラメータ   | le_system_parameter |   | ○ |   |   |                    |
 | 5  | テーブル   | 日別カレンダーマスタ    | le_mst_calendar_sum |   | ○ |   |   |                    |
+| 6  | 共通関数   | 稼働日計算              | LEYS0001            |   |    |   |   |                    |
+| 7  | 共通関数   | エラーログ登録          | LDAS0409            |   |    |   |   |                    |
 
 ## 2. 詳細処理
 
@@ -104,7 +106,6 @@ class arg_process_and_check,init_process,delete_date_check,requirement_exist_che
   - エラーコード：'E.LDP10447'
   - エラーメッセージ：'Enter Order Number'
     - （オーダー番号を入力してください）
-  - エラー位置：'orderNo'
 
 ### 2.2. 初期処理
 
@@ -126,7 +127,6 @@ SELECT 現在有効カレンダー
   - エラーコード：'E.LDP10910'
   - エラーメッセージ：'Effective calendar does not exist by the specified Supplier/User.'
     - (指定のＳＵで有効なカレンダーが存在しません。)
-  - エラー位置：'usercd'
 
 ##### 2.3.1.2. 削除日付の稼働日区分チェック
 
@@ -142,26 +142,24 @@ SELECT 稼働日区分
   - エラーコード：'E.LDP10106'
   - エラーメッセージ：'Day String does not exist in the common calendar.'
     - (日情報がカレンダーテーブルに存在しません。)
-  - エラー位置：'deleteYmd'
 - 稼働日区分が'0'（稼働日）以外の場合
 
   - エラーコード：'E.LDP10353'
   - エラーメッセージ：'The day you specified is not a working-day.'
     - (指定日は稼働日ではありません。)
-  - エラー位置：'deleteYmd'
 
 ##### 2.3.1.3. IC工場処理日取得
 
 ```sql
 SELECT IC工場処理日
-  FROM IC工場処理日;
+  FROM IC工場処理日
+ WHERE 処理タイプ = 'STD' 
 ```
 
 - データが存在しない場合、エラーメッセージを出力し処理終了
   - エラーコード：'E.LDP10911'
   - エラーメッセージ：'The IC pymac date is not exist.'
     - (IC工場処理日が存在しません。)
-  - エラー位置：'pymacDate '
 
 ##### 2.3.1.4. 削除日付とIC工場処理日の比較
 
@@ -169,7 +167,6 @@ SELECT IC工場処理日
   - エラーコード：'E.LDP10364'
   - エラーメッセージ：'For Deletion Date, specify the date later than the final day of the fixed period of this time.'
     - （削除日付には今回確定期間最終日よりも後の日付を指定してください）
-  - エラー位置：'deleteYmd'
 
 #### 2.3.2. 独立所要量明細の存在チェック
 
@@ -189,22 +186,19 @@ SELECT 着手日, 発注時着手日
   - エラーコード：'E.LDP10530'
   - エラーメッセージ：'The requirements you specified does not exist.'
     - （指定所要量が存在しません）
-  - エラー位置：'orderNo'
 
 #### 2.3.3. 削除日付の妥当性チェック
 
-- 引数.削除日付 = 2.3.2取得.開始日の場合、エラーメッセージを出力し処理終了
+- 引数.削除日付 = 2.3.2取得.着手日の場合、エラーメッセージを出力し処理終了
 
   - エラーコード：'E.LDP10369'
   - エラーメッセージ：'Change Deletion Date.'
     - （削除日付を変更してください。）
-  - エラー位置：'deleteYmd'
 - 引数.削除日付 <= 2.3.2取得.発注時着手日の場合、エラーメッセージを出力し処理終了
 
   - エラーコード：'E.LDP10363'
   - エラーメッセージ：'For Deletion Date, specify the date later than Start Date.'
     - （削除日付には着手日より大きな日付を指定してください）
-  - エラー位置：'deleteYmd'
 
 #### 2.3.4. 先行RD削除日登録可能日数チェック
 
@@ -241,7 +235,6 @@ SELECT *
   - エラーコード：'E.LDP10371'
   - エラーメッセージ：'Deletion Date is over the period in which the date is able to be resistered from Start Date.'
     - （削除日が着手日から未来の登録可能な期間を超えています。）
-  - エラー位置：'deleteYmd'
 
 ### 2.4. 終了処理
 
@@ -266,6 +259,7 @@ SELECT *
 
 ### 3.2. エラー発生時の対応について
 
+- 戻り値.エラー位置 :'LDAS0319'
 - SQLエラーが発生した場合、戻り値を返して処理終了
 - PGMエラーが発生した場合、
   - 引数.ログ出力サイン＝'1'の場合、エラーログファイルを1レコード生成する。
@@ -280,9 +274,9 @@ SELECT *
 | 2   | 入力ユーザーＩＤ           | I   | 引数.ユーザーＩＤ       |
 | 3   | エラーコード               | I   | 戻り値.エラーコード     |
 | 4   | 処理識別                   | I   | 'LD21'                  |
-| 5   | 変更区分                   | I   | 2'                      |
-| 6   | エラーレベルステータス     | I   | 9'                      |
-| 7   | 受信ＩＤ                   | I   | ' '                     |
+| 5   | 変更区分                   | I   | '2'                     |
+| 6   | エラーレベルステータス     | I   | '9'                     |
+| 7   | 受信ＩＤ                   | I   | 引数.受信ＩＤ           |
 | 8   | 相手先システム識別         | I   | 引数.相手先システム識別 |
 | 9   | 入力元トランザクション     | I   | ' '                     |
 | 10  | エラー発生処理ＩＤ         | I   | LDAS0319                |

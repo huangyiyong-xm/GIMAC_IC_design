@@ -14,8 +14,6 @@
 
 削除するオーダーの各項目に対するバリデーションを定義する。
 
-以下、コードと要件に基づいて詳細設計文書の不足部分を補完いたします。
-
 ### 1.2. 処理概要フロー
 
 ```mermaid
@@ -47,7 +45,7 @@ end_process["<div style='white-space: nowrap;'>2.4.終了処理</div>"]
 end
 
 class start,end_process startEnd
-class arg_process_and_check,init_process,item_check,order_check,status_check,inspection_check process
+class arg_process_and_check,init_process,item_check,order_check,status_check process
 ```
 
 ### 1.3. プログラム入出力パラメータ
@@ -58,7 +56,7 @@ class arg_process_and_check,init_process,item_check,order_check,status_check,ins
 | --- | ------------------ | ---------------------- | ------- | -------------------------------- |
 | 1   | ユーザーID         | ps_user_id             | VARCHAR | ログインID又はSYSTEM             |
 | 2   | ログ出力サイン     | ps_log_sign            | VARCHAR | 0:ログ出力しない、1:ログ出力     |
-| 3   | 受信ID             | ps_recieve_id          | VARCHAR | 外部データ：受信ID               |
+| 3   | 受信ID             | ps_receive_id          | VARCHAR | 外部データ：受信ID               |
 | 4   | 相手先システム識別 | ps_request_system_code | VARCHAR | 外部データ：相手先システムコード |
 | 5   | 品目番号           | ps_itemno              | VARCHAR |                                  |
 | 6   | 供給者             | ps_supplier            | VARCHAR |                                  |
@@ -93,7 +91,6 @@ class arg_process_and_check,init_process,item_check,order_check,status_check,ins
   - エラーコード : E.LDP10447
   - エラーメッセージ : 'Enter Order Number.'
     - (オーダー番号を入力してください)
-  - エラー位置 : 'orderNo'
 
 ### 2.2. 初期処理
 
@@ -141,7 +138,6 @@ SELECT オーダーステータス
   - エラーコード：'E.LDP10527'
   - エラーメッセージ：'The order you specified does not exist.'
     - (指定オーダーが存在しません。)
-  - エラー位置： 'orderNo'
 
 #### 2.3.3. オーダーステータスチェック
 
@@ -149,7 +145,6 @@ SELECT オーダーステータス
   - エラーコード：'E.LDP10528'
   - エラーメッセージ：'You cannot specify the closed order.'
     - (完了済オーダーは指定できません。)
-  - エラー位置： 'orderNo'
 
 ### 2.4. 終了処理
 
@@ -175,6 +170,7 @@ SELECT オーダーステータス
 
 ### 3.2. エラー発生時の対応について
 
+- 戻り値.エラー位置 :'LDAS0314'
 - SQLエラーが発生した場合、戻り値を返して処理終了。
 - PGMエラーが発生した場合、
   - 引数.ログ出力サイン＝'1'の場合、エラーログファイルを1レコード生成する。
@@ -188,7 +184,7 @@ SELECT オーダーステータス
 | 1   | 作成区分                   | I   | '99'                    |
 | 2   | 入力ユーザーＩＤ           | I   | 引数.ユーザーＩＤ       |
 | 3   | エラーコード               | I   | 戻り値.エラーコード     |
-| 4   | 処理識別                   | I   | 'LD21'                  |
+| 4   | 処理識別                   | I   | 'LD11'                  |
 | 5   | 変更区分                   | I   | '3'                     |
 | 6   | エラーレベルステータス     | I   | '9'                     |
 | 7   | 受信ＩＤ                   | I   | 引数.受信ＩＤ           |

@@ -60,7 +60,7 @@ class arg_check,init_vars,item_check,date_check,reason_check,return_check,stock_
 | --- | ---------------------- | ---------------------- | ------- | -------------------------------- |
 | 1   | ユーザーＩＤ           | ps_user_id             | VARCHAR | ログインＩＤorSYSTEM             |
 | 2   | ログ出力サイン         | ps_log_sign            | VARCHAR | 0:ログ出力しない1:ログ出力       |
-| 3   | 受信ID                 | ps_receive_id          | VARCHAR | 外部データ：受信ＩＤ             |
+| 3   | 受信ID                 | ps_recieve_id          | VARCHAR | 外部データ：受信ＩＤ             |
 | 4   | 相手先システム識別     | ps_request_system_code | VARCHAR | 外部データ：相手先ｼｽﾃﾑコード |
 | 5   | 品目番号               | ps_itemno              | VARCHAR |                                  |
 | 6   | 供給者                 | ps_supplier            | VARCHAR |                                  |
@@ -119,13 +119,11 @@ class arg_check,init_vars,item_check,date_check,reason_check,return_check,stock_
   - エラーコード : E.LDP10307
   - エラーメッセージ : 'You cannot specify 0 or less than 0.'
     - (０以下の数量は指定できません。)
-  - エラー位置 : 'orderQty'
 - 引数.生試初品区分が'2'（生試）、'3'（量産初品）、空白（量産）以外の場合、エラーメッセージを出力し処理終了。
 
   - エラーコード : E.LDP10426
   - エラーメッセージ : 'You can specify only 2(Pilot Production), 3(First Production) or Blank(Mass Production) for Production Classification.'
     - (生試初品区分には２（生試）、３（初品）、または空白（量産）のみが指定可能です。)
-  - エラー位置 : 'pilotClass'
 
 ### 2.2. 初期処理
 
@@ -173,7 +171,6 @@ SELECT 1
   - エラーコード : E.LDP10023
   - エラーメッセージ : 'Reason Code does not exist in the order reason code table.'
     - (理由コードが発注理由コードテーブルに存在しません。)
-  - エラー位置 : 'reasonCode'
 
 #### 2.3.4. 返品・仕損生試初品区分チェック
 
@@ -182,7 +179,6 @@ SELECT 1
     - エラーコード : E.LDP10509
     - エラーメッセージ : 'You cannot register Mass Production Order for Pilot Production Parts in Parts Return and Scrap Report Operation.'
       - (返品・仕損からのオーダー登録時は、生試品に対する量産オーダーは登録できません。)
-    - エラー位置 : 'pilotClass'
 
 #### 2.3.5. 安全在庫チェック
 
@@ -190,7 +186,6 @@ SELECT 1
   - エラーコード : E.LDP10510
   - エラーメッセージ : 'In Scrap Report Operation, you cannot register the order for the item that has safety stock.'
     - (安全在庫が存在する品目に対して、仕損からのオーダー登録はできません。)
-  - エラー位置 : 'itemno'
 
 #### 2.3.6. 完了日チェック
 
@@ -235,7 +230,6 @@ SELECT 1
   - エラーコード : E.LDP10372
   - エラーメッセージ : 'Due Date you entered does not meet with the setting of DELIVERY STANDARD DAY TABLE.'
     - (入力した完了日が、納入基準日テーブルの設定内容と異なります。)
-  - エラー位置 : 'dueDate'
 
 #### 2.3.7. 初品チェック
 
@@ -256,7 +250,6 @@ SELECT 1
   - エラーコード : E.LDP10473
   - エラーメッセージ : 'First production order of the same item already exists.'
     - (同一品目ですでに初品オーダーが存在しています。)
-  - エラー位置 : 'pilotClass'
 
 ##### 2.3.7.2. 品目ステータスチェック
 
@@ -264,7 +257,6 @@ SELECT 1
   - エラーコード : E.LDP10474
   - エラーメッセージ : 'Because Item Status is not 3(First Production), you cannot register first production order.'
     - (品目ステータスが初品ではないため、初品オーダーは登録できません。)
-  - エラー位置 : 'pilotClass'
 
 ##### 2.3.7.3. 量産オーダーと初品オーダーの順序チェック
 
@@ -284,7 +276,6 @@ SELECT 1
   - エラーコード : E.LDP10475
   - エラーメッセージ : 'After the mass production order you entered, first production order exists.'
     - (入力した量産オーダーの後に初品オーダーが存在します。)
-  - エラー位置 : 'pilotClass'
 
 ### 2.4. 終了処理
 
@@ -310,6 +301,7 @@ SELECT 1
 
 ### 3.2. エラー発生時の対応について
 
+- 戻り値.エラー位置 :'LDAS0313'
 - SQLエラーが発生した場合、戻り値を返して処理終了。
 - PGMエラーが発生した場合、
   - 引数.ログ出力サイン＝'1'の場合、エラーログファイルを1レコード生成する。
