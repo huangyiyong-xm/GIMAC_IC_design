@@ -74,7 +74,7 @@ class arg_process_and_check,init_process,start_check,due_check,disburse_check pr
 | --- | ---------------- | ---------------- | ------- | --------------------------------------------- |
 | 1   | ステータス       | rn_status        | INTEGER | 0:NormalEnd,-1:SQLError/-2:PGError,1:警告発生 |
 | 2   | SQLコード        | rs_sql_code      | VARCHAR |                                               |
-| 3   | エラーコード     | rs_err_code      | INTEGER |                                               |
+| 3   | エラーコード     | rs_err_code      | VARCHAR |                                               |
 | 4   | エラーメッセージ | rs_err_msg       | VARCHAR |                                               |
 | 5   | エラー位置       | rs_err_focus     | VARCHAR |                                               |
 

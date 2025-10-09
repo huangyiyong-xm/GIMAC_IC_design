@@ -289,7 +289,7 @@ SELECT 1
 
 ###### 2.3.5.2.1. 費用振替先情報チェック
 
-- 引数．費用振替先区分または費用振替先コードがブランクの場合
+- 引数．費用振替先区分または費用振替先コードがブランク以外の場合
   - エラーコード：'E.LDP10430'
   - エラーメッセージ：'Enter the value for Charged Section Classification and Code.'
     - (費用振替先区分、コードに値を入力してください。)
@@ -374,13 +374,19 @@ SELECT 1
  WHERE SUコード = 引数.独立需要送り先コード;
 ```
 
-データが存在しない場合：
+```sql
+SELECT 1
+  FROM GIMACエリアマスタ
+ WHERE エリアコード = '***' || '引数.独立需要送り先コード';
+```
+
+両方のデータが存在しない場合：
 
 - エラーコード：'E.LDP10004'
 - エラーメッセージ：'Receiver Code of independent demand does not exist in the organization master.'
   - (独立需要送り先コードが組織マスタに存在しません。)
 
-#### 2.3.6. 着手日チェック（確認待ち）
+#### 2.3.6. 着手日チェック
 
 ```sql
 SELECT 1

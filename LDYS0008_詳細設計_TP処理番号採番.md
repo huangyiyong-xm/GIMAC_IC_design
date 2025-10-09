@@ -63,7 +63,7 @@ flowchart LR
 | 3   | エラーコード     | rs_err_code        | VARCHAR |                                    |
 | 4   | エラーメッセージ | rs_err_msg         | VARCHAR |                                    |
 | 5   | エラー位置       | rs_err_focus       | VARCHAR |                                    |
-| 6   | ＴＰ処理番号     | rn_tp_operation_no | VARCHAR |                                    |
+| 6   | ＴＰ処理番号     | rs_tp_operation_no | INTEGER |                                    |
 
 ### 1.4. その他制御・要件
 
