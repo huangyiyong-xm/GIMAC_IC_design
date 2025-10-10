@@ -95,7 +95,7 @@ flowchart LR
 | 13  | 理由コード                       | ps_reason_code          | VARCHAR |                                                                                                        |
 | 14  | 生試初品区分                     | ps_pilot_class          | VARCHAR | 生試=２、量産初品=３、量産=SPACE（単品生試=4)？                                                        |
 | 15  | 生試処理タイプ                   | ps_pilot_condition_type | VARCHAR | １：生試所要量＋サイン２：生試所要量－サイン                                                           |
-| 16  | 所要数                           | ps_required_qty         | DECIMAL |                                                                                                        |
+| 16  | 所要数                           | pn_required_qty         | DECIMAL |                                                                                                        |
 | 17  | コメント                         | ps_remark               | VARCHAR |                                                                                                        |
 | 18  | 費用振替先区分                   | ps_transfer_class       | VARCHAR | 1:S/U2:原価センター3:受払種別                                                                          |
 | 19  | 費用振替先コード                 | ps_transfer_code        | VARCHAR | 2：原価センターの場合10桁                                                                              |
@@ -409,7 +409,6 @@ SELECT 1
 - エラーコード：'E.LDP10005'
 - エラーメッセージ：'Receiver Code of independent demand does not exist in the accounting code table.'
   - (独立需要送り先コードが経費部課に存在しません)
-
 - 機能オプションパラメータのデータが存在しない場合、以下チェックを実行
 
 ```sql
