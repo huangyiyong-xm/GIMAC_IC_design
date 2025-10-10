@@ -386,6 +386,41 @@ SELECT 1
 - エラーメッセージ：'Receiver Code of independent demand does not exist in the organization master.'
   - (独立需要送り先コードが組織マスタに存在しません。)
 
+##### 2.3.5.5. S/U送り先チェック（送り先区分='2'の場合）
+
+```sql
+SELECT 1
+  FROM 機能オプションパラメータ
+ WHERE システムコード = 'LD'
+   AND 機能識別ＩＤ = 'LDA0011'
+   AND オプションコード = '1'
+   AND 選択フラグ = 'T';
+```
+
+- 機能オプションパラメータのデータが存在する場合、以下チェックを実行
+
+```sql
+SELECT 1
+  FROM SUマスタ
+ WHERE SUコード = 引数.独立需要送り先コード
+   AND エリアカテゴリ = '24';
+```
+
+- エラーコード：'E.LDP10005'
+- エラーメッセージ：'Receiver Code of independent demand does not exist in the accounting code table.'
+  - (独立需要送り先コードが経費部課に存在しません)
+
+- 機能オプションパラメータのデータが存在しない場合、以下チェックを実行
+
+```sql
+SELECT 1
+  FROM SUマスタ
+ WHERE SUコード = 引数.独立需要送り先コード
+```
+
+- エラーコード：'E.LDP10956'
+- エラーメッセージ：'Accounting code exists in organization master.'
+
 #### 2.3.6. 着手日チェック
 
 ```sql
@@ -439,7 +474,6 @@ SELECT 独立所要量登録可能日数, 先行RD削除日登録可能日数
 - エラーコード：'E.LDP10932'
 - エラーメッセージ：'Independent Requirements Input Days does not exist in the MRP system parameter.'
   - (独立所要量登録可能日数がシステムパラメータに登録されていません。)
-- エラー位置：' '
 
 ##### 2.3.7.2. 登録可能期間チェック
 
@@ -527,7 +561,7 @@ SELECT *
 
 引数.所要量区分が'0'（通常）で、引数.供給者と使用者が異なる場合：
 
-##### 2.3.12.1. 使用者GIMACエリアマスタ存在チェック
+##### 2.3.12.1. SUマスタ存在チェック
 
 ```sql
 SELECT エリアカテゴリ
