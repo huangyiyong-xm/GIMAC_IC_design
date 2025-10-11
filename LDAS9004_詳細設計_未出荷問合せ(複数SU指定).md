@@ -175,6 +175,7 @@ class arg_process_and_check,init_process,temp_table_create,ic_slip_date_get,org_
 | 5  | テーブル   | オーダー明細              | le_trn_order           | - | ○ | - | - |                         |
 | 6  | テーブル   | 日別カレンダーマスタ（D） | le_mst_calendar_sum    | - | ○ | - | - | (旧)lc_mst_calendar_sum |
 | 7  | テーブル   | 独立所要量明細            | le_trn_ird             | - | ○ | - | - |                         |
+| 8  | 共通関数   | 前工程在庫数取得          | LDYS0012               |   |    |   |   |                         |
 
 ## 2. 詳細処理
 
