@@ -181,7 +181,7 @@ class arg_process_and_check,init_process,start_check,due_check,disburse_check pr
 
 #### 2.3.1. 品目妥当性チェック
 
-LDAS0300（Valid／品目妥当性チェック）をコール。
+LDAS0300（Valid／品目妥当性チェック）をコールする。
 
 ```sql
 SELECT * 
@@ -193,7 +193,7 @@ SELECT *
 
 #### 2.3.2. 日付妥当性チェック
 
-LDAS0301（Valid／オーダー登録日付チェック）をコール。
+LDAS0301（Valid／オーダー登録日付チェック）をコールする。
 
 ```sql
 SELECT * 
