@@ -38,9 +38,8 @@ flowchart LR
    subgraph mainBlock ["2.3.主処理"]
      main_process["<div style='white-space: nowrap;'>2.3.1.変更内容の品目情報を取得</div>"] 
      main_process --> airSign["<div style='white-space: nowrap;'>2.3.2.AIRSサイン変更</div>"] 
-     airSign --> flagCheck["<div style='white-space: nowrap;'>2.3.2.1.対象品目の判定</div>"] 
-     flagCheck --> callSP["<div style='white-space: nowrap;'>2.3.2.2.納品書現品票データ削除</div>"] 
-     callSP --> updateDerev["<div style='white-space: nowrap;'>2.3.3.IC分析BOM改訂トランザクションを更新する</div>"]
+     airSign --> flagCheck["<div style='white-space: nowrap;'>2.3.2.1.対象品目の判定</div>"]  
+     flagCheck --> updateDerev["<div style='white-space: nowrap;'>2.3.2.IC分析BOM改訂トランザクションを更新する</div>"]
 
    end
  
@@ -59,11 +58,6 @@ flowchart LR
 | No. | パラメータ論理名 | パラメータ物理名 | 属性 | 備考 |
 | --- | --- | --- | --- | --- |
 | 1 | （なし） |  |  |  |
-| 2 |  |  |  |  |
-| 3 |  |  |  |  |
-| 4 |  |  |  |  |
-| 5 |  |  |  |  |
-| 6 |  |  |  |  |
 
 #### 1.3.2. 戻り値
 
@@ -94,9 +88,6 @@ flowchart LR
 | 2 | テーブル | MRP情報値 | le_mst_mrp_information | - | v | - | - |  |
 | 3 | テーブル   | GIMACエリアマスタ         | la_area_master         | - | ○ | - | - |                         |
 | 4 | 共通関数   | 納品書現品票データ削除       | ld0slb111           |   |    |   |    |      |
-| 5 |  |  |  |  |  |  |  |  |
-| 6 |  |  |  |  |  |  |  |  |
-| 7 |  |  |  |  |  |  |  |  |
 
 
 ## 2. 詳細処理
@@ -128,8 +119,6 @@ flowchart LR
 | 15  | 変数.エラーコード         | スペース     |
 | 16  | 変数.エラーメッセージ     | スペース     |
 | 17  | 変数.エラー位置           | スペース     |
-| 18  | 変数.システム日付         | システム時刻     |
-| 19  | 変数.XXXX                 | スペース     |
 
 ### 2.3. 主処理
 #### 2.3.1. 変更内容の品目情報を取得
@@ -147,7 +136,7 @@ SELECT  親品目番号
        ,メッセージコード 
        ,登録日時
        ,AIRSサイン
-  into  変数.親品目番号
+  INTO  変数.親品目番号
        ,変数.親供給者 
        ,変数.親使用者  
        ,変数.構成連番 
@@ -157,9 +146,9 @@ SELECT  親品目番号
        ,変数.メッセージコード 
        ,変数.登録日時
        ,変数.AIRSサイン
-FROM  IC分析BOM改訂トランザクション a 
-WHERE IC処理済サイン = '0'  ※未処理
-  AND メッセージコード = '300'     ※'300'(S≠U　AIRSサイン変更)
+  FROM  IC分析BOM改訂トランザクション a 
+ WHERE  IC処理済サイン = '0'  ※未処理
+   AND  メッセージコード = '300'(S≠U　AIRSサイン変更)
   
 ```
 
@@ -174,16 +163,18 @@ WHERE IC処理済サイン = '0'  ※未処理
     MRP情報値を検索する
 
 ```sql
-SELECT  a.AIRSサイン
-  into  変数.AIRSサイン
-FROM  MRP情報値 a 
-  INNER JOIN GIMACエリアマスタ b
-    ON a.供給者 = b.エリアコード
-WHERE   a.品目番号    = 変数.親品目番号
-    AND a.供給者      = 変数.親供給者 
-    AND a.使用者      = 変数.親使用者  
-    AND (a.AIRSサイン = '1' 
-        or  a.AIRSサイン = " " and b.AIRSサイン = "1"  ※完成報告自動作成する
+SELECT  DECODE(a.AIRSサイン, " ", a.AIRSサイン, d.AIRSサイン)
+  INTO  変数.AIRSサイン
+  FROM  MRP情報値 a 
+  INNER JOIN SUマスタ c
+    ON a.供給者 = c.SUコード
+  INNER JOIN GIMACエリアマスタ d
+    ON c.エリアコード = d.エリアコード
+ WHERE   a.品目番号    = 変数.親品目番号
+   AND a.供給者      = 変数.親供給者 
+   AND a.使用者      = 変数.親使用者  
+   AND (a.AIRSサイン = '1' 
+        OR  a.AIRSサイン = ' ' AND d.AIRSサイン = '1'  ※完成報告自動作成する
         )
   
 ```
@@ -192,9 +183,10 @@ WHERE   a.品目番号    = 変数.親品目番号
     データが存在しない場合
         変数.対象品目フラグ　= '0'
 
-##### 2.3.2.2 納品書現品票データ削除
+<!-- ##### 2.3.2.2 現品／完成報告カード削除
     変数.対象品目フラグ　= '1' の場合
-        CALL SP ld0slb111(GIMACはまだ採番されていません) 納品書現品票データ削除
+        (変数.親供給者 <> 変数.親使用者) かつ　変数.AIRSサイン = '1'  の場合
+          CALL SP LDAS0439現品／完成報告カード削除    確認待ち
 ```sql
 SELECT
     処理ステータス,
@@ -202,32 +194,34 @@ SELECT
     エラーコード,
     エラーメッセージ,
     エラー位置,
-    XXXX
-INTO
+  INTO
     変数.処理ステータス,
     変数.SQLコード,
     変数.エラーコード,
     変数.エラーメッセージ,
     変数.エラー位置,
-    XXXX
-FROM
-   ld0slb111(
-
+  FROM
+   LDAS0439(
+          変数.親品目番号
+         ,変数.親供給者 
+         ,変数.親使用者 
+         ,'1' 
 )
 ```
-        変数.処理ステータス <> 0 の場合、エラーメッセージを出力し処理終了
-            - エラーメッセージ：' ' || '<<SP ld0slb111 Error Return>>' || 'Return:     変数.処理ステータス,変数.SQLコード,変数.エラーコード,変数.エラーメッセージ,変数.エラー位置,変数.XXXX'
-##### 2.3.2.3 IC分析BOM改訂トランザクションを更新する
+          変数.処理ステータス <> 0 の場合、エラーメッセージを出力し処理終了
+            - エラーメッセージ：' ' || '<<SP ld0slb111 Error Return>>' || 'Return:     変数.処理ステータス,変数.SQLコード,変数.エラーコード,変数.エラーメッセージ,変数.エラー位置' -->
+
+##### 2.3.2.2 IC分析BOM改訂トランザクションを更新する
 
     IC分析BOM改訂トランザクションを更新する
 
 ```sql
 UPDATE IC分析BOM改訂トランザクション
 SET    IC処理済サイン = '1',
-       更新者 = 'LDPS0004',
-       更新カウンター = 更新カウンター + 1,
-       更新日時 = 変数.システム日付,
-       更新pgmid = 'LDPS0004'
+       更新者 = プログラムID,
+       更新カウンタ = 更新カウンタ + 1,
+       更新日時 = システム日時,
+       更新PGMID = プログラムID
 WHERE IC処理済サイン    = '0'
 　 AND 親品目番号       = 変数.親品目番号
    AND 親供給者         = 変数.親供給者 
