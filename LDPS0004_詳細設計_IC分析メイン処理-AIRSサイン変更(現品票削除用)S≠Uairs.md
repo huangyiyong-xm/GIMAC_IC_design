@@ -163,7 +163,7 @@ SELECT  親品目番号
     MRP情報値を検索する
 
 ```sql
-SELECT  DECODE(a.AIRSサイン, " ", a.AIRSサイン, d.AIRSサイン)
+SELECT  DECODE(a.AIRSサイン, " ", d.AIRSサイン, a.AIRSサイン)
   INTO  変数.AIRSサイン
   FROM  MRP情報値 a 
   INNER JOIN SUマスタ c
