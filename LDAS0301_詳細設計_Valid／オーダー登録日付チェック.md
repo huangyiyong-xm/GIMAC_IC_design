@@ -94,7 +94,7 @@ class arg_process_and_check,init_process,start_check,due_check,disburse_check pr
 | No | 入出力対象 | 名称                           | 物理名称               | C | R  | U | D | 備考 |
 | -- | ---------- | ------------------------------ | ---------------------- | - | -- | - | - | ---- |
 | 1  | テーブル   | SUマスタ                       | la_area_master_su      |   | ○ |   |   |      |
-| 2  | テーブル   | [MRP]日別カレンダーマスタ（D） | le_mst_calendar_sum    |   | ○ |   |   |      |
+| 2  | テーブル   | [MRP]日別カレンダーマスタ（D） | lc_mst_calendar_sum    |   | ○ |   |   |      |
 | 3  | テーブル   | IC工場処理日                   | ld_mst_slip_date       |   | ○ |   |   |      |
 | 4  | テーブル   | 機能オプションパラメータ       | lz_function_parameter  |   | ○ |   |   |      |
 | 5  | テーブル   | 品目マスター                   | la_itemmast            |   | ○ |   |   |      |
@@ -129,9 +129,9 @@ class arg_process_and_check,init_process,start_check,due_check,disburse_check pr
 ##### 2.3.1.1. 現在有効カレンダー取得する
 
 ```sql
-SELECT calendar_code            -- 現在有効カレンダー
-  FROM la_area_master_su       -- SUマスタ
- WHERE su_code = ps_usercd;
+SELECT 現在有効カレンダー
+  FROM SUマスタ
+ WHERE SUコード  = 引数.使用者;
 ```
 
 - データが存在しない場合、エラーメッセージを出力し処理終了
@@ -142,10 +142,10 @@ SELECT calendar_code            -- 現在有効カレンダー
 ##### 2.3.1.2. 稼働日でない場合エラー
 
 ```sql
-SELECT day_type                -- 稼働日区分
-  FROM le_mst_calendar_sum     -- 日別カレンダーマスター(D)
- WHERE calendar_code　＝　calendar_code -- 2.3.1.1で取得.現在有効カレンダー
-   AND calendar_ymd　＝　ps_start_date;
+SELECT 稼働日区分 
+  FROM [MRP]日別カレンダーマスタ（D）
+ WHERE カレンダーコード　＝　2.3.1.1で取得.現在有効カレンダー 
+    AND カレンダー年月日　＝　引数.着手日;
 ```
 
 - 稼働日区分 <> '0'（稼働日） の場合、エラーメッセージを出力し処理終了
@@ -162,18 +162,18 @@ SELECT day_type                -- 稼働日区分
 ##### 2.3.1.3. 確定期間情報取得
 
 ```sql
-SELECT fix_period_id            -- 確定期間ID
-  FROM le_mst_mrp_information   -- MRP情報値
- WHERE itemno   = ps_itemno
-   AND supplier = ps_supplier
-   AND usercd   = ps_usercd;
+SELECT 確定期間ID
+  FROM MRP情報値
+ WHERE 品目番号 = 引数.品目番号
+    AND 供給者 = 引数.供給者
+    AND 使用者 = 引数.使用者;
 ```
 
 LEBS0010（確定期間検索）をコール
 
 ```sql
 SELECT * 
-  FROM LEBS0010(fix_period_id,"T") --確定期間ID
+  FROM LEBS0010(取得した.確定期間ID,"T")
 ```
 
 - 戻り値．ステータスがエラー(-1)の場合、エラー返して処理を異常終了させる。
@@ -184,9 +184,9 @@ SELECT *
 ##### 2.3.1.4. IC工場処理日取得する
 
 ```sql
-SELECT ic_slip_date             -- IC工場処理日
-  FROM ld_mst_slip_date         -- IC工場処理日
- WHERE operation_type = 'STD'
+SELECT IC工場処理日
+  FROM IC工場処理日
+ WHERE 処理タイプ = 'STD' 
 ```
 
 - データが存在しない場合、エラーメッセージを出力し処理終了。
@@ -219,11 +219,11 @@ SELECT ic_slip_date             -- IC工場処理日
 ##### 2.3.2.1. 機能選択
 
 ```sql
-SELECT option_code               -- オプションコード
-  FROM lz_function_parameter     -- 機能オプションパラメータ
- WHERE system_code = 'LC'
-   AND function_id = 'LCB0001'
-   AND select_flg  = 'T';
+SELECT オプションコード
+  FROM 機能オプションパラメータ
+ WHERE システムコード = 'LC'
+   AND IDコード = 'LCB0001'
+   AND 選択フラグ = 'T';
 ```
 
 - データが存在しない場合、エラーメッセージを出力し処理終了。
@@ -234,12 +234,11 @@ SELECT option_code               -- オプションコード
 ##### 2.3.2.2. 品目タイプ取得する
 
 ```sql
-SELECT item_type             -- 品目タイプ
-  FROM la_itemmast           -- 品目マスター
- WHERE itemno   = ps_itemno
-   AND supplier = ps_supplier
-   AND usercd   = ps_usercd;
-
+SELECT 品目タイプ
+  FROM 品目マスター
+ WHERE 品目番号 = 引数.品目番号
+   AND 供給者 = 引数.供給者
+   AND 使用者 = 引数.使用者;
 ```
 
 - データが存在しない場合、エラーメッセージを出力し処理終了。
@@ -258,10 +257,10 @@ SELECT item_type             -- 品目タイプ
 ##### 2.3.2.4. 稼働日でない場合エラー
 
 ```sql
-SELECT day_type                -- 稼働日区分
-  FROM le_mst_calendar_sum     -- 日別カレンダーマスター(D)
- WHERE calendar_code　＝　calendar_code -- 2.3.1.1で取得.現在有効カレンダー
-   AND calendar_ymd　＝　ps_due_date;
+SELECT 稼働日区分 
+  FROM [MRP]日別カレンダーマスタ（D）
+ WHERE カレンダーコード　＝　2.3.1.1で取得.現在有効カレンダー 
+   AND カレンダー年月日　＝　引数.完了日;
 ```
 
 - 稼働日区分 <> '0'（稼働日） の場合、エラーメッセージを出力し処理終了。
@@ -292,10 +291,10 @@ SELECT day_type                -- 稼働日区分
 ##### 2.3.3.1. 稼働日でない かつ MRP需要方針コード<>'2'の場合エラー
 
 ```sql
-SELECT day_type                -- 稼働日区分
-  FROM le_mst_calendar_sum     -- 日別カレンダーマスター(D)
- WHERE calendar_code　＝　calendar_code -- 2.3.1.1で取得.現在有効カレンダー
-   AND calendar_ymd　＝　ps_disburse_date;
+SELECT 稼働日区分 
+  FROM [MRP]日別カレンダーマスタ（D）
+ WHERE カレンダーコード　＝　2.3.1.1で取得.現在有効カレンダー
+    AND カレンダー年月日　＝　引数.払出日;
 ```
 
 - 稼働日区分 <> '0'（稼働日） かつ 引数.MRP需要方針コード <> '2'の場合、エラーメッセージを出力し処理終了。
