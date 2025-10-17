@@ -60,9 +60,9 @@ class arg_process_and_check,init_process,start_check,due_check,disburse_check pr
 | No. | パラメータ論理名  | パラメータ物理名 | 属性    | 備考                 |
 | --- | ----------------- | ---------------- | ------- | -------------------- |
 | 1   | 処理識別          | ps_operation_id  | VARCHAR | LD11/71              |
-| 2   | 着手日            | ps_start_date    | VARCHAR | (エラー時)ID=1       |
-| 3   | 完了日            | ps_due_date      | VARCHAR | (エラー時)ID=2       |
-| 4   | 払出日            | ps_disburse_date | VARCHAR | (エラー時)ID=3       |
+| 2   | 着手日            | ps_start_date    | VARCHAR |                      |
+| 3   | 完了日            | ps_due_date      | VARCHAR |                      |
+| 4   | 払出日            | ps_disburse_date | VARCHAR |                      |
 | 5   | 品目番号          | ps_itemno        | VARCHAR |                      |
 | 6   | 供給者            | ps_supplier      | VARCHAR |                      |
 | 7   | 使用者            | ps_usercd        | VARCHAR | 稼働日チェック用     |
@@ -94,7 +94,7 @@ class arg_process_and_check,init_process,start_check,due_check,disburse_check pr
 | No | 入出力対象 | 名称                           | 物理名称               | C | R  | U | D | 備考 |
 | -- | ---------- | ------------------------------ | ---------------------- | - | -- | - | - | ---- |
 | 1  | テーブル   | SUマスタ                       | la_area_master_su      |   | ○ |   |   |      |
-| 2  | テーブル   | [MRP]日別カレンダーマスタ（D） | lc_mst_calendar_sum    |   | ○ |   |   |      |
+| 2  | テーブル   | 日別カレンダーマスター(D)       | le_mst_calendar_sum    |   | ○ |   |   |      |
 | 3  | テーブル   | IC工場処理日                   | ld_mst_slip_date       |   | ○ |   |   |      |
 | 4  | テーブル   | 機能オプションパラメータ       | lz_function_parameter  |   | ○ |   |   |      |
 | 5  | テーブル   | 品目マスター                   | la_itemmast            |   | ○ |   |   |      |
@@ -106,15 +106,15 @@ class arg_process_and_check,init_process,start_check,due_check,disburse_check pr
 ### 2.1. 引数の取得とチェック
 
 - 引数.着手日が　ブランク　又は　 NULL 　の場合、エラーメッセージを出力し処理終了。
-  - エラーコード : E.LDP10354
+  - エラーコード : ld.E.LDP10059
   - エラーメッセージ：'Specify Start Date.';
     - (着手日を指定してください。)
 - 引数.完了日が　ブランク　又は　 NULL 　の場合、エラーメッセージを出力し処理終了。
-  - エラーコード : E.LDP10355
+  - エラーコード : ld.E.LDP10060
   - エラーメッセージ：'Specify Due Date.';
     - (完了日を指定してください。)
 - 引数.払出日が   ブランク　又は　 NULL   の場合、エラーメッセージを出力し処理終了。
-  - エラーコード : E.LDP10356
+  - エラーコード : ld.E.LDP10061
   - エラーメッセージ：'Specify Disburse Date.';
     - (払出日を指定してください。)
 
@@ -129,51 +129,51 @@ class arg_process_and_check,init_process,start_check,due_check,disburse_check pr
 ##### 2.3.1.1. 現在有効カレンダー取得する
 
 ```sql
-SELECT 現在有効カレンダー
-  FROM SUマスタ
- WHERE SUコード  = 引数.使用者;
+SELECT calendar_code           -- 現在有効カレンダー
+  FROM la_area_master_su       -- SUマスタ
+ WHERE su_code = ps_usercd;
 ```
 
 - データが存在しない場合、エラーメッセージを出力し処理終了
-  - エラーコード：'E.LDP10910';
+  - エラーコード：'ld.E.LDP10062';
   - エラーメッセージ：'Effective calendar does not exist by the specified Supplier/User.';
     - (指定のＳＵで有効なカレンダーが存在しません。)
 
 ##### 2.3.1.2. 稼働日でない場合エラー
 
 ```sql
-SELECT 稼働日区分 
-  FROM [MRP]日別カレンダーマスタ（D）
- WHERE カレンダーコード　＝　2.3.1.1で取得.現在有効カレンダー 
-    AND カレンダー年月日　＝　引数.着手日;
+SELECT day_type                           -- 稼働日区分
+  FROM le_mst_calendar_sum                -- 日別カレンダーマスター(D)
+ WHERE calendar_code　＝　calendar_code    -- 2.3.1.1で取得.現在有効カレンダー
+   AND calendar_ymd　＝　ps_start_date;
 ```
 
 - 稼働日区分 <> '0'（稼働日） の場合、エラーメッセージを出力し処理終了
 
-  - エラーコード：'E.LDP10377';
+  - エラーコード：'ld.E.LDP10063';
   - エラーメッセージ：'The day you specified is not a working-day.';
     - (指定した日付が稼働日ではありません。)
 - データが存在しない場合、エラーメッセージを出力し処理終了
 
-  - エラーコード：'E.LDP10106';
+  - エラーコード：'ld.E.LDP10064';
   - エラーメッセージ：'Day String does not exist in the common calendar.';
     - (日情報がカレンダーテーブルに存在しません。)
 
 ##### 2.3.1.3. 確定期間情報取得
 
 ```sql
-SELECT 確定期間ID
-  FROM MRP情報値
- WHERE 品目番号 = 引数.品目番号
-    AND 供給者 = 引数.供給者
-    AND 使用者 = 引数.使用者;
+SELECT fix_period_id            -- 確定期間ID
+  FROM le_mst_mrp_information   -- MRP情報値
+ WHERE itemno   = ps_itemno
+   AND supplier = ps_supplier
+   AND usercd   = ps_usercd;
 ```
 
 LEBS0010（確定期間検索）をコール
 
 ```sql
 SELECT * 
-  FROM LEBS0010(取得した.確定期間ID,"T")
+  FROM LEBS0010(fix_period_id,"T") --確定期間ID
 ```
 
 - 戻り値．ステータスがエラー(-1)の場合、エラー返して処理を異常終了させる。
@@ -184,13 +184,13 @@ SELECT *
 ##### 2.3.1.4. IC工場処理日取得する
 
 ```sql
-SELECT IC工場処理日
-  FROM IC工場処理日
- WHERE 処理タイプ = 'STD' 
+SELECT ic_slip_date             -- IC工場処理日
+  FROM ld_mst_slip_date         -- IC工場処理日テーブル
+ WHERE operation_type = 'STD'
 ```
 
 - データが存在しない場合、エラーメッセージを出力し処理終了。
-  - エラーコード：'E.LDP10911';
+  - エラーコード：'ld.E.LDP10004';
   - エラーメッセージ：'The IC pymac date is not exist.';
     - (IC工場処理日が存在しません。)
 
@@ -198,79 +198,79 @@ SELECT IC工場処理日
 
 - 引数.処理識別が'LD11'又は'LD41'の場合
 
-  - 引数.MRP需要方針コードが'1'又は'2'以外の場合
+  - 引数.MRP需要方針コードが'1'(生産計画品目)又は'2'(ハンド管理品目)以外の場合
     - 引数.着手日 > 2.3.1.3で取得.今回_確定期間最終日の場合、エラーメッセージを出力し処理終了。
-      - エラーコード：'E.LDP10367';
+      - エラーコード：'ld.E.LDP10065';
       - エラーメッセージ：'For Start Date, specify the date former than the final day of the fixed order period.';
         - (着手日には発注期間最終日以前の日付を指定してください。)
 - 引数.処理識別が'LD71'の場合
 
   - 引数.着手日 > 2.3.1.3で取得.今回_確定期間最終日の場合、エラーメッセージを出力し処理終了。
-    - エラーコード：'E.LDP10367';
+    - エラーコード：'ld.E.LDP10065';
     - エラーメッセージ：'For Start Date, specify the date former than the final day of the fixed order period.';
       - (着手日には発注期間最終日以前の日付を指定してください。)
   - 引数.着手日 <2.3.1.4で取得.IC工場処理日の場合、エラーメッセージを出力し処理終了。
-    - エラーコード：'E.LDP10357';
+    - エラーコード：'ld.E.LDP10066';
     - エラーメッセージ：'You cannot specify the past date for Start Date.';
       - (着手日には過去日付を指定できません。)
 
 #### 2.3.2. 完了日チェック
 
-##### 2.3.2.1. 機能選択
+##### 2.3.2.1. 機能選択（過去オーダー登録許可）
 
 ```sql
-SELECT オプションコード
-  FROM 機能オプションパラメータ
- WHERE システムコード = 'LC'
-   AND IDコード = 'LCB0001'
-   AND 選択フラグ = 'T';
+SELECT option_code               -- オプションコード
+  FROM lz_function_parameter     -- 機能オプションパラメータ
+ WHERE system_code = 'LE'
+   AND function_id = 'LEA0001'
+   AND select_flg  = 'T';
 ```
 
 - データが存在しない場合、エラーメッセージを出力し処理終了。
-  - エラーコード：'E.LDP10912';
+  - エラーコード：'ld.E.LDP10002';
   - エラーメッセージ：'Target data does not exist in the Function Parameter table.';
     - (機能選択のデータが存在していません。)
 
 ##### 2.3.2.2. 品目タイプ取得する
 
 ```sql
-SELECT 品目タイプ
-  FROM 品目マスター
- WHERE 品目番号 = 引数.品目番号
-   AND 供給者 = 引数.供給者
-   AND 使用者 = 引数.使用者;
+SELECT item_type             -- 品目タイプ
+  FROM la_itemmast           -- 品目マスター
+ WHERE itemno   = ps_itemno
+   AND supplier = ps_supplier
+   AND usercd   = ps_usercd;
 ```
 
 - データが存在しない場合、エラーメッセージを出力し処理終了。
-  - エラーコード：'E.LDP10726';
+  - エラーコード：'ld.E.LDP10067';
   - エラーメッセージ：'Data does not exist in the item master.';
     - (品目マスターに登録されていません。)
 
 ##### 2.3.2.3. 完了日チェック
 
-- 2.3.2.1で取得.オプションコード = '0' かつ 引数.完了日 < 2.3.1.4で取得.IC工場処理日 かつ 2.3.2.2で取得.品目タイプ <> '2'の場合、又は
-  2.3.2.1で取得.オプションコード <> '0' かつ 引数.完了日 < 2.3.1.4で取得.IC工場処理日の場合、エラーメッセージを出力し処理終了。
-  - エラーコード：'E.LDP10398';
+- 2.3.2.1で取得.オプションコード = '0'(許可する) かつ 引数.完了日 < 2.3.1.4で取得.IC工場処理日 かつ 2.3.2.2で取得.品目タイプ <> '2'(通過品目)の場合、又は
+  2.3.2.1で取得.オプションコード <> '0'(許可しない) かつ 引数.完了日 < 2.3.1.4で取得.IC工場処理日の場合、エラーメッセージを出力し処理終了。
+  - エラーコード：'ld.E.LDP10068';
   - エラーメッセージ：'You cannot specify the past date for due date.';
     - (完了日には過去日付を指定できません。)
 
 ##### 2.3.2.4. 稼働日でない場合エラー
 
 ```sql
-SELECT 稼働日区分 
-  FROM [MRP]日別カレンダーマスタ（D）
- WHERE カレンダーコード　＝　2.3.1.1で取得.現在有効カレンダー 
-   AND カレンダー年月日　＝　引数.完了日;
+SELECT day_type                         -- 稼働日区分
+  FROM le_mst_calendar_sum              -- 日別カレンダーマスター(D)
+ WHERE calendar_code　＝　calendar_code -- 2.3.1.1で取得.現在有効カレンダー
+   AND calendar_ymd　＝　ps_due_date;
 ```
 
 - 稼働日区分 <> '0'（稼働日） の場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード：'E.LDP10936';
+  - エラーコード：'ld.E.LDP10069';
   - エラーメッセージ：'The day you specified is not a working-day.';
     - (指定した日付が稼働日ではありません。)
 - データが存在しない場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード：'E.LDP10106';
+  - エラーコード：'ld.E.LDP10064';
   - エラーメッセージ：'Day String does not exist in the common calendar.';
     - (日情報がカレンダーテーブルに存在しません。)
 
@@ -278,11 +278,11 @@ SELECT 稼働日区分
 
 - 引数.完了日 < 引数.着手日の場合
   - 引数.処理識別が'LD11'又は'LD41'の場合、エラーメッセージを出力し処理終了。
-    - エラーコード：'E.LDP10360';
+    - エラーコード：'ld.E.LDP10070';
     - エラーメッセージ：'For Due Date, specify the date later than Start Date.';
       - (完了日には着手日より後の日付を指定してください。)
   - 引数.処理識別が'LD71'の場合、エラーメッセージを出力し処理終了。
-    - エラーコード：'E.LDP10358';
+    - エラーコード：'ld.E.LDP10071';
     - エラーメッセージ：'For Start Date, specify the date former than Due Date.';
       - (着手日には完了日より前の日付を指定してください。)
 
@@ -291,27 +291,27 @@ SELECT 稼働日区分
 ##### 2.3.3.1. 稼働日でない かつ MRP需要方針コード<>'2'の場合エラー
 
 ```sql
-SELECT 稼働日区分 
-  FROM [MRP]日別カレンダーマスタ（D）
- WHERE カレンダーコード　＝　2.3.1.1で取得.現在有効カレンダー
-    AND カレンダー年月日　＝　引数.払出日;
+SELECT day_type                        -- 稼働日区分
+  FROM le_mst_calendar_sum              -- 日別カレンダーマスター(D)
+ WHERE calendar_code　＝　calendar_code -- 2.3.1.1で取得.現在有効カレンダー
+   AND calendar_ymd　＝　ps_disburse_date;
 ```
 
 - 稼働日区分 <> '0'（稼働日） かつ 引数.MRP需要方針コード <> '2'の場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード：'E.LDP10750';
+  - エラーコード：'ld.E.LDP10072';
   - エラーメッセージ：'The day you specified is not a working-day.';
     - (払出日が稼働日ではありません。)
 - データが存在しない場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード：'E.LDP10106';
+  - エラーコード：'ld.E.LDP10064';
   - エラーメッセージ：'Day String does not exist in the common calendar.';
     - (日情報がカレンダーテーブルに存在しません。)
 
 ##### 2.3.3.2. 引数．払出日＜引数．完了日の場合エラー
 
 - 引数.払出日 < 引数.完了日の場合、エラーメッセージを出力し処理終了。
-  - エラーコード：'E.LDP10361';
+  - エラーコード：'ld.E.LDP10073';
   - エラーメッセージ：'For Disburse Date, specify the date later than Due Date.';
     - (払出日には完了日以降の日付を指定してください。)
 
@@ -322,7 +322,7 @@ SELECT 稼働日区分
 月差 = (払出日の年 - 着手日の年) × 12 + (払出日の月 - 着手日の月)
 
 - 月差 > 6 又は (月差 = 6 かつ (払出日の日 - 着手日の日) > 0)の場合、エラーメッセージを出力し処理終了
-  - エラーコード：'E.LDP10397';
+  - エラーコード：'ld.E.LDP10074';
   - エラーメッセージ：'Make the difference between Start Date and Disburse Date within 6 months.';
     - (着手日と払出日との差は６ヶ月以内に設定してください。)
 
