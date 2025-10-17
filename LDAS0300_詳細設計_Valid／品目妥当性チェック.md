@@ -158,22 +158,23 @@ flowchart LR
 品目マスターとMRP情報値から該当品目の情報を取得する。
 
 ```sql
-SELECT item.品目タイプ
-     , item.品目クラス
-     , item.品目ステータス
-     , mrp.MRP需要方針コード
-     , mrp.Wビン管理コード
-     , mrp.AIRSサイン
-     , mrp.変動安全在庫数
-     , mrp.シンクロ管理コード
-FROM 品目マスター item
- JOIN MRP情報値 mrp
-  ON mrp.品目番号 = item.品目番号
- AND mrp.供給者   = item.供給者
- AND mrp.使用者   = item.使用者
-WHERE item.品目番号 = 引数.品目番号
-  AND item.供給者   = 引数.供給者
-  AND item.使用者   = 引数.使用者;
+SELECT item.item_type              -- item.品目タイプ
+  , item.item_class                -- item.品目クラス
+  , item.item_status               -- item.品目ステータス
+  , mrp.demand_policy_code         -- mrp.MRP需要方針コード
+  , mrp.wbin_control_code          -- mrp.Wビン管理コード
+  , mrp.airs_sign                  -- mrp.AIRSサイン
+  , mrp.float_safety_stock_qty     -- mrp.変動安全在庫数
+  , mrp.synchro_control_code       -- mrp.シンクロ管理コード
+FROM la_itemmast item      
+ JOIN le_mst_mrp_information mrp   
+  ON mrp.itemno = item.itemno  
+ AND mrp.supplier   = item.supplier  
+ AND mrp.usercd     = item.usercd  
+WHERE item.itemno = ps_itemno
+  AND item.supplier   = ps_supplier
+  AND item.usercd   = ps_usercd;
+
 ```
 
 item.品目タイプ        ⇒ 変数.品目タイプ
