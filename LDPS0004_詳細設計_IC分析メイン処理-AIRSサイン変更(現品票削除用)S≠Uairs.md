@@ -163,18 +163,16 @@ SELECT  親品目番号
     MRP情報値を検索する
 
 ```sql
-SELECT  DECODE(a.AIRSサイン, " ", d.AIRSサイン, a.AIRSサイン)
+SELECT  DECODE(a.AIRSサイン, " ", c.AIRSサイン, a.AIRSサイン)
   INTO  変数.AIRSサイン
   FROM  MRP情報値 a 
   INNER JOIN SUマスタ c
     ON a.供給者 = c.SUコード
-  INNER JOIN GIMACエリアマスタ d
-    ON c.エリアコード = d.エリアコード
  WHERE   a.品目番号    = 変数.親品目番号
    AND a.供給者      = 変数.親供給者 
    AND a.使用者      = 変数.親使用者  
    AND (a.AIRSサイン = '1' 
-        OR  a.AIRSサイン = ' ' AND d.AIRSサイン = '1'  ※完成報告自動作成する
+        OR  a.AIRSサイン = ' ' AND c.AIRSサイン = '1'  ※完成報告自動作成する
         )
   
 ```
