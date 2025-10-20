@@ -267,7 +267,7 @@ UPDATE IC分析BOM改訂トランザクション
 #### 2.3.3. 処理件数の出力
 データの処理件数をログに出力する
   IC分析BOM改訂トランザクションTBLから検索したﾚｺｰﾄﾞ件数、ｵｰﾀﾞｰ明細TBLから検索したﾚｺｰﾄﾞ件数、ｵｰﾀﾞｰ明細TBLから削除したﾚｺｰﾄﾞ件数 を出力 :
-    '<ic_derev_trn> Read Count  = ' || 変数.IC分析BOM改訂カウント || 
+    '<ld_trn_derev_trn> Read Count  = ' || 変数.IC分析BOM改訂カウント || 
     '<le_trn_order> Read Count   = ' || 変数.オーダー明細カウント ||
     '.............. Delete Count = ' || 変数.オーダー明細削除カウント
 
