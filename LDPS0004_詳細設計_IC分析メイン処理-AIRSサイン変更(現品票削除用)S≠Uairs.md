@@ -40,7 +40,7 @@ flowchart LR
      main_process --> airSign["<div style='white-space: nowrap;'>2.3.2.AIRSサイン変更</div>"] 
      airSign --> flagCheck["<div style='white-space: nowrap;'>2.3.2.1.対象品目の判定</div>"]  
      flagCheck --> updateDerev["<div style='white-space: nowrap;'>2.3.2.IC分析BOM改訂トランザクションを更新する</div>"]
-
+     updateDerev --> log["<div style='white-space: nowrap;'>2.3.3.処理件数の出力</div>"]
    end
  
    %% 終了処理
@@ -234,6 +234,12 @@ WHERE IC処理済サイン    = '0'
 ```
 
 ループ END （2.3.2のループ）
+
+#### 2.3.3. 処理件数の出力
+データの処理件数をログに出力する
+  IC分析BOM改訂トランザクションTBLから検索したﾚｺｰﾄﾞ件数、ｵｰﾀﾞｰ明細TBLから検索したﾚｺｰﾄﾞ件数、ｵｰﾀﾞｰ明細TBLから削除したﾚｺｰﾄﾞ件数 を出力 :
+    '<ic_derev_trn> Read Count  = ' || 変数.IC分析BOM改訂カウント || 
+    ' "Normal End." ' 
 
 ### 2.4. 終了処理
 
