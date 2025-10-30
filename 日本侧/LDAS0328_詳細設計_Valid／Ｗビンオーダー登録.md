@@ -101,78 +101,75 @@ class arg_process_and_check,init_process,start_check,due_check,disburse_check pr
 
 - ユーザーIDが NULL の場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : 'E.LDP10917'
+  - エラーコード : 'ld.E.LDP10110'
   - エラーメッセージ : 'Specify the User ID.'
     - (ユーザーＩＤを指定してください。)
 - ログ出力サインが NULL 又は ブランク の場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : 'E.LDP10918'
+  - エラーコード : 'ld.E.LDP10111'
   - エラーメッセージ : 'Specify the Log Sign.'
     - (ログ出力サインを指定してください。)
 - 受信IDが NULL の場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : 'E.LDP10919'
+  - エラーコード : 'ld.E.LDP10112'
   - エラーメッセージ : 'Specify the Receive ID.'
     - (受信IDを指定してください。)
 - 相手先システム識別が NULL の場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : 'E.LDP10920'
+  - エラーコード : 'ld.E.LDP10113'
   - エラーメッセージ : 'Specify the System ID.'
     - (相手先システム識別を指定してください。)
 - 品目番号が NULL 又は ブランク の場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : 'E.LDP10915'
+  - エラーコード : 'ld.E.LDP10915'
   - エラーメッセージ : 'Specify the Item Number.'
     - (品目番号を指定してください。)
 - 供給者が NULL 又は ブランク の場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : 'E.LDP10893'
+  - エラーコード : 'ld.E.LDP10055'
   - エラーメッセージ : 'Specify the Supplier.'
     - (供給者を指定してください。)
 - 使用者が NULL 又は ブランク の場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : 'E.LDP10895'
+  - エラーコード : 'ld.E.LDP10057'
   - エラーメッセージ : 'Specify the User.'
     - (使用者を指定してください。)
 - オーダー番号が NULL 又は ブランク の場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : 'E.LDP10908'
+  - エラーコード : 'ld.E.LDP10130'
   - エラーメッセージ : 'Specify the Order Number.'
     - (オーダー番号を指定してください。)
 - オーダー番号の先頭文字が 'W' 以外の場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : 'E.LDP10424'
+  - エラーコード : 'ld.E.LDP10131'
   - エラーメッセージ : 'Specify "W" in the first digit of Order Number.'
     - (オーダー番号の先頭１桁には W を指定してください。)
 - オーダー数が NULL の場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : 'E.LDP10922'
+  - エラーコード : 'ld.E.LDP10132'
   - エラーメッセージ : 'Specify the Order Qty.'
     - (オーダー数を指定してください。)
 - オーダー数が 0 以下の場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : 'E.LDP10307'
+  - エラーコード : 'ld.E.LDP10075'
   - エラーメッセージ : 'You cannot specify 0 or less than 0. '
     - (０以下の数量は指定できません。)
 - 着手日が NULL 又は ブランク の場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : 'E.LDP10354'
+  - エラーコード : 'ld.E.LDP10059'
   - エラーメッセージ : 'Specify Start Date.'
     - (着手日を指定してください。)
-  - エラー位置 : 'startDate'
 - 完了日が NULL 又は ブランク の場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : 'E.LDP10355'
+  - エラーコード : 'ld.E.LDP10060'
   - エラーメッセージ : 'Specify Due Date.'
     - (完了日を指定してください。)
-  - エラー位置 : 'dueDate'
 - 払出日が NULL 又は ブランク の場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : 'E.LDP10356'
+  - エラーコード : 'ld.E.LDP10061'
   - エラーメッセージ : 'Specify Disburse Date.'
     - (払出日を指定してください。)
-  - エラー位置 : 'disburseDate'
-
+ 
 ### 2.2. 初期処理
 
 - 利用する変数を初期化する。
@@ -184,8 +181,11 @@ class arg_process_and_check,init_process,start_check,due_check,disburse_check pr
 LDAS0300（Valid／品目妥当性チェック）をコール。
 
 ```sql
-SELECT * 
-  FROM LDAS0300('LD71', 引数.品目番号,引数.供給者, 引数.使用者)
+SELECT *
+  FROM LDAS0300('LD71'
+                ,ps_itemno
+                ,ps_supplier
+                ,ps_usercd)
 ```
 
 - 戻り値が-1の場合、エラー情報を設定して処理終了。
@@ -196,8 +196,15 @@ SELECT *
 LDAS0301（Valid／オーダー登録日付チェック）をコール。
 
 ```sql
-SELECT * 
-  FROM LDAS0301('LD71', 引数.着手日, 引数.完了日, 引数.払出日, 引数.品目番号, 引数.供給者, 引数.使用者, ' ')
+SELECT *
+  FROM LDAS0301('LD71'
+                ,ps_start_date
+                ,ps_end_date
+                ,ps_disburse_date
+                ,ps_itemno
+                ,ps_supplier
+                ,ps_usercd
+                ,' ')
 ```
 
 - 戻り値が-1の場合、エラー情報を設定して処理終了。

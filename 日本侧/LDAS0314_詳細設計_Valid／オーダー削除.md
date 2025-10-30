@@ -105,9 +105,9 @@ LDAS0300（Valid／品目妥当性チェック）をコール。
 ```sql
 SELECT * 
   FROM LDAS0300('LD11',
-                 ps_itemno,    --品目番号,
-                 ps_supplier,  --供給者,
-                 ps_usercd     --使用者
+                 ps_itemno,  
+                 ps_supplier,  
+                 ps_usercd   
 );
 ```
 
@@ -121,18 +121,18 @@ SELECT *
 ```sql
 IF EXISTS(SELECT 1
           FROM le_trn_order                   --オーダー明細
-          WHERE itemno     = ps_itemno        --品目番号 = 引数.品目番号
-          AND supplier     = ps_supplier      --供給者 = 引数.供給者
-          AND usercd       = ps_usercd        --使用者 = 引数.使用者
-          AND order_no     = ps_order_no      --オーダー番号 = 引数.オーダー番号
+          WHERE itemno     = ps_itemno  
+          AND supplier     = ps_supplier  
+          AND usercd       = ps_usercd  
+          AND order_no     = ps_order_no  
 )THEN
 
           SELECT order_status                   --オーダーステータス
             FROM le_trn_order                   --オーダー明細
-            WHERE itemno       = ps_itemno      --品目番号 = 引数.品目番号
-            AND   supplier     = ps_supplier    --供給者 = 引数.供給者
-            AND   usercd       = ps_usercd      --使用者 = 引数.使用者
-            AND   order_no     = ps_order_no;   --オーダー番号 = 引数.オーダー番号
+            WHERE itemno       = ps_itemno  
+            AND   supplier     = ps_supplier  
+            AND   usercd       = ps_usercd  
+            AND   order_no     = ps_order_no;   
 ```
 
 ##### 2.3.2.2. オーダー明細に存在しない場合、オーダー明細内示テーブルをチェック
@@ -140,17 +140,17 @@ IF EXISTS(SELECT 1
 ```sql
 IF EXISTS(SELECT 1
           FROM le_trn_order_forecast       --オーダー明細内示
-          WHERE itemno   = ps_itemno       --品目番号 = 引数.品目番号
-          AND supplier   = ps_supplier     --供給者 = 引数.供給者
-          AND usercd     = ps_usercd       --使用者 = 引数.使用者
-          AND order_no   = ps_order_no     --オーダー番号 = 引数.オーダー番号
+          WHERE itemno   = ps_itemno   
+          AND supplier   = ps_supplier   
+          AND usercd     = ps_usercd   
+          AND order_no   = ps_order_no   
 )THEN
           SELECT order_status                 --オーダーステータス
             FROM le_trn_order_forecast        --オーダー明細内示
-            WHERE itemno      = ps_itemno     --品目番号 = 引数.品目番号
-            AND  supplier     = ps_supplier   --供給者 = 引数.供給者
-            AND  usercd       = ps_usercd     --使用者 = 引数.使用者
-            AND  order_no     = ps_order_no;  --オーダー番号 = 引数.オーダー番号
+            WHERE itemno      = ps_itemno   
+            AND  supplier     = ps_supplier   
+            AND  usercd       = ps_usercd   
+            AND  order_no     = ps_order_no;  
 ```
 
 - どちらのテーブルにも存在しない場合、エラーメッセージを出力し処理終了。

@@ -98,47 +98,47 @@ class arg_check,init_vars,item_check,order_exist_check,order_status_check proces
 
 - 引数.ユーザーＩＤがNULLの場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : E.LDP10917
+  - エラーコード : ld.E.LDP10110
   - エラーメッセージ : 'Specify the User ID.'
     - (オーダー番号を入力してください。)
 - 引数.ログ出力サインがNULLまたは空白の場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : E.LDP10918
+  - エラーコード : ld.E.LDP10111
   - エラーメッセージ : 'Specify the Log Sign.'
     - (ログ出力サインを指定してください。)
 - 引数.受信IDがNULLの場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : E.LDP10919
+  - エラーコード : ld.E.LDP10112
   - エラーメッセージ : 'Specify the Receive ID.'
     - (受信IDを指定してください。)
 - 引数.相手先システム識別がNULLの場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : E.LDP10920
+  - エラーコード : ld.E.LDP10113
   - エラーメッセージ : 'Specify the System ID.'
     - (相手先システム識別を指定してください。)
 - 引数.品目番号がNULLまたは空白の場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : E.LDP10915
+  - エラーコード : ld.E.LDP10055
   - エラーメッセージ : 'Specify the Item Number.'
     - (品目番号を指定してください。)
 - 引数.供給者がNULLまたは空白の場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : E.LDP10893
+  - エラーコード : ld.E.LDP10056
   - エラーメッセージ : 'Specify the Supplier.'
     - (供給者を指定してください。)
 - 引数.使用者がNULLまたは空白の場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : E.LDP10895
+  - エラーコード : ld.E.LDP10057
   - エラーメッセージ : 'Specify the User.'
     - (使用者を指定してください。)
 - 引数.オーダー番号がNULLまたは空白の場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : E.LDP10908
+  - エラーコード : ld.E.LDP10130
   - エラーメッセージ : 'Specify the Order Number.'
     - (オーダー番号を指定してください。)
 - 引数.オーダー番号の1文字目が'W'でない場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : E.LDP10424
+  - エラーコード : ld.E.LDP10131
   - エラーメッセージ : 'Specify "W" in the first digit of Order Number.'
     - (オーダー番号の先頭１桁には W を指定してください。)
 
@@ -153,8 +153,11 @@ class arg_check,init_vars,item_check,order_exist_check,order_status_check proces
 LDAS0300（Valid／品目妥当性チェック）をコールして品目の妥当性をチェックする。
 
 ```sql
-SELECT * 
-  FROM LDAS0300('LD71', 引数.品目番号, 引数.供給者, 引数.使用者)
+   SELECT *
+     FROM LDAS0300('LD71'
+                    ,ps_itemno
+                    ,ps_supplier
+                    ,ps_usercd)
 ```
 
 - 戻り値．ステータスがエラー(-1)の場合、エラー返して処理を異常終了させる。
@@ -163,23 +166,30 @@ SELECT *
 #### 2.3.2. オーダー存在チェック
 
 ```sql
-SELECT オーダーステータス
-  FROM オーダー明細
- WHERE 品目番号 = 引数.品目番号
-   AND 供給者 = 引数.供給者
-   AND 使用者 = 引数.使用者
-   AND オーダー番号 = 引数.オーダー番号
+IF EXISTS(SELECT 1
+            FROM le_trn_order --オーダー明細
+           WHERE itemno   = ps_itemno
+             AND supplier = ps_supplier
+             AND usercd   = ps_usercd
+             AND order_no = ps_order_no)THEN
+
+          SELECT order_status  --オーダーステータス
+            FROM le_trn_order  --オーダー明細
+           WHERE itemno   = ps_itemno
+             AND supplier = ps_supplier
+             AND usercd   = ps_usercd
+             AND order_no = ps_order_no
 ```
 
 - 検索結果が0件の場合、エラーメッセージを出力し処理終了。
-  - エラーコード : E.LDP10527
+  - エラーコード : ld.E.LDP10527
   - エラーメッセージ : 'The order you specified does not exist Error: [品目番号] [供給者] [使用者] [オーダー番号]'
     - (指定オーダーが存在しません。)
 
 #### 2.3.3. オーダーステータスチェック
 
 - 2.3.2で取得.オーダーステータス = '9'の場合、エラーメッセージを出力し処理終了。
-  - エラーコード : E.LDP10528
+  - エラーコード : ld.E.LDP10018
   - エラーメッセージ : 'You cannot specify the closed order Number:  2.3.2で取得.オーダーステータス'
     - (クローズされたオーダー番号は指定できません。)
 

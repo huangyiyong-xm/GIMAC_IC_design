@@ -88,7 +88,7 @@ flowchart LR
 ### 2.1. 引数の取得とチェック
 
 - 引数.ユーザーＩＤ が　ブランク　又は　 NULL 　の場合、エラーメッセージを出力し処理終了。
-  - エラーコード : 'E.LDP10917'
+  - エラーコード : 'ld.E.LDP10110'
   - エラーメッセージ : 'Specify the User ID.'
   - (ユーザーＩＤを指定してください。)
 
@@ -108,18 +108,21 @@ flowchart LR
 - ＴＰ処理番号採番ファイルを検索する
 
 ```sql
-SELECT 次回ＴＰ処理番号,
-       採番範囲 From，
-       採番範囲 To 
-  INTO 変数.次回ＴＰ処理番号，
-       変数.採番範囲 From，
-       変数.採番範囲 To 
-  FROM ＴＰ処理番号採番ファイル a
+IF EXISTS (SELECT 1
+             FROM ＴＰ処理番号採番ファイル a
+  )  THEN
+   SELECT 次回ＴＰ処理番号,
+          採番範囲 From，
+          採番範囲 To 
+     INTO 変数.次回ＴＰ処理番号，
+          変数.採番範囲 From，
+          変数.採番範囲 To 
+     FROM ＴＰ処理番号採番ファイル a
 ```
 
 - データが存在しない場合、エラーメッセージを出力し処理終了。
 
-  - エラーコード : 'E.LDP10934'
+  - エラーコード : 'ld.E.LDP10134'
   - エラーメッセージ : 'Target data does not exist in the TP Operation No Numbering File table.'
   - (ＴＰ処理番号採番ファイルにデータが存在していません。)
 - データ存在の場合、

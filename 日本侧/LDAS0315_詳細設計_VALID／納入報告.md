@@ -101,7 +101,7 @@ flowchart LR
 
 ### 2.1. 引数の取得とチェック
 - オーダー番号が NULL もしくは、''（ブランク）の場合、エラーメッセージを出力し処理終了
-  - エラーコード：'E.LDP10050';
+  - エラーコード：'ld.E.LDP10050';
   - エラーメッセージ：'Enter Order Number..　Argument Error : [引数.オーダー番号] = ' || COALESCE(引数.オーダー番号,'NULL')
     - (オーダー番号を入力してください)
   - エラー位置： 'LDAS0315' 
@@ -124,7 +124,7 @@ IF NOT EXISTS (SELECT 1
                 WHERE PFコード = 引数.供給者) THEN
     ```
     - PFマスタに存在しない場合、エラーメッセージを出力し処理終了
-        - エラーコード：'E.LDP10051';
+        - エラーコード：'ld.E.LDP10051';
         - エラーメッセージ：'Supplier Code does not exist in the SU master　AND PF master.　Argument Error : [引数.オーダー番号] = ' || COALESCE(引数.オーダー番号,'NULL')
             - (供給者がSUマスタ,PFマスタに存在しません)
         - エラー位置： 'LDAS0315' 
@@ -185,12 +185,12 @@ IF NOT EXISTS (SELECT 1
                AND オーダー番号 = 引数.オーダー番号;
     ``` 
     - オーダーステータスが'2'(確定)ではない時
-      - エラーコード         = E.LDP10038
+      - エラーコード         = ld.E.LDP10038
       - エラーメッセージ     = 'You cannot specify the closed order.'
       - (完了済オーダーは指定できません)
       - エラー位置        = 'LDAS0315'
   - 存在しない場合、エラーを出力し処理終了
-      - エラーコード         = E.LDP10018
+      - エラーコード         = ld.E.LDP10018
       - エラーメッセージ     = 'The order you specified does not exist.'||
                             '[ ps_itemno ] = ' ||
                             COALESCE( ps_itemno , 'NULL' ) ||
@@ -219,7 +219,7 @@ IF NOT EXISTS (SELECT 1
           AND 選択フラグ     = 'T';
     ``` 
     - 存在しない場合、エラーを出力し処理終了する
-      - エラーコード         = E.LDP10002
+      - エラーコード         = ld.E.LDP10002
       - エラーメッセージ     = 'Target data does not exist in the Function Parameter table.';
       - (機能選択のデータが存在していません。)
       - エラー位置        = 'LDAS0315'
@@ -241,13 +241,13 @@ IF NOT EXISTS (SELECT 1
               AND 識別コード      = 'LDA0003';
       ```  
       - 存在しない場合、エラーを出力し処理終了
-        - エラーコード         = E.LDP10053
+        - エラーコード         = ld.E.LDP10053
         - エラーメッセージ     = 'Target data does not exist in the Anti Literal Element table.';
         - (対象データがリテラル防止テーブルに存在しません。)
         - エラー位置        = 'LDAS0315'
   - 過剰納入チェック
     - (オーダー明細.入庫数 + 引数.数量) が (オーダー明細.オーダー数 * (100 + TO_NUMBER(リテラル防止要素.過剰納入許可オプション,'999999999999999'))) / 100　より大きい場合、エラーを出力し処理終了
-      - エラーコード         = E.LDP10040
+      - エラーコード         = ld.E.LDP10040
       - エラーメッセージ     = 'You cannot report more than Order Remain Quantity.'||
                               '[ 引数.数量 ] = ' || 引数.数量;
       - (オーダー残を超える報告はできません)
@@ -255,7 +255,7 @@ IF NOT EXISTS (SELECT 1
 
     - 品目クラス IN ('0','1') かつ　変数.エリアカテゴリ = '06'(社内)の場合
       - 引数.数量 が　オーダー残数　より大きいならば、エラーを出力し処理終了
-        - エラーコード         = E.LDP10040
+        - エラーコード         = ld.E.LDP10040
         - エラーメッセージ     = 'You cannot report more than Order Remain Quantity.'||
                                 '[ 戻り値.数量 ] = ' || 戻り値.数量;
         - (オーダー残を超える報告はできません)
@@ -276,14 +276,14 @@ IF NOT EXISTS (SELECT 1
             AND 識別コード      = 'LDA0001';
       ```  
   - 存在しない場合、エラーを出力し処理終了
-    - エラーコード         = E.LDP10002
+    - エラーコード         = ld.E.LDP10002
     - エラーメッセージ     = 'Target data does not exist in the Function Parameter table.';
     - (機能選択のデータが存在していません。)
     - エラー位置        = 'LDAS0315'
 
   - (変数.品目クラス ≠ '0'(梱包資材) かつ 変数.品目クラス ≠ '1'(原材料)) もしくは、(変数.品目クラス = '0'(梱包資材) かつ 変数.品目クラス = '1'(原材料) かつ オプションコード='1'(原材料の過剰報告を許可しない))　の時
     - 戻り値.数量 が オーダー残数　より大きい場合、エラーを出力し処理終了
-      - エラーコード         = E.LDP10040
+      - エラーコード         = ld.E.LDP10040
       - エラーメッセージ     = 'You cannot report more than Order Remain Quantity.'||
                               '[ 戻り値.数量 ] = ' || 戻り値.数量;
       - (オーダー残を超える報告はできません)
@@ -311,7 +311,7 @@ IF NOT EXISTS (SELECT 1
           AND TRIM(削除日) = '';
     ``` 
   - 存在しない場合、エラーを出力し処理終了
-    - エラーコード         = E.LDP10018
+    - エラーコード         = ld.E.LDP10018
     - エラーメッセージ     = 'The order you specified does not exist.'||
                             '[ ps_itemno ] = ' ||
                             COALESCE( ps_itemno , 'NULL' ) ||

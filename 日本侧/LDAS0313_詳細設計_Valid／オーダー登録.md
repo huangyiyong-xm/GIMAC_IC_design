@@ -138,9 +138,9 @@ LDAS0300（Valid／品目妥当性チェック）をコールして品目の妥�
 ```sql
 SELECT * 
   FROM LDAS0300('LD11',
-                 ps_itemno,            --引数.品目番号
-                 ps_supplier,          --引数.供給者
-                 ps_usercd);            --引数.使用者
+                 ps_itemno,      
+                 ps_supplier,      
+                 ps_usercd);         
 ```
 
 - 戻り値．ステータスがエラー(-1)の場合、エラー返して処理を異常終了させる。
@@ -157,12 +157,12 @@ LDAS0301（Valid／オーダー登録日付チェック）をコールして各�
 ```sql
 SELECT * 
   FROM LDAS0301( 'LD11',
-                  ps_start_date,         --引数.着手日
-                  ps_due_date,           --引数.完了日,
-                  ps_disburse_date,      --引数.払出日,
-                  ps_itemno,             --引数.品目番号,
-                  ps_supplier,           --引数.供給者,
-                  ps_usercd,             --引数.使用者,
+                  ps_start_date,   
+                  ps_due_date,   
+                  ps_disburse_date,  
+                  ps_itemno,     
+                  ps_supplier,     
+                  ps_usercd,           
                   demand_policy_code);   --2.3.1で取得.MRP需要方針コード
 ```
 
@@ -207,16 +207,16 @@ IF EXISTS(SELECT 1
 ```sql
 IF EXISTS(SELECT 1
             FROM  le_mst_mrp_information     --MRP情報値
-           WHERE  itemno   = ps_itemno       --品目番号 = 引数.品目番号
-             AND  supplier = ps_supplier      --供給者   = 引数.供給者
-             AND  usercd   = ps_usercd        --使用者   = 引数.使用者
+           WHERE  itemno   = ps_itemno   
+             AND  supplier = ps_supplier  
+             AND  usercd   = ps_usercd  
 )THEN
 
           SELECT order_policy_code           --発注方針コード
             FROM le_mst_mrp_information      --MRP情報値
-          WHERE  itemno   = ps_itemno        --品目番号 = 引数.品目番号
-            AND  supplier = ps_supplier      --供給者   = 引数.供給者
-            AND  usercd   = ps_usercd        --使用者   = 引数.使用者
+          WHERE  itemno   = ps_itemno  
+            AND  supplier = ps_supplier  
+            AND  usercd   = ps_usercd      
 ```
 
 ##### 2.3.6.2. 納入基準日チェック
@@ -228,9 +228,9 @@ IF EXISTS(SELECT 1
 ```sql
 IF EXISTS ( SELECT 1
               FROM le_mst_deliv_std_day                        --納入基準日マスタ
-             WHERE supplier        = ps_supplier               --供給者        = 引数.供給者
-               AND deliv_std_class = 'D'                        --納入基準区分  = 'D'
-               AND deliv_std_day   = SUBSTR(ps_due_date,7,2)   --納入基準日    = 引数.完了日の日部分
+             WHERE supplier        = ps_supplier            
+               AND deliv_std_class = 'D'                  
+               AND deliv_std_day   = SUBSTR(ps_due_date,7,2)   
 )THEN
 ```
 
@@ -239,9 +239,9 @@ IF EXISTS ( SELECT 1
 ```sql
 IF EXISTS ( SELECT 1
             FROM  le_mst_deliv_std_day               --納入基準日マスタ
-            WHERE supplier        = ps_supplier      --供給者 = 引数.供給者
-            AND   deliv_std_class = 'W'              --納入基準区分 = 'W'
-            AND   deliv_std_day   = ls_due_weekday   --納入基準日 = 引数.完了日の曜日部分
+            WHERE supplier        = ps_supplier  
+            AND   deliv_std_class = 'W'          
+            AND   deliv_std_day   = ls_due_weekday   
 )THEN
 ```
 
@@ -258,11 +258,11 @@ IF EXISTS ( SELECT 1
 ```sql
 IF EXISTS(SELECT 1
           FROM le_trn_order                     --オーダー明細
-          WHERE itemno           = ps_itemno    --品目番号 = 引数.品目番号
-          AND supplier           = ps_supplier  --供給者 = 引数.供給者
-          AND usercd             = ps_usercd    --使用者 = 引数.使用者
-          AND TRIM(delete_ymd)   = ''           --削除日 = ''
-          AND pilot_class        = '3'          --生試初品区分 = '3'
+          WHERE itemno           = ps_itemno  
+          AND supplier           = ps_supplier  
+          AND usercd             = ps_usercd  
+          AND TRIM(delete_ymd)   = ''       
+          AND pilot_class        = '3'       
 )THEN
 ```
 
@@ -284,12 +284,12 @@ IF EXISTS(SELECT 1
 ```sql
 IF EXISTS(SELECT 1
           FROM le_trn_order                       --オーダー明細
-          WHERE itemno           = ps_itemno      --品目番号 = 引数.品目番号
-          AND supplier           = ps_supplier    --供給者 = 引数.供給者
-          AND usercd             = ps_usercd      --使用者 = 引数.使用者
-          AND TRIM(delete_ymd)   = ''             --削除日 = ''
-          AND pilot_class        = '3'            --生試初品区分 = '3'
-          AND due_date           > ps_due_date    --完了日 > 引数.完了日 
+          WHERE itemno           = ps_itemno  
+          AND supplier           = ps_supplier  
+          AND usercd             = ps_usercd  
+          AND TRIM(delete_ymd)   = ''       
+          AND pilot_class        = '3'        
+          AND due_date           > ps_due_date  
 ) THEN
 ```
 

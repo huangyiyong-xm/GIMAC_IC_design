@@ -108,12 +108,13 @@ class arg_process_and_check,init_process,data_exist_check,order_status_check,end
 
 ```sql
 SELECT 1
-  FROM 独立所要量明細
- WHERE 品目番号 = 引数.品目番号
-   AND 供給者 = 引数.供給者
-   AND 使用者 = 引数.使用者
-   AND オーダー番号 = 引数.オーダー番号
-   AND (着手日 = 引数.着手日 OR TRIM(引数.着手日) = '')
+  FROM le_trn_ird           --独立所要量明細
+ WHERE itemno               = ps_itemno
+   AND supplier             = ps.supplier
+   AND usercd               = ps.usercd
+   AND order_no             = ps.order_no
+   AND (start_date          = ps_start_date
+    OR TRIM(ps_start_date)  = '')
 ```
 
 ##### 2.3.1.1. 対象データが存在する場合
@@ -121,19 +122,20 @@ SELECT 1
 該当する独立所要量明細のオーダーステータスをチェックする。
 
 ```sql
-SELECT オーダーステータス
-  FROM 独立所要量明細
- WHERE 品目番号 = 引数.品目番号
-   AND 供給者 = 引数.供給者
-   AND 使用者 = 引数.使用者
-   AND オーダー番号 = 引数.オーダー番号
-   AND (着手日 = 引数.着手日 OR TRIM(引数.着手日) = '')
+FOR ls_order_status IN (SELECT order_status        --オーダーステータス
+                          FROM le_trn_ird          --独立所要量明細
+                         WHERE itemno               = ps_itemno
+                           AND supplier             = ps_supplier
+                           AND usercd               = ps_usercd
+                           AND order_no             = ps_order_no
+                           AND (start_date          = ps_start_date
+                            OR TRIM (ps_start_date) = '')) LOOP
 ```
 
 検索結果が複数件ある場合、LOOPして下記のチェックを行なう。
 
 - オーダーステータス ＝'9'の場合、エラーメッセージを出力し処理終了。
-  - エラーコード：'E.LDP10531'
+  - エラーコード：'ld.E.LDP10109'
   - エラーメッセージ：'You cannot specify the closed requirements:'
     - (完了済所要量は指定できません。)
 
@@ -141,7 +143,7 @@ SELECT オーダーステータス
 
 エラーメッセージを出力し処理終了。
 
-- エラーコード：'E.LDP10530'
+- エラーコード：'ld.E.LDP10039'
 - エラーメッセージ：'The requirements you specified does not exist: [パラメータ情報]'
   - (指定された所要量が存在しません: [パラメータ情報])
 

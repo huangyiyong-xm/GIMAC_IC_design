@@ -12,24 +12,7 @@
 
 ### 1.1. 機能概要
 
-登録する独立所要量のPFマスタで存在する場合（変数.存在するクラス2 = 1）、以下のエリア構成チェックを実行：
-
-```sql
-IF EXISTS(SELECT 1
-　　　　FROM PFマスタ pf
-       　　 JOIN GIMACエリア構成 area
-  　　　 ON pf.area_category = area.child_area_code     -- 子エリアコード
-　　　　WHERE pf.pf_code = ps_ind_user_code　-- 独立需要送り先コード
-　　　　AND area.area_strc_type_code = 'X'
-　　　　AND pf.area_category = area.child_area_code 
-　　　　AND  area.in_effective_ymd  <= 変数.ic_slip_date -- 2.3.4.で取得
-　　　　AND area.exp_out_eff_ymd   > 変数.ic_slip_date -- 2.3.4.で取得
-　　　    AND (area.parent_area_category = '02'
-　　　　OR area.parent_area_category = '51'))THEN
-　　　　変数.取引フラグ = 1
-```
-
-- 条件に該当しない場合：エラー処理（ld.E.LDP10096）る。
+登録する独立所要量の各項目に対するバリデーションを定義する。
 
 ### 1.2. 処理概要フロー
 
@@ -105,7 +88,7 @@ flowchart LR
 | 6   | 供給者                           | ps_supplier             | VARCHAR |                                                                                                        |
 | 7   | 使用者                           | ps_usercd               | VARCHAR |                                                                                                        |
 | 8   | オーダー番号                     | ps_order_no             | VARCHAR |                                                                                                        |
-| 9   | 所要量区分                       | ps_rd_class             | VARCHAR | 0:通常、1:先行生産、2:変動安全在庫、3:自動安全在庫、4:生試所要量調整、5:同梱品出庫用、6:所要量分割調整 |
+| 9   | 所要量区分                       | ps_rd_class             | VARCHAR | 0:通常、1:先行生産、2:変動安全在庫、3:自動安全在庫、4:生試所要量調整、6:所要量分割調整(、5:同梱品出庫用は削除) |
 | 10  | 独立需要送り先区分               | ps_ind_user_class       | VARCHAR | SUコードorP/Fコードのみ                                                                                |
 | 11  | 独立需要送り先コード             | ps_ind_user_code        | VARCHAR |                                                                                                        |
 | 12  | 着手日                           | ps_start_date           | VARCHAR | YYYYMMDD                                                                                               |
@@ -153,6 +136,8 @@ flowchart LR
 | -- | ---------- | ------------------------- | --------------------- | - | -- | - | - | ------------------ |
 | 1  | テーブル   | SUマスタ                  | la_area_master_su     |   | ○ |   |   | 旧名称：組織SU情報 |
 | 2  | テーブル   | GIMACエリアマスタ         | la_area_master        |   | ○ |   |   |                    |
+| 3  | テーブル   | PFマスタ                  | la_area_master_pf     |   | ○ |   |   |                    |
+| 4  | テーブル   | GIMACエリア構成           | la_areastrc           |   | ○ |   |   |                    |
 | 3  | テーブル   | IC工場処理日              | ld_mst_slip_date      |   | ○ |   |   |                    |
 | 4  | テーブル   | 日別カレンダーマスター    | le_mst_calendar_sum   |   | ○ |   |   |                    |
 | 5  | テーブル   | MRPシステムパラメータ     | le_system_parameter   |   | ○ |   |   |                    |
@@ -211,12 +196,12 @@ SELECT *
 
 ```sql
 IF EXISTS(SELECT 1
-          FROM la_area_master_su
-          WHERE su_code = ps_usercd)THEN
+            FROM la_area_master_su  --SUマスタ
+           WHERE su_code = ps_usercd)THEN
 
-          SELECT calendar_code
-          FROM la_area_master_su
-          WHERE su_code = ps_usercd;
+          SELECT calendar_code   --現在有効カレンダー
+            FROM la_area_master_su --SUマスタ
+           WHERE su_code = ps_usercd;
 ```
 
 - データが存在しない場合、エラーメッセージを出力し処理終了
@@ -231,15 +216,15 @@ IF EXISTS(SELECT 1
 ##### 2.3.3.1. 稼働日チェック
 
 ```sql
-IF EXISTS(SELECT day_type                         --稼働日区分
-          FROM le_mst_calendar_sum               --日別カレンダーマスター
-          WHERE calendar_code = ls_calendar_code --2.3.2.1で取得.現在有効カレンダー
-            AND calendar_ymd = ps_delete_ymd)THEN
+IF EXISTS(SELECT 1                                 --稼働日区分
+            FROM le_mst_calendar_sum               --日別カレンダーマスター
+           WHERE calendar_code = ls_calendar_code --2.3.2.1で取得.現在有効カレンダー
+             AND calendar_ymd = ps_delete_ymd)THEN
 
           SELECT day_type                          --稼働日区分
-          FROM le_mst_calendar_sum                --日別カレンダーマスター
-          WHERE calendar_code = ls_calendar_code  --2.3.2.1で取得.現在有効カレンダー
-            AND calendar_ymd = ps_delete_ymd;
+            FROM le_mst_calendar_sum                --日別カレンダーマスター
+           WHERE calendar_code = ls_calendar_code  --2.3.2.1で取得.現在有効カレンダー
+             AND calendar_ymd = ps_delete_ymd;
 ```
 
 - データが存在しない場合
@@ -256,22 +241,22 @@ IF EXISTS(SELECT day_type                         --稼働日区分
 ##### 2.3.3.2. 確定期間チェック
 
 ```sql
-IF EXISTS(SELECT fix_period_id        --確定期間ID
-          FROM le_mst_mrp_information --MRP情報値
-          WHERE itemno = ps_itemno
-            AND supplier = ps_supplier
-            AND usercd = ps_usercd)THEN
+IF EXISTS(SELECT 1  
+            FROM le_mst_mrp_information --MRP情報値
+           WHERE itemno = ps_itemno
+             AND supplier = ps_supplier
+             AND usercd = ps_usercd)THEN
 
-SELECT fix_period_id                --確定期間ID
-    FROM le_mst_mrp_information     --MRP情報値
-  WHERE itemno = ps_itemno
-      AND supplier = ps_supplier
-      AND usercd = ps_usercd;
+          SELECT fix_period_id                --確定期間ID
+          　FROM le_mst_mrp_information       --MRP情報値
+           WHERE itemno = ps_itemno
+             AND supplier = ps_supplier
+             AND usercd = ps_usercd;
 ```
 
 データが存在しない場合
 
-- エラーコード：'ld.E.LDP11023'
+- エラーコード：'ld.E.LDP10129'
 - エラーメッセージ：'The data you specified is not exist in MRP information.'
   - (対象データはMRP情報値に存在しません。)
 
@@ -279,7 +264,7 @@ LEBS0010（確定期間検索）をコール
 
 ```sql
 SELECT * 
-  FROM LEBS0010(ls_fix_period_id,
+  FROM LEBS0010(ls_fix_period_id, --取得した.確定期間ID
                 "T")
 ```
 
@@ -301,7 +286,7 @@ IF EXISTS(SELECT 1
            FROM ld_mst_slip_date --IC工場処理日
           WHERE operation_type = 'STD' )THEN
 
-          SELECT ic_slip_date --IC工場処理日
+          SELECT ic_slip_date      --IC工場処理日
             FROM ld_mst_slip_date --IC工場処理日
            WHERE operation_type = 'STD'
 ```
@@ -318,16 +303,16 @@ IF EXISTS(SELECT 1
 機能オプションパラメータから自動安全在庫所要量登録機能の設定を確認
 
 ```sql
-SELECT 1
-  FROM lz_function_parameter --機能オプションパラメータ
- WHERE system_code = 'LE'
-   AND function_id = 'LEA0002'
-   AND option_code = '0'
-   AND select_flg = 'T';
+IF EXIST(SELECT 1
+           FROM lz_function_parameter --機能オプションパラメータ
+          WHERE system_code = 'LE'
+            AND function_id = 'LEA0002'
+            AND option_code = '0'
+            AND select_flg = 'T')
 ```
 
-- 設定が有効（データ登録しない）の場合：引数.所要量区分が'1'（先行生産）、'4'（生試所要量調整）の場合、変数.処理区分＝'1'
-- 設定が無効（データ登録する）の場合：引数.所要量区分が'1'（先行生産）、'3'（自動安全在庫）、'4'（生試所要量調整）の場合、変数.処理区分＝'1'
+- 設定が有効（データ登録しない）の場合：引数.所要量区分が'1'（先行生産）、'4'（生試所要量調整）、'6'（所要量分割調整）の場合、変数.処理区分＝'1'
+- 設定が無効（データ登録する）の場合：引数.所要量区分が'1'（先行生産）、'3'（自動安全在庫）、'4'（生試所要量調整）、'6'（所要量分割調整）の場合、変数.処理区分＝'1'
 
 ##### 2.3.5.2. 変動安全在庫専用チェック
 
@@ -401,13 +386,13 @@ SELECT 1
 
 ```sql
    IF EXISTS(SELECT 1
-          FROM le_mst_ind_user_transfer_check --独立需要送り先/費用振替先チェックテーブル
-          WHERE target_org_code = ps_ind_user_code)THEN
+               FROM le_mst_ind_user_transfer_check --独立需要送り先/費用振替先チェックテーブル
+              WHERE target_org_code = ps_ind_user_code)THEN
 
-          SELECT valid_ind_user_yn,            --有効独立需要送り先コード区分
-                 ind_user_eq_transfer_yn       --送り先/振替先等価区分
-          FROM le_mst_ind_user_transfer_check --独立需要送り先/費用振替先チェックテーブル
-          WHERE target_org_code = ps_ind_user_code;
+             SELECT valid_ind_user_yn,            --有効独立需要送り先コード区分
+                    ind_user_eq_transfer_yn       --送り先/振替先等価区分
+               FROM le_mst_ind_user_transfer_check --独立需要送り先/費用振替先チェックテーブル
+              WHERE target_org_code = ps_ind_user_code;
 ```
 
 - 有効独立需要送り先コード区分 = 'Y'(有効)の場合：有効な送り先として処理継続
@@ -424,9 +409,9 @@ IF EXISTS(SELECT 1
 　　　      FROM la_area_master_su --SUマスタ
     　　　 WHERE su_code = ps_ind_user_code)THEN
 
-   　　　SELECT area_category　-- エリアカテゴリ
-　　　    FROM la_area_master_su
-    　　WHERE su_code = ps_ind_user_code;
+   　　　 SELECT area_category　   --エリアカテゴリ
+　　　      FROM la_area_master_su --SUマスタ
+    　　   WHERE su_code = ps_ind_user_code;
 ```
 
 - データが存在する場合：変数.存在するクラス1 = 1（SUマスタに存在）
@@ -434,11 +419,11 @@ IF EXISTS(SELECT 1
 
 ```sql
 IF EXISTS(SELECT 1
-　　　　FROM la_area_master_pf  --PFマスタ
-　　　　WHERE pf_code = ps_ind_user_code)THEN
+　　　　    FROM la_area_master_pf  --PFマスタ
+　　　　   WHERE pf_code = ps_ind_user_code)THEN
 
-   　　　SELECT  area_category　-- エリアカテゴリ
-　   　　FROM la_area_master_pf --PFマスタ
+   　　　 SELECT  area_category　  -- エリアカテゴリ
+　   　　   FROM la_area_master_pf --PFマスタ
        　　WHERE pf_code = ps_ind_user_code;
 ```
 
@@ -455,16 +440,16 @@ SUマスタで存在する場合（変数.存在するクラス1 = 1）、以下
 
 ```sql
 IF EXISTS(SELECT 1
-　　　　FROM la_area_master_su su                       --SUマスタ
-       　　 JOIN la_areastrc area                       --GIMACエリア構成
-  　　　 ON su.area_category = area.child_area_code     --子エリアコード
-　　　　WHERE su.su_code = ps_ind_user_code　           --独立需要送り先コード
-　　　　AND area.area_strc_type_code = 'X'
-　　　　AND su.area_category = area.child_area_code 
-　　　　AND  area.in_effective_ymd  <= 変数.ic_slip_date -- 2.3.4.で取得
-　　　　AND area.exp_out_eff_ymd   > 変数.ic_slip_date   -- 2.3.4.で取得
-　　　    AND (area.parent_area_category = '02'
-　　　　OR area.parent_area_category = '51'))THEN
+　　　　    FROM la_area_master_su su                        --SUマスタ
+       　　 JOIN la_areastrc area                            --GIMACエリア構成
+  　　　      ON su.area_category = area.child_area_code     --子エリアコード
+　　　　   WHERE su.su_code = ps_ind_user_code　             --独立需要送り先コード
+　　　　     AND area.area_strc_type_code = 'X'
+　　　　     AND su.area_category = area.child_area_code 
+　　　　     AND  area.in_effective_ymd  <= 変数.ic_slip_date -- 2.3.4.で取得
+　　　　     AND area.exp_out_eff_ymd   > 変数.ic_slip_date   -- 2.3.4.で取得
+　　　       AND (area.parent_area_category = '02'
+　　　　      OR area.parent_area_category = '51'))THEN
 　　　　
        変数.取引フラグ = 1
 ```
@@ -480,16 +465,16 @@ PFマスタで存在する場合（変数.存在するクラス2 = 1）、以下
 
 ```sql
 IF EXISTS(SELECT 1
-　　　　FROM la_area_master_pf pf                       --PFマスタ
-       JOIN la_areastrc area                            --GIMACエリア構成
-  　　　 ON pf.area_category = area.child_area_code     --子エリアコード
-　　　　WHERE pf.pf_code = ps_ind_user_code　           --独立需要送り先コード
-　　　　AND area.area_strc_type_code = 'X'
-　　　　AND pf.area_category = area.child_area_code 
-　　　　AND  area.in_effective_ymd  <= 変数.ic_slip_date --2.3.4.で取得
-　　　　AND area.exp_out_eff_ymd   > 変数.ic_slip_date   --2.3.4.で取得
-　　　    AND (area.parent_area_category = '02'
-　　　　OR area.parent_area_category = '51'))THEN
+　　　　    FROM la_area_master_pf pf                         --PFマスタ
+            JOIN la_areastrc area                            --GIMACエリア構成
+  　　　      ON pf.area_category = area.child_area_code     --子エリアコード
+　　　　   WHERE pf.pf_code = ps_ind_user_code　             --独立需要送り先コード
+　　　　     AND area.area_strc_type_code = 'X'
+　　　　     AND pf.area_category = area.child_area_code 
+　　　　     AND  area.in_effective_ymd  <= 変数.ic_slip_date --2.3.4.で取得
+　　　　     AND area.exp_out_eff_ymd   > 変数.ic_slip_date   --2.3.4.で取得
+　　　       AND (area.parent_area_category = '02'
+　　　　      OR area.parent_area_category = '51'))THEN
 
 　　　　変数.取引フラグ = 1
 ```
@@ -510,10 +495,15 @@ IF NOT EXISTS(SELECT 1
 ##### 2.3.6.1. 着手日稼働日チェック
 
 ```sql
-SELECT 稼働日区分
-  FROM 日別カレンダーマスター
- WHERE カレンダーコード = 2.3.2.1で取得.現在有効カレンダー
-   AND カレンダー年月日 = ps_start_date;
+IF EXISTS(SELECT 1                                 --稼働日区分
+           FROM le_mst_calendar_sum               --日別カレンダーマスター
+          WHERE calendar_code = ls_calendar_code --2.3.2.1で取得.現在有効カレンダー
+            AND calendar_ymd = ps_start_date)THEN
+
+          SELECT day_type                          --稼働日区分
+           FROM le_mst_calendar_sum                --日別カレンダーマスター
+          WHERE calendar_code = ls_calendar_code  --2.3.2.1で取得.現在有効カレンダー
+            AND calendar_ymd = ps_start_date;
 ```
 
 - データが存在しない場合
@@ -543,9 +533,9 @@ SELECT 稼働日区分
 IF EXISTS(SELECT 1
            FROM le_system_parameter)THEN
 
-SELECT rd_input_days        --独立所要量登録可能日数,
-       rd_delete_input_days --先行RD削除日登録可能日数
-  FROM le_system_parameter; --MRPシステムパラメーター
+          SELECT rd_input_days,        --独立所要量登録可能日数
+                 rd_delete_input_days  --先行RD削除日登録可能日数
+           FROM le_system_parameter;  --MRPシステムパラメーター
 ```
 
 データが存在しない場合：
@@ -560,8 +550,8 @@ LEYS0001（稼働日計算）をコール
 
 ```sql
 SELECT * 
-  FROM LEYS0001(ls_calendar_code   --2.3.2.1で取得.現在有効カレンダー,
-                ls_ic_slip_date,   --IC工場処理日
+  FROM LEYS0001(ls_calendar_code,   --2.3.2.1で取得.現在有効カレンダー
+                ls_ic_slip_date,    --IC工場処理日
                 ln_rd_input_days1)  --2.3.7.1で取得.独立所要量登録可能日数
 ```
 
@@ -628,7 +618,7 @@ LEYS0001（稼働日計算）をコール
 
 ```sql
 SELECT * 
-  FROM LEYS0001(ls_calendar_code --2.3.2.1で取得.現在有効カレンダー,
+  FROM LEYS0001(ls_calendar_code,        --2.3.2.1で取得.現在有効カレンダー
                 ps_start_date,
                 ln_rd_delete_input_days1) --2.3.7.1で取得.削除登録可能日数
 ```
@@ -649,10 +639,10 @@ SELECT *
 ```sql
 IF EXISTS(SELECT 1
 　　　　    FROM la_area_master_su --SUマスタ
-　　　　  WHERE su_code = ps_usercd )THEN
-SELECT area_category              --エリアカテゴリ
-  FROM la_area_master_su         --SUマスタ
- WHERE su_code = ps_usercd;
+　　　　   WHERE su_code = ps_usercd )THEN
+          SELECT area_category              --エリアカテゴリ
+           FROM la_area_master_su          --SUマスタ
+          WHERE su_code = ps_usercd;
 ```
 
 データが存在しない場合：

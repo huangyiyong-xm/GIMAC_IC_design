@@ -103,7 +103,7 @@ class arg_process_and_check,init_process,delete_date_check,requirement_exist_che
 ### 2.1. 引数の取得とチェック
 
 - オーダー番号が  NULL  又は  ブランクの場合、エラーメッセージを出力し処理終了
-  - エラーコード：'E.LDP10447'
+  - エラーコード：'ld.E.LDP10050'
   - エラーメッセージ：'Enter Order Number'
     - （オーダー番号を入力してください）
 
@@ -118,72 +118,93 @@ class arg_process_and_check,init_process,delete_date_check,requirement_exist_che
 ##### 2.3.1.1. 現在有効カレンダー取得
 
 ```sql
-SELECT 現在有効カレンダー
-  FROM SUマスタ
- WHERE SUコード = 引数.使用者;
+IF EXISTS(SELECT 1
+            FROM la_area_master_su
+           WHERE su_code = ps_usercd)THEN
+          SELECT calendar_code          --現在有効カレンダー
+            FROM la_area_master_su      --SUマスタ
+           WHERE su_code = ps_usercd
 ```
 
 - データが存在しない場合
-  - エラーコード：'E.LDP10910'
+  - エラーコード：'ld.E.LDP10062'
   - エラーメッセージ：'Effective calendar does not exist by the specified Supplier/User.'
     - (指定のＳＵで有効なカレンダーが存在しません。)
 
 ##### 2.3.1.2. 削除日付の稼働日区分チェック
 
 ```sql
-SELECT 稼働日区分
-  FROM 日別カレンダーマスタ
- WHERE カレンダーコード = 2.3.1.1で取得.カレンダーコード
-   AND カレンダー年月日 = 引数.削除日付
+IF EXISTS(SELECT 1
+            FROM le_mst_calendar_sum
+           WHERE calendar_code = 2.3.1.1.calendar_code
+             AND calendar_ymd  = ps_delete_ymd)THEN
+          SELECT day_type                --稼働日区分
+            FROM le_mst_calendar_sum     --日別カレンダーマスタ
+           WHERE calendar_code = 2.3.1.1.calendar_code
+             AND calendar_ymd  = ps_delete_ymd
 ```
 
 - データが存在しない場合
 
-  - エラーコード：'E.LDP10106'
+  - エラーコード：'ld.E.LDP10106'
   - エラーメッセージ：'Day String does not exist in the common calendar.'
     - (日情報がカレンダーテーブルに存在しません。)
 - 稼働日区分が'0'（稼働日）以外の場合
 
-  - エラーコード：'E.LDP10353'
+  - エラーコード：'ld.E.LDP10064'
   - エラーメッセージ：'The day you specified is not a working-day.'
     - (指定日は稼働日ではありません。)
 
 ##### 2.3.1.3. IC工場処理日取得
 
 ```sql
-SELECT IC工場処理日
-  FROM IC工場処理日
- WHERE 処理タイプ = 'STD' 
+IF EXISTS(SELECT 1
+            FROM ld_mst_slip_date
+           WHERE operation_type = 'STD')THEN
+
+          SELECT ic_slip_date      --IC工場処理日
+            FROM ld_mst_slip_date  --IC工場処理日
+           WHERE operation_type = 'STD'
 ```
 
 - データが存在しない場合、エラーメッセージを出力し処理終了
-  - エラーコード：'E.LDP10911'
+  - エラーコード：'ld.E.LDP10004'
   - エラーメッセージ：'The IC pymac date is not exist.'
     - (IC工場処理日が存在しません。)
 
 ##### 2.3.1.4. 削除日付とIC工場処理日の比較
 
 - 引数.削除日付 < 2.3.1.3で取得.IC工場処理日の場合
-  - エラーコード：'E.LDP10364'
+  - エラーコード：'ld.E.LDP10091'
   - エラーメッセージ：'For Deletion Date, specify the date later than the final day of the fixed period of this time.'
     - （削除日付には今回確定期間最終日よりも後の日付を指定してください）
 
 #### 2.3.2. 独立所要量明細の存在チェック
 
 ```sql
-SELECT 着手日, 発注時着手日
-  FROM 独立所要量明細
- WHERE 品目番号 = 引数.品目番号
-   AND 供給者 = 引数.供給者
-   AND 使用者 = 引数.使用者
-   AND オーダー番号 = 引数.オーダー番号
-   AND 削除日 = ' '
-   AND 所要区分 = '1'
-   AND 着手日 <> 発注時着手日
+IF EXISTS(SELECT 1
+            FROM le_trn_ird
+           WHERE itemno     =  ps_itemno
+             AND supplier   =  ps_supplier
+             AND usercd     =  ps_usercd
+             AND order_no   =  ps_order_no
+             AND delete_ymd =  ' '
+             AND rd_class   =  '1'
+             AND start_date <> rls_start_date)THEN
+          SELECT start_date,           --着手日
+                 rls_start_date         --発注時着手日
+            FROM le_trn_ird            --独立所要量明細
+           WHERE itemno     =  ps_itemno
+             AND supplier   =  ps_supplier
+             AND usercd     =  ps_usercd
+             AND order_no   =  ps_order_no
+             AND delete_ymd =  ' '
+             AND rd_class   =  '1'
+             AND start_date <> rls_start_date
 ```
 
 - データが存在しない場合、エラーメッセージを出力し処理終了
-  - エラーコード：'E.LDP10530'
+  - エラーコード：'ld.E.LDP10039'
   - エラーメッセージ：'The requirements you specified does not exist.'
     - （指定所要量が存在しません）
 
@@ -191,12 +212,12 @@ SELECT 着手日, 発注時着手日
 
 - 引数.削除日付 = 2.3.2取得.着手日の場合、エラーメッセージを出力し処理終了
 
-  - エラーコード：'E.LDP10369'
+  - エラーコード：'ld.E.LDP10106'
   - エラーメッセージ：'Change Deletion Date.'
     - （削除日付を変更してください。）
 - 引数.削除日付 <= 2.3.2取得.発注時着手日の場合、エラーメッセージを出力し処理終了
 
-  - エラーコード：'E.LDP10363'
+  - エラーコード：'ld.E.LDP10102'
   - エラーメッセージ：'For Deletion Date, specify the date later than Start Date.'
     - （削除日付には着手日より大きな日付を指定してください）
 
@@ -205,13 +226,17 @@ SELECT 着手日, 発注時着手日
 ##### 2.3.4.1. MRPシステムパラメータから先行RD削除日登録可能日数を取得
 
 ```sql
-SELECT 先行RD削除日登録可能日数
-  FROM MRPシステムパラメータ
- WHERE システムコード = 'LC'
+IF EXISTS(SELECT 1
+            FROM le_system_parameter
+           WHERE system_code = 'LE')THEN
+
+          SELECT rd_delete_input_days --先行RD削除日登録可能日数
+            FROM le_system_parameter  --MRPシステムパラメータ
+           WHERE system_code = 'LE'
 ```
 
 - データが存在しない場合、エラーメッセージを出力し処理終了
-  - エラーコード：'E.LDP10933'
+  - エラーコード：'ld.E.LDP10107'
     - （先行生産削除日登録可能日数がシステムパラメータに登録されていません。）
   - エラーメッセージ：'Advanced Production Deletion Date Input Days does not exist in the MRP system parameter.'
 
@@ -220,10 +245,10 @@ SELECT 先行RD削除日登録可能日数
 LEYS0001（稼働日計算）をコール
 
 ```sql
-SELECT * 
-  FROM LEYS0001(2.3.1.1で取得.現在有効カレンダー
-                ,2.3.2で取得. 発注時着手日
-                ,2.3.4.1で取得.先行RD削除日登録可能日数)
+   SELECT *
+     FROM LEYS0001(2.3.1.1.calender_code               --2.3.1.1で取得.現在有効カレンダー
+                  ,2.3.2.rls_start_date                --2.3.2で取得. 発注時着手日
+                  ,2.3.4.1.rd_delete_input_days)       --2.3.4.1で取得.先行RD削除日登録可能日数)
 ```
 
 - 戻り値がエラー(-1)の場合、エラーを返して処理終了
@@ -232,7 +257,7 @@ SELECT *
 ##### 2.3.4.3. 削除日付の期間チェック
 
 - 引数.削除日付 > 稼働日計算戻り値．対象日付の場合
-  - エラーコード：'E.LDP10371'
+  - エラーコード：'ld.E.LDP10103'
   - エラーメッセージ：'Deletion Date is over the period in which the date is able to be resistered from Start Date.'
     - （削除日が着手日から未来の登録可能な期間を超えています。）
 
