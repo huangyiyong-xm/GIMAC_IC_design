@@ -109,6 +109,8 @@ flowchart LR
 | 5  | トランザクション数（需要方針）   | int_trn_demand_policy_code | 0            | integer                 |
 | 6  | トランザクション数（AIRSフラグ） | int_trn_mrp_airs           | 0            | integer                 |
 | 7  | トランザクション総数             | int_trn_total              | 0            | integer                 |
+| 8  | ログインのユーザーID             | author                     | ログインのユーザーID            | string                 |
+| 9  | プログラムID                     | pgmid                      | 'LDPJ0001'            | string                 |
 
 ### 2.3. 主処理
 
@@ -153,12 +155,12 @@ flowchart LR
               ,B.demand_policy_code        -- MRP需要方針コード
               ,B.airs_sign                 -- AIRSサイン
               ,0                           -- 更新カウンタ
-              ,システム日時                 -- 登録日時
-              ,ログインのユーザーID          -- 登録者
-              ,プログラムID                 -- 登録PGID
-              ,システム日時                 -- 更新日時
-              ,ログインのユーザーID          -- 更新者
-              ,プログラムID                 -- 更新PGID
+              ,g_now_trn_proc_time         -- 登録日時
+              ,author                      -- 登録者
+              ,pgmid                       -- 登録PGID
+              ,g_now_trn_proc_time         -- 更新日時
+              ,author                      -- 更新者
+              ,pgmid                       -- 更新PGID
           FROM la_prodstrc  A              -- 製品構成
     INNER JOIN le_mst_mrp_information  B   -- MRP情報値
             ON A.comp_itemno   = B.itemno
@@ -168,8 +170,8 @@ flowchart LR
             ON A.comp_itemno   = C.itemno
            AND A.comp_supplier = C.supplier
            AND A.comp_usercd   = C.usercd
-         WHERE A.current_datetime >= 変数.前回処理時間
-           AND A.current_datetime <  変数.今回処理時間
+         WHERE A.current_datetime >= g_bf_trn_proc_time
+           AND A.current_datetime <  g_now_trn_proc_time
   ```
 
   - 正常処理の場合
@@ -203,12 +205,12 @@ flowchart LR
              ,A.demand_policy_code        -- MRP需要方針コード
              ,A.airs_sign                 -- AIRSサイン
              ,0                           -- 更新カウンタ
-             ,システム日時                 -- 登録日時
-             ,ログインのユーザーID          -- 登録者
-             ,プログラムID                 -- 登録PGID
-             ,システム日時                 -- 更新日時
-             ,ログインのユーザーID          -- 更新者
-             ,プログラムID                 -- 更新PGID
+             ,g_now_trn_proc_time         -- 登録日時
+             ,author                      -- 登録者
+             ,pgmid                       -- 登録PGID
+             ,g_now_trn_proc_time         -- 更新日時
+             ,author                      -- 更新者
+             ,pgmid                       -- 更新PGID
          FROM le_mst_mrp_information  A,  -- MRP情報値
    INNER JOIN la_prodstrc B   -- 製品構成
            ON B.comp_itemno      = A.itemno
@@ -218,8 +220,8 @@ flowchart LR
            ON A.comp_itemno      = C.itemno
           AND A.comp_supplier    = C.supplier
           AND A.comp_usercd      = C.usercd
-        WHERE A.current_datetime >= 変数.前回処理時間
-          AND A.current_datetime <  変数.今回処理時間
+        WHERE A.current_datetime >= g_bf_trn_proc_time
+          AND A.current_datetime <  g_now_trn_proc_time
           AND NOT EXISTS  (SELECT 1
                              FROM ld_trn_derev_trn            -- IC分析BOM改訂トランザクション
                             WHERE close_sign             =  '0'
@@ -264,15 +266,15 @@ flowchart LR
              ,demand_policy_code          -- MRP需要方針コード
              ,airs_sign                   -- AIRSサイン
              ,0                           -- 更新カウンタ
-             ,システム日時                 -- 登録日時
-             ,ログインのユーザーID          -- 登録者
-             ,プログラムID                 -- 登録PGID
-             ,システム日時                 -- 更新日時
-             ,ログインのユーザーID          -- 更新者
-             ,プログラムID                 -- 更新PGID
+             ,g_now_trn_proc_time         -- 登録日時
+             ,author                      -- 登録者
+             ,pgmid                       -- 登録PGID
+             ,g_now_trn_proc_time         -- 更新日時
+             ,author                      -- 更新者
+             ,pgmid                       -- 更新PGID
          FROM le_mst_mrp_information       -- MRP情報値
-        WHERE current_datetime >= 変数.前回処理時間
-          AND current_datetime <  変数.今回処理時間
+        WHERE current_datetime >= g_bf_trn_proc_time
+          AND current_datetime <  g_now_trn_proc_time
   ```
 
   - 正常処理の場合
@@ -306,20 +308,20 @@ flowchart LR
              ,A.demand_policy_code        -- MRP需要方針コード
              ,A.airs_sign                 -- AIRSサイン
              ,0                           -- 更新カウンタ
-             ,システム日時                 -- 登録日時
-             ,ログインのユーザーID          -- 登録者
-             ,プログラムID                 -- 登録PGID
-             ,システム日時                 -- 更新日時
-             ,ログインのユーザーID          -- 更新者
-             ,プログラムID                 -- 更新PGID
+             ,g_now_trn_proc_time         -- 登録日時
+             ,author                      -- 登録者
+             ,pgmid                       -- 登録PGID
+             ,g_now_trn_proc_time         -- 更新日時
+             ,author                      -- 更新者
+             ,pgmid                       -- 更新PGID
          FROM le_mst_mrp_information A     -- MRP情報値
    INNER JOIN ld_trn_inv  B                -- 在庫ファイル
            ON B.itemno           =  A.itemno
           AND B.supplier         =  A.supplier
           AND B.usercd           =  A.usercd
           AND B.oh_qty           <> 0
-        WHERE current_datetime >= 変数.前回処理時間
-          AND current_datetime <  変数.今回処理時間
+        WHERE current_datetime >= g_bf_trn_proc_time
+          AND current_datetime <  g_now_trn_proc_time
           AND A.airs_sign        = '1'
   ```
 
@@ -350,15 +352,15 @@ flowchart LR
              ,demand_policy_code          -- MRP需要方針コード
              ,airs_sign                   -- AIRSサイン
              ,0                           -- 更新カウンタ
-             ,システム日時                 -- 登録日時
-             ,ログインのユーザーID         -- 登録者
-             ,プログラムID                 -- 登録PGID
-             ,システム日時                 -- 更新日時
-             ,ログインのユーザーID         -- 更新者
-             ,プログラムID                 -- 更新PGID
+             ,g_now_trn_proc_time         -- 登録日時
+             ,author                      -- 登録者
+             ,pgmid                       -- 登録PGID
+             ,g_now_trn_proc_time         -- 更新日時
+             ,author                      -- 更新者
+             ,pgmid                       -- 更新PGID
          FROM le_mst_mrp_information      -- MRP情報値
-        WHERE current_datetime >= 変数.前回処理時間
-          AND current_datetime <  変数.今回処理時間
+        WHERE current_datetime >= g_bf_trn_proc_time
+          AND current_datetime <  g_now_trn_proc_time
           AND airs_sign        = '1'
           AND supplier         <>  usercd
   ```
@@ -373,8 +375,15 @@ flowchart LR
 - IC分析BOM改訂コントロールの前回改訂ﾄﾗﾝｻﾞｸｼｮﾝ取得日時を変数.今回処理時間に更新する
 
 ```sql
-UPDATE ld_trn_derev_ctrl        -- IC分析BOM改訂コントロール
-   SET bf_trn_proc_time = 変数.今回処理時間
+UPDATE ld_trn_derev_ctrl           -- IC分析BOM改訂コントロール
+   SET bf_trn_proc_time = g_now_trn_proc_time
+      ,update_counter   = 0
+      ,create_datetime  = g_now_trn_proc_time
+      ,create_author    = author
+      ,create_pgmid     = pgmid
+      ,update_datetime  = g_now_trn_proc_time
+      ,update_author    = author
+      ,update_pgmid     = pgmid
  WHERE keyfiled = "ICREVC"
 ```
 
