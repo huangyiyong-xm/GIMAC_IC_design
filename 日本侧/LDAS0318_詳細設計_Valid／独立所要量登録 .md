@@ -78,36 +78,36 @@ flowchart LR
 
 #### 1.3.1. 引数
 
-| No. | パラメータ論理名                 | パラメータ物理名        | 属性    | 備考                                                                                                   |
-| --- | -------------------------------- | ----------------------- | ------- | ------------------------------------------------------------------------------------------------------ |
-| 1   | ユーザーＩＤ                     | ps_user_id              | VARCHAR | 画面：PymacユーザーＩＤその他：「SYSTEM」                                                              |
-| 2   | ログ出力サイン                   | ps_log_sign             | VARCHAR | 0:ログ出力しない1:ログ出力                                                                             |
-| 3   | 受信ID                           | ps_receive_id           | VARCHAR | 外部データ：受信ＩＤ                                                                                   |
-| 4   | 相手先システム識別               | ps_request_system_code  | VARCHAR | 外部データ：相手先ｼｽﾃﾑコード                                                                       |
-| 5   | 品目番号                         | ps_itemno               | VARCHAR |                                                                                                        |
-| 6   | 供給者                           | ps_supplier             | VARCHAR |                                                                                                        |
-| 7   | 使用者                           | ps_usercd               | VARCHAR |                                                                                                        |
-| 8   | オーダー番号                     | ps_order_no             | VARCHAR |                                                                                                        |
+| No. | パラメータ論理名                 | パラメータ物理名        | 属性    | 備考                                                                                                           |
+| --- | -------------------------------- | ----------------------- | ------- | -------------------------------------------------------------------------------------------------------------- |
+| 1   | ユーザーＩＤ                     | ps_user_id              | VARCHAR | 画面：PymacユーザーＩＤその他：「SYSTEM」                                                                      |
+| 2   | ログ出力サイン                   | ps_log_sign             | VARCHAR | 0:ログ出力しない1:ログ出力                                                                                     |
+| 3   | 受信ID                           | ps_receive_id           | VARCHAR | 外部データ：受信ＩＤ                                                                                           |
+| 4   | 相手先システム識別               | ps_request_system_code  | VARCHAR | 外部データ：相手先ｼｽﾃﾑコード                                                                               |
+| 5   | 品目番号                         | ps_itemno               | VARCHAR |                                                                                                                |
+| 6   | 供給者                           | ps_supplier             | VARCHAR |                                                                                                                |
+| 7   | 使用者                           | ps_usercd               | VARCHAR |                                                                                                                |
+| 8   | オーダー番号                     | ps_order_no             | VARCHAR |                                                                                                                |
 | 9   | 所要量区分                       | ps_rd_class             | VARCHAR | 0:通常、1:先行生産、2:変動安全在庫、3:自動安全在庫、4:生試所要量調整、6:所要量分割調整(、5:同梱品出庫用は削除) |
-| 10  | 独立需要送り先区分               | ps_ind_user_class       | VARCHAR | SUコードorP/Fコードのみ                                                                                |
-| 11  | 独立需要送り先コード             | ps_ind_user_code        | VARCHAR |                                                                                                        |
-| 12  | 着手日                           | ps_start_date           | VARCHAR | YYYYMMDD                                                                                               |
-| 13  | 理由コード                       | ps_reason_code          | VARCHAR |                                                                                                        |
-| 14  | 生試初品区分                     | ps_pilot_class          | VARCHAR | 生試=２、量産初品=３、量産=SPACE（単品生試=4)？                                                        |
-| 15  | 生試処理タイプ                   | ps_pilot_condition_type | VARCHAR | １：生試所要量＋サイン２：生試所要量－サイン                                                           |
-| 16  | 所要数                           | pn_required_qty         | DECIMAL |                                                                                                        |
-| 17  | コメント                         | ps_remark               | VARCHAR |                                                                                                        |
-| 18  | 費用振替先区分                   | ps_transfer_class       | VARCHAR | 1:S/U2:原価センター3:受払種別                                                                          |
-| 19  | 費用振替先コード                 | ps_transfer_code        | VARCHAR | 2：原価センターの場合10桁                                                                              |
-| 20  | 振替理由コード                   | ps_transfer_reason_code | VARCHAR |                                                                                                        |
-| 21  | 勘定科目コード                   | ps_account_heading      | VARCHAR |                                                                                                        |
-| 22  | 目的No                           | ps_budget_no            | VARCHAR |                                                                                                        |
-| 23  | 受払種別コード                   | ps_account_code_sales   | VARCHAR |                                                                                                        |
-| 24  | 削除日付                         | ps_delete_ymd           | VARCHAR | YYYYMMDD                                                                                               |
-| 25  | ｻｰﾋﾞｽﾊﾟｰﾂ特別発注区分   | ps_sp_order_class       | VARCHAR |                                                                                                        |
-| 26  | ｻｰﾋﾞｽﾊﾟｰﾂ直送先ｺｰﾄﾞ | ps_sp_delivery_code     | VARCHAR |                                                                                                        |
-| 27  | ｻｰﾋﾞｽﾊﾟｰﾂﾃﾞｨｰﾗｰNO | ps_sp_dealer_no         | VARCHAR |                                                                                                        |
-| 28  | ｻｰﾋﾞｽﾊﾟｰﾂ受注番号       | ps_sp_order_no          | VARCHAR |                                                                                                        |
+| 10  | 独立需要送り先区分               | ps_ind_user_class       | VARCHAR | SUコードorP/Fコードのみ                                                                                        |
+| 11  | 独立需要送り先コード             | ps_ind_user_code        | VARCHAR |                                                                                                                |
+| 12  | 着手日                           | ps_start_date           | VARCHAR | YYYYMMDD                                                                                                       |
+| 13  | 理由コード                       | ps_reason_code          | VARCHAR |                                                                                                                |
+| 14  | 生試初品区分                     | ps_pilot_class          | VARCHAR | 生試=２、量産初品=３、量産=SPACE（単品生試=4)？                                                                |
+| 15  | 生試処理タイプ                   | ps_pilot_condition_type | VARCHAR | １：生試所要量＋サイン２：生試所要量－サイン                                                                   |
+| 16  | 所要数                           | pn_required_qty         | DECIMAL |                                                                                                                |
+| 17  | コメント                         | ps_remark               | VARCHAR |                                                                                                                |
+| 18  | 費用振替先区分                   | ps_transfer_class       | VARCHAR | 1:S/U2:原価センター3:受払種別                                                                                  |
+| 19  | 費用振替先コード                 | ps_transfer_code        | VARCHAR | 2：原価センターの場合10桁                                                                                      |
+| 20  | 振替理由コード                   | ps_transfer_reason_code | VARCHAR |                                                                                                                |
+| 21  | 勘定科目コード                   | ps_account_heading      | VARCHAR |                                                                                                                |
+| 22  | 目的No                           | ps_budget_no            | VARCHAR |                                                                                                                |
+| 23  | 受払種別コード                   | ps_account_code_sales   | VARCHAR |                                                                                                                |
+| 24  | 削除日付                         | ps_delete_ymd           | VARCHAR | YYYYMMDD                                                                                                       |
+| 25  | ｻｰﾋﾞｽﾊﾟｰﾂ特別発注区分   | ps_sp_order_class       | VARCHAR |                                                                                                                |
+| 26  | ｻｰﾋﾞｽﾊﾟｰﾂ直送先ｺｰﾄﾞ | ps_sp_delivery_code     | VARCHAR |                                                                                                                |
+| 27  | ｻｰﾋﾞｽﾊﾟｰﾂﾃﾞｨｰﾗｰNO | ps_sp_dealer_no         | VARCHAR |                                                                                                                |
+| 28  | ｻｰﾋﾞｽﾊﾟｰﾂ受注番号       | ps_sp_order_no          | VARCHAR |                                                                                                                |
 
 #### 1.3.2. 戻り値
 
@@ -375,10 +375,10 @@ IF EXIST(SELECT 1
 
 ###### 2.3.5.3.2. 送り先区分チェック
 
-- 引数．独立需要送り先区分が１(Ｓ／Ｕ)、２(経理コード)以外の場合
+- 引数．独立需要送り先区分が１(Ｓ／Ｕ)、２(原価センターコード)以外の場合
   - エラーコード：'ld.E.LDP10094'
-  - エラーメッセージ：'You can specify only 1(S/U), 2(Accounting Code) or "X" for Independent Requirements Destination Classificaton.'
-    - (独立需要送り先区分には１（Ｓ／Ｕ）、２（経理コード）、Ｘのみが指定可能です。)
+  - エラーメッセージ：'You can specify only 1(S/UorP/F), 2(Accounting Code) or "X" for Independent Requirements Destination Classificaton.'
+    - (独立需要送り先区分には１（S/U or P/F）、２（原価センターコード）が指定可能です。)
 
 ##### 2.3.5.4. S/U送り先チェック（送り先区分='1'の場合）
 
