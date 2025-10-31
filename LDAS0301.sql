@@ -4,11 +4,13 @@
 --
 --    @Written : 1.0.0                2025.10.15 Sun Sheng / YMSLX
 --    --------------------------------------------------------------------------
+--    @Update  : xxxxxxxxxxxx         xxxx.xx.xx  xxxxxxxx  / xx
+--     Reason  : xxx
+--               xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+--    --------------------------------------------------------------------------
 --
 --    @Version : 1.0.0
 --
-----------------------------------------------------------------------------
---@SEE << Valid Common/Regist Order Date Check  >>
 ----------------------------------------------------------------------------
 --  < INPUT Parameter >
 --    @ps_operation_id       <I/ > VARCHAR       : Operation Id
@@ -29,26 +31,28 @@
 --    @rs_err_msg            < /O> VARCHAR       : Error Message
 --    @rs_err_focus          < /O> VARCHAR       : Error Focus
 ----------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION ldas0301(
-     ps_operation_id     character varying      -----------1
-    ,ps_start_date       character varying      -----------2
-    ,ps_due_date         character varying      -----------3
-    ,ps_disburse_date    character varying      -----------4
-    ,ps_itemno           character varying      -----------5
-    ,ps_supplier         character varying      -----------6
-    ,ps_usercd           character varying      -----------7
-    ,ps_demand_pol_cd    character varying      -----------8
+CREATE OR REPLACE FUNCTION LDAS0301(
+      ps_operation_id     VARCHAR       -- 1 処理識別
+    , ps_start_date       VARCHAR       -- 2 着手日
+    , ps_due_date         VARCHAR       -- 3 完了日
+    , ps_disburse_date    VARCHAR       -- 4 払出日
+    , ps_itemno           VARCHAR       -- 5 品目番号
+    , ps_supplier         VARCHAR       -- 6 供給者
+    , ps_usercd           VARCHAR       -- 7 使用者
+    , ps_demand_pol_cd    VARCHAR       -- 8 MRP需要方針コード
 )
 RETURNS TABLE(
-     rn_status       INTEGER                    -----------1
-    ,rs_sql_code     VARCHAR                    -----------2
-    ,rs_err_code     VARCHAR                    -----------3
-    ,rs_err_msg      VARCHAR                    -----------4
-    ,rs_err_focus    VARCHAR                    -----------5
+     rn_status            INTEGER       -- 1 ステータス
+   , rs_sql_code          VARCHAR       -- 2 SQLコード
+   , rs_err_code          VARCHAR       -- 3 エラーコード
+   , rs_err_msg           VARCHAR       -- 4 エラーメッセージ
+   , rs_err_focus         VARCHAR       -- 5 エラー位置
 ) AS
 $BODY$
 DECLARE
-    -- SP return record  --
+    --------------------------------------------------
+    --  < Definition Local Paramater >
+    --------------------------------------------------
     rec_fix_period_date RECORD;
     ls_calendar_code    la_area_master_su.calendar_code%TYPE;
     ls_day_type         le_mst_calendar_sum.day_type%TYPE;
@@ -57,8 +61,9 @@ DECLARE
     ls_item_type        la_itemmast.item_type%TYPE;
     ls_fix_to_ymd       VARCHAR;
     ln_mon_diff         INTEGER;
-    cs_empty_string     CONSTANT  VARCHAR := '';
-    cs_org_type         CONSTANT  VARCHAR := '000';
+
+    cs_empty_string     CONSTANT VARCHAR := '';
+    cs_org_type         CONSTANT VARCHAR := '000';
     cs_LE               CONSTANT VARCHAR := 'LE';
     cs_STD              CONSTANT VARCHAR := 'STD';
     cs_T                CONSTANT VARCHAR := 'T';
@@ -69,25 +74,26 @@ DECLARE
     cs_DEMAND_1         CONSTANT VARCHAR := '1';
     cs_DEMAND_2         CONSTANT VARCHAR := '2';
     cs_SPACE            CONSTANT VARCHAR := ' ';
+    cs_pgmid            CONSTANT VARCHAR := 'LDAS0301';
 BEGIN
     --------------------------------------------------
     --  < STEP1 : Initialization >
     --------------------------------------------------
     /* Return Value Set */
-    rn_status               :=   0;
+    rn_status               :=               0;
     rs_sql_code             := cs_empty_string;
     rs_err_code             := cs_empty_string;
     rs_err_msg              := cs_empty_string;
     rs_err_focus            := cs_empty_string;
 
     /* Variable Initialization */
-    ls_calendar_code         := cs_empty_string;
-    ls_day_type              := cs_empty_string;
-    ls_ic_slip_date          := cs_empty_string;
-    ls_option_code           := cs_empty_string;
-    ls_item_type             := cs_empty_string;
-    ls_fix_to_ymd            := cs_empty_string;
-    ln_mon_diff              :=   0;
+    ls_calendar_code        := cs_empty_string;
+    ls_day_type             := cs_empty_string;
+    ls_ic_slip_date         := cs_empty_string;
+    ls_option_code          := cs_empty_string;
+    ls_item_type            := cs_empty_string;
+    ls_fix_to_ymd           := cs_empty_string;
+    ln_mon_diff             :=               0;
 
     /* Argument Check */
     IF ps_start_date IS NULL OR TRIM(ps_start_date) = '' THEN
@@ -114,10 +120,11 @@ BEGIN
     IF EXISTS ( SELECT 1
                   FROM la_area_master_su
                  WHERE su_code     = ps_usercd ) THEN
-        SELECT calendar_code
-          INTO STRICT ls_calendar_code
-          FROM la_area_master_su
-         WHERE su_code = ps_usercd;
+    SELECT calendar_code
+      INTO STRICT ls_calendar_code
+      FROM la_area_master_su
+     WHERE su_code = ps_usercd;
+
     /* Calendar Code Data Not Found */
     ELSE
         rs_err_code  := 'ld.E.LDP10062';
@@ -131,21 +138,22 @@ BEGIN
                   FROM le_mst_calendar_sum
                  WHERE calendar_code = ls_calendar_code
                    AND calendar_ymd  = ps_start_date ) THEN
-        SELECT day_type
-          INTO STRICT ls_day_type
-          FROM le_mst_calendar_sum
-         WHERE calendar_code = ls_calendar_code
-           AND calendar_ymd  = ps_start_date;
+    SELECT day_type
+      INTO STRICT ls_day_type
+      FROM le_mst_calendar_sum
+     WHERE calendar_code = ls_calendar_code
+       AND calendar_ymd  = ps_start_date;
         IF ls_day_type <> cs_OPTION_0 THEN
             rs_err_code  := 'ld.E.LDP10063';
             rs_err_msg   := 'The day you specified is not a working-day.';
             RAISE EXCEPTION ' ';
         END IF;
+
     /* Day Type Data Not Found */
     ELSE
-    rs_err_code  := 'ld.E.LDP10064';
-    rs_err_msg   := 'Day String does not exist in the common calendar.';
-    RAISE EXCEPTION ' ';
+        rs_err_code  := 'ld.E.LDP10064';
+        rs_err_msg   := 'Day String does not exist in the common calendar.';
+        RAISE EXCEPTION ' ';
     END IF;
 
     /* Get Fix Period */
@@ -161,28 +169,25 @@ BEGIN
            AND     supplier = ps_supplier
            AND     usercd   = ps_usercd;
         SELECT rn_status
-              ,rs_sql_code
-              ,rs_err_code
-              ,rs_err_msg
-              ,rs_t_fix_to_ymd
-         INTO STRICT rec_fix_period_date
-         FROM LEBS0010(ls_fix_to_ymd,'T');
+             , rs_sql_code
+             , rs_err_code
+             , rs_err_msg
+             , rs_t_fix_to_ymd
+          INTO STRICT rec_fix_period_date
+          FROM LEBS0010(ls_fix_to_ymd,'T');
          IF rec_fix_period_date.rn_status <> 0 THEN
             rn_status   := rec_fix_period_date.rn_status;
             rs_sql_code := rec_fix_period_date.rs_sql_code;
             rs_err_code := rec_fix_period_date.rs_err_code;
             rs_err_msg  := rec_fix_period_date.rs_err_msg;
-
-            RETURN NEXT;
-            RETURN;
         ELSE
-            ls_fix_to_ymd     := rec_fix_period_date.rs_t_fix_to_ymd;
-            END IF;
-    ELSE
-    rs_err_code  := 'ld.E.LDP10129';
-    rs_err_msg   := 'Item does not exist in the itemmast mrp.';
-    RAISE EXCEPTION ' ';
+            ls_fix_to_ymd  := rec_fix_period_date.rs_t_fix_to_ymd;
         END IF;
+    ELSE
+        rs_err_code  := 'ld.E.LDP10129';
+        rs_err_msg   := 'Item does not exist in the itemmast mrp.';
+        RAISE EXCEPTION ' ';
+    END IF;
 
     /* Get Ic Slip Date */
     IF EXISTS ( SELECT 1
@@ -239,12 +244,13 @@ BEGIN
                  WHERE system_code = cs_LE
                    AND function_id = 'LEA0001'
                    AND select_flg = cs_T;
+
     /* Option Code Not Found */
     ELSE
-    rs_err_code  := 'ld.E.LDP10002';
-    rs_err_msg   := 'Target data does not exist'
-             || ' in the Function Parameter table.';
-    RAISE EXCEPTION ' ';
+        rs_err_code  := 'ld.E.LDP10002';
+        rs_err_msg   := 'Target data does not exist'
+                     || ' in the Function Parameter table.';
+        RAISE EXCEPTION ' ';
     END IF;
 
     /* Get Item Type */
@@ -261,18 +267,18 @@ BEGIN
                    AND usercd   = ps_usercd;
     /* Item Type Not Found */
     ELSE
-    rs_err_code  := 'ld.E.LDP10067';
-    rs_err_msg   := 'Data does not exist in the item master.';
-    RAISE EXCEPTION ' ';
+        rs_err_code  := 'ld.E.LDP10067';
+        rs_err_msg   := 'Data does not exist in the item master.';
+        RAISE EXCEPTION ' ';
     END IF;
 
     /* Due Date Check */
     IF (ls_option_code = cs_OPTION_0   AND ps_due_date < ls_ic_slip_date
                               AND ls_item_type <> cs_DEMAND_2 ) OR
        (ls_option_code <> cs_OPTION_0  AND ps_due_date < ls_ic_slip_date )THEN
-    rs_err_code  := 'ld.E.LDP10068';
-    rs_err_msg   := 'You cannot specify the past date for due date.';
-    RAISE EXCEPTION ' ';
+        rs_err_code  := 'ld.E.LDP10068';
+        rs_err_msg   := 'You cannot specify the past date for due date.';
+        RAISE EXCEPTION ' ';
     END IF;
 
     /* Day Type Does Not Exist Error */
@@ -284,18 +290,18 @@ BEGIN
           INTO STRICT ls_day_type
           FROM le_mst_calendar_sum
          WHERE calendar_code = ls_calendar_code
-           AND calendar_ymd = ps_due_date;
+           AND calendar_ymd  = ps_due_date;
         IF ls_day_type <> cs_OPTION_0 THEN
             rs_err_code  := 'ld.E.LDP10069';
-            rs_err_msg   := 'The day you specified is not a working-day.' ||
-            '[ ps_due_date  ] = ' ||;
+            rs_err_msg   := 'The day you specified is not a working-day.' ;
             RAISE EXCEPTION ' ';
         END IF;
+
     /* Day Type Does Not Exist  */
-        ELSE
-    rs_err_code  := 'ld.E.LDP10064';
-    rs_err_msg   := 'Day String does not exist in the common calendar.';
-    RAISE EXCEPTION ' ';
+    ELSE
+        rs_err_code  := 'ld.E.LDP10064';
+        rs_err_msg   := 'Day String does not exist in the common calendar.';
+        RAISE EXCEPTION ' ';
     END IF;
 
     /* Due Date Less Then Start Date */
@@ -304,7 +310,7 @@ BEGIN
             rs_err_code  := 'ld.E.LDP10070';
             rs_err_msg   := 'For Due Date, specify the date later than'
                          || ' Start Date.';
-           RAISE EXCEPTION ' ';
+            RAISE EXCEPTION ' ';
         ELSE
             IF ps_operation_id = cs_LD71 THEN
                 rs_err_code  := 'ld.E.LDP10071';
@@ -327,23 +333,22 @@ BEGIN
            AND calendar_ymd   = ps_disburse_date;
         IF ls_day_type <> cs_OPTION_0 AND ps_demand_pol_cd <> cs_DEMAND_2  THEN
             rs_err_code  := 'ld.E.LDP10072';
-            rs_err_msg   := 'The day you specified is not a working-day.' ||
-            '[ ps_disburse_date  ] = ' ||;
-           RAISE EXCEPTION ' ';
+            rs_err_msg   := 'The day you specified is not a working-day.' ;
+            RAISE EXCEPTION ' ';
         END IF;
         /* Suitable Data Not Found */
-        ELSE
-    rs_err_code  := 'ld.E.LDP10064';
-    rs_err_msg   := 'Day String does not exist in the common calendar.';
-    RAISE EXCEPTION ' ';
+    ELSE
+        rs_err_code  := 'ld.E.LDP10064';
+        rs_err_msg   := 'Day String does not exist in the common calendar.';
+        RAISE EXCEPTION ' ';
     END IF;
 
     /* Disburse Date Less Then Due Date */
     IF ps_disburse_date < ps_due_date THEN
-    rs_err_code  := 'ld.E.LDP10073';
-    rs_err_msg   := 'For Disburse Date, specify the date later than'
-             || ' Due Date.';
-    RAISE EXCEPTION ' ';
+        rs_err_code  := 'ld.E.LDP10073';
+        rs_err_msg   := 'For Disburse Date, specify the date later than'
+                     || ' Due Date.';
+        RAISE EXCEPTION ' ';
     END IF;
 
     ln_mon_diff := ( TO_NUMBER(SUBSTR(ps_disburse_date,1,4), '9999')
@@ -362,21 +367,25 @@ BEGIN
     --------------------------------------------------
     --  < STEP3 : Return Value Processing >
     --------------------------------------------------
-    RETURN NEXT;
-    RETURN;
 EXCEPTION
     WHEN RAISE_EXCEPTION THEN
-        rn_status   :=  -2;
-        rs_sql_code := ' ';
-        rs_err_focus:= 'LDAS0301';
+        IF rn_status <> 0 THEN  -- FOR CALL SP ERROR
+            NULL;
+        ELSE                    -- FOR PGM ERROR
+            rn_status   :=  -2;
+            rs_sql_code := cs_empty_string;
+            rs_err_focus:= cs_pgmid;
+        END IF;
+
         RETURN NEXT;
         RETURN;
-    WHEN OTHERS THEN
+
+    WHEN OTHERS THEN           -- FOR SQL ERROR
         rn_status    := -1;
         rs_sql_code  := SQLSTATE;
         rs_err_code  := cs_empty_string;
         rs_err_msg   := SQLERRM;
-        rs_err_focus := 'LDAS0301';
+        rs_err_focus := cs_pgmid;
 
         RETURN NEXT;
         RETURN;

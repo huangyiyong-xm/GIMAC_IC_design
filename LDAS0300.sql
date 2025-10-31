@@ -126,6 +126,7 @@ DECLARE
     cs_SPACE                     CONSTANT VARCHAR := ' ';
     cs_EMPTY                     CONSTANT VARCHAR := '';
     cn_ZERO                      CONSTANT NUMERIC := 0;
+    cs_pgmid                     CONSTANT VARCHAR := 'LDAS0300';
 
     --Initialize the flags to be used.
     ls_item_type_flag_1          VARCHAR(01);
@@ -240,21 +241,21 @@ BEGIN
            AND item.usercd   = ps_usercd;
         ELSE
             rs_err_code  := 'ld.E.LDP10019';
-            rs_err_msg   := 'Item does not exist in the item master';
+            rs_err_msg   := 'Item does not exist in the item master.';
             RAISE EXCEPTION ' ';
         END IF;
 
         -- Item class check (basic validity)
         IF  ls_item_class = cs_ITEM_CLASS_M OR ls_item_class = cs_ITEM_CLASS_K THEN
             rs_err_code  := 'ld.E.LDP10037';
-            rs_err_msg   := 'You cannot specify Product, CBU Model or CKD Model';
+            rs_err_msg   := 'You cannot specify Product, CBU Model or CKD Model.';
             RAISE EXCEPTION ' ';
         END IF;
 
         --Product status check
         IF  ls_item_status = cs_ITEM_STATUS_1 THEN
             rs_err_code   := 'ld.E.LDP10024';
-            rs_err_msg    := 'You cannot specify the item of which Item Status is 1(Technical Trial)' ;
+            rs_err_msg    := 'You cannot specify the item of which Item Status is 1(Technical Trial).' ;
             RAISE EXCEPTION ' ';
         END IF;
 
@@ -312,7 +313,7 @@ BEGIN
             IF  ls_item_type <> cs_ITEM_TYPE_1 THEN
                 rs_err_code  := 'ld.E.LDP10020';
                 rs_err_msg   := 'You cannot specify the item of which Item Status'||
-                                ' is 1(Technical Trial) ' ;
+                                ' is 1(Technical Trial). ' ;
                 RAISE EXCEPTION ' ';
             END IF;
         END IF;
@@ -321,7 +322,7 @@ BEGIN
            IF ls_item_type <> cs_ITEM_TYPE_1 AND ls_item_type <> cs_ITEM_TYPE_2 THEN
                 rs_err_code  := 'ld.E.LDP10021';
                 rs_err_msg   := 'You can specify only the item of which Item Type' ||
-                                ' is 1(Standard) or 2(B/T)' ;
+                                ' is 1(Standard) or 2(B/T).' ;
                 RAISE EXCEPTION ' ';
             END IF;
         END IF;
@@ -333,7 +334,7 @@ BEGIN
                 ls_item_class <> cs_ITEM_CLASS_2 THEN
                 rs_err_code  := 'ld.E.LDP10022';
                 rs_err_msg   := 'You can specify only the item of which Item Cl. ' ||
-                            'is 0(Packing Materials) or 1(Raw Materials) or 2(Parts)  ';
+                            'is 0(Packing Materials) or 1(Raw Materials) or 2(Parts).';
                 RAISE EXCEPTION ' ';
             END IF;
         END IF;
@@ -341,7 +342,7 @@ BEGIN
         IF ls_item_class_flag_4 = cs_FLAG_Y THEN
             IF ls_item_class <> cs_ITEM_CLASS_E AND ls_item_class <> cs_ITEM_CLASS_F THEN
                 rs_err_code  := 'ld.E.LDP10058';
-                rs_err_msg   := 'You cannot specify Parts';
+                rs_err_msg   := 'You cannot specify Parts.';
                 RAISE EXCEPTION ' ';
             END IF;
         END IF;
@@ -350,7 +351,7 @@ BEGIN
         IF ls_demand_policy_code_flag_5 = cs_FLAG_Y THEN
             IF ls_demand_policy_code < cs_DEMAND_1 OR ls_demand_policy_code > cs_DEMAND_6 THEN
                 rs_err_code  := 'ld.E.LDP10026';
-                rs_err_msg   := 'You can specify only the item of which MRP Demand Policy Code is 1 to 6';
+                rs_err_msg   := 'You can specify only the item of which MRP Demand Policy Code is 1 to 6.';
                 RAISE EXCEPTION ' ';
             END IF;
         END IF;
@@ -359,7 +360,7 @@ BEGIN
             IF ls_demand_policy_code <> cs_DEMAND_2 THEN
                 rs_err_code  := 'ld.E.LDP10028';
                 rs_err_msg   := 'You can specify only the item of which ' ||
-                                'MRP Demand Policy Code is 2(Manual Control) ';
+                                'MRP Demand Policy Code is 2(Manual Control).';
                 RAISE EXCEPTION ' ';
             END IF;
         END IF;
@@ -369,7 +370,7 @@ BEGIN
             IF ls_wbin_control_code <> cs_WBIN_0 THEN
                 rs_err_code  := 'ld.E.LDP10029';
                 rs_err_msg   := 'You can specify only the item of which ' ||
-                                'W-bin Control Code is 0(Out of an object of control)';
+                                'W-bin Control Code is 0(Out of an object of control).';
                 RAISE EXCEPTION ' ';
             END IF;
         END IF;
@@ -378,7 +379,7 @@ BEGIN
             IF ls_wbin_control_code <> cs_WBIN_1 THEN
                 rs_err_code  := 'ld.E.LDP10030';
                 rs_err_msg   := 'You can specify only the item of which  ' ||
-                                'W-bin Control Code is 1(An object of control)';
+                                'W-bin Control Code is 1(An object of control).';
                 RAISE EXCEPTION ' ';
             END IF;
         END IF;
@@ -387,7 +388,7 @@ BEGIN
         IF ls_airs_sign_flag_9 = cs_FLAG_Y THEN
             IF ls_airs_sign = cs_AIRS_1 THEN
                 rs_err_code  := 'ld.E.LDP10034';
-                rs_err_msg   := 'You cannot specify AIRS Item';
+                rs_err_msg   := 'You cannot specify AIRS Item.';
                 RAISE EXCEPTION ' ';
             END IF;
         END IF;
@@ -410,9 +411,9 @@ EXCEPTION
         IF rn_status <> 0 THEN  -- FOR CALL SP ERROR
             NULL;
         ELSE                    -- FOR PGM ERROR
-            rn_status   := -2;
-            rs_sql_code := cs_SPACE;
-            rs_err_focus := 'LDAS0300';
+            rn_status    := -2;
+            rs_sql_code  := cs_SPACE;
+            rs_err_focus := cs_pgmid;
         END IF;
 
         RETURN NEXT;
@@ -423,7 +424,7 @@ EXCEPTION
         rs_sql_code  := SQLSTATE;
         rs_err_code  := cs_SPACE;
         rs_err_msg   := SQLERRM;
-        rs_err_focus := 'LDAS0300';
+        rs_err_focus := cs_pgmid;
 
         RETURN NEXT;
         RETURN;
