@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
---@SEE << Valid Common/Regist Order Date Check >>
+--@SEE <<  Order Login Date Check >>
 --    @ID      : LDAS0301
 --
 --    @Written : 1.0.0                2025.10.15 Sun Sheng / YMSLX

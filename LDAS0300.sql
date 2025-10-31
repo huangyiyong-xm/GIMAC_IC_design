@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
---    @SEE << Valid Common/Item Validity Check >>
+--    @SEE << PYMAC/IV IC ITEM STABILITY CHECK >>
 --    @ID      : LDAS0300
 --
 --    @Written : 1.0.0                   2025.10.14 Sun Sheng / YMSLX
