@@ -121,7 +121,7 @@ flowchart LR
 
 | No. | 変数論理名 | 初期化設定値 |
 | :-: | ---------- | ------------ |
-|  1  | なし       |              |
+|  1  | 変数.システム日付     | システム日付 |
 
 ### 2.3. 主処理
 
@@ -131,10 +131,10 @@ flowchart LR
 
 ```sql
 IF EXISTS ( SELECT 1
-              FROM 在庫ファイル 
-             WHERE 品目番号 = 引数.品目番号
-               AND  供給者 = 引数.供給者
-               AND  使用者 = 引数.使用者) THEN
+              FROM ld_trn_inv                    --在庫ファイル 
+             WHERE itemno   = ps_itemno
+               AND supplier = ps_supplier
+               AND usercd   = ps_usercd) THEN
 ```
 
 - データが存在しない場合  処理終了
@@ -146,17 +146,17 @@ IF EXISTS ( SELECT 1
 #### 2.3.2. 在庫ファイルに更新する
 
 ```sql
-UPDATE 在庫ファイル 
-   SET 接頭番号（オンライン） = 引数.接頭番号（オンライン）
-      ,順序番号（オンライン） = 引数.順序番号（オンライン）
-      ,最新入庫オーダー番号   = CONCAT(引数.接頭番号（オンライン）, 引数.順序番号（オンライン）)
-      ,更新カウンター = 更新カウンター + 1
-      ,更新日時 = システム時間
-      ,更新者 = 'SYSTEM'
-      ,更新pgid = 'LDYS0013'
- WHERE 品目番号 = 引数.品目番号
-   AND 供給者 = 引数.供給者
-   AND 使用者 = 引数.使用者
+UPDATE ld_trn_inv                                                                 --在庫ファイル 
+   SET next_ohorder_ic      = ps_next_ohorder_ic                                  --接頭番号（オンライン)
+      ,next_odorder_ic      = ps_next_odorder_ic                                  --順序番号（オンライン）
+      ,latest_in_orderno    = CONCAT(ps_next_ohorder_ic, ps_next_odorder_ic)
+      ,update_author        = 'SYSTEM',                                           --更新者
+      ,update_counter       = update_counter + 1,                                 --更新カウンター
+      ,update_datetime      = ld_system_date,                                     --更新日時、変数.システム日付
+      ,update_pgmid         = 'LDYS0013'                                          --更新pgmid
+ WHERE itemno   = ps_itemno
+   AND supplier = ps_supplier
+   AND usercd   = ps_usercd
 ```
 
 ### 2.4. 終了処理
