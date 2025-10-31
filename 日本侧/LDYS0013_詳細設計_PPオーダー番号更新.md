@@ -149,7 +149,7 @@ IF EXISTS ( SELECT 1
 UPDATE ld_trn_inv                                                                 --在庫ファイル 
    SET next_ohorder_ic      = ps_next_ohorder_ic                                  --接頭番号（オンライン)
       ,next_odorder_ic      = ps_next_odorder_ic                                  --順序番号（オンライン）
-      ,latest_in_orderno    = CONCAT(ps_next_ohorder_ic, ps_next_odorder_ic)
+      ,latest_in_orderno    = CONCAT(ps_next_ohorder_ic, ps_next_odorder_ic)      --最新入庫オーダー番号
       ,update_author        = 'SYSTEM',                                           --更新者
       ,update_counter       = update_counter + 1,                                 --更新カウンター
       ,update_datetime      = ld_system_date,                                     --更新日時、変数.システム日付
