@@ -109,15 +109,15 @@ flowchart LR
 
 ```sql
 IF EXISTS (SELECT 1
-             FROM ＴＰ処理番号採番ファイル a
+             FROM ld_mst_tp_num a                --TP処理番号採番ファイル
   )  THEN
-   SELECT 次回ＴＰ処理番号,
-          採番範囲 From，
-          採番範囲 To 
-     INTO 変数.次回ＴＰ処理番号，
-          変数.採番範囲 From，
-          変数.採番範囲 To 
-     FROM ＴＰ処理番号採番ファイル a
+   SELECT tp_operation_no,                       --次回ＴＰ処理番号
+          num_range_from，                       --採番範囲 From
+          num_range_to                           --採番範囲 To 
+     INTO ln_tp_operation_no，                   --変数.次回ＴＰ処理番号
+          ln_num_range_from，                    --変数.採番範囲 From
+          ln_num_range_to                        --変数.採番範囲 To
+     FROM ld_mst_tp_num a                       --ＴＰ処理番号採番ファイル
 ```
 
 - データが存在しない場合、エラーメッセージを出力し処理終了。
@@ -133,11 +133,11 @@ IF EXISTS (SELECT 1
   ＴＰ処理番号採番ファイルを更新する
 
   ```sql
-  UPDATE ＴＰ処理番号採番ファイル 
-    SET 次回ＴＰ処理番号 = 変数.次回ＴＰ処理番号
-        更新者 = 変数.ユーザーＩＤ
-        更新カウンター = 更新カウンター + 1
-        更新日時 = 変数.更新日時
+  UPDATE ld_mst_tp_num                                       --TP処理番号採番ファイル
+    SET tp_operation_no = ln_tp_operation_no                 --変数.次回ＴＰ処理番号
+        update_author = ps_user_id                           --更新者
+        update_counter = COALESCE(update_counter, 0) + 1    --更新カウンター
+        update_datetime = ld_update_datetime                 --変数.更新日時
   ```
 
 ### 2.4. 終了処理
