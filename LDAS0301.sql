@@ -197,8 +197,8 @@ BEGIN
                   FROM ld_mst_slip_date
                  WHERE operation_type = cs_STD )THEN
                 SELECT ic_slip_date
-                    INTO STRICT ls_ic_slip_date
-                    FROM ld_mst_slip_date
+                  INTO STRICT ls_ic_slip_date
+                  FROM ld_mst_slip_date
                  WHERE operation_type = cs_STD;
     ELSE
         rs_err_code  := 'ld.E.LDP10004';
@@ -264,8 +264,8 @@ BEGIN
     IF EXISTS ( SELECT 1
                   FROM la_itemmast
                  WHERE itemno = ps_itemno
-                    AND supplier = ps_supplier
-                    AND usercd = ps_usercd )THEN
+                   AND supplier = ps_supplier
+                   AND usercd = ps_usercd )THEN
                 SELECT item_type
                   INTO STRICT ls_item_type
                   FROM la_itemmast
@@ -294,12 +294,12 @@ BEGIN
     IF EXISTS ( SELECT 1
                   FROM le_mst_calendar_sum
                  WHERE calendar_code = ls_calendar_code
-                    AND calendar_ymd = ps_due_date ) THEN
+                   AND calendar_ymd = ps_due_date ) THEN
         SELECT day_type
           INTO STRICT ls_day_type
           FROM le_mst_calendar_sum
          WHERE calendar_code = ls_calendar_code
-            AND calendar_ymd = ps_due_date;
+           AND calendar_ymd = ps_due_date;
         IF ls_day_type <> cs_OPTION_0 THEN
             rs_err_code  := 'ld.E.LDP10069';
             rs_err_msg   := 'The day you specified is not a working-day.' ||
@@ -339,12 +339,12 @@ BEGIN
     IF EXISTS ( SELECT 1
                   FROM le_mst_calendar_sum
                  WHERE calendar_code = ls_calendar_code
-                    AND calendar_ymd = ps_disburse_date) THEN
+                   AND calendar_ymd = ps_disburse_date) THEN
         SELECT day_type
           INTO STRICT ls_day_type
           FROM le_mst_calendar_sum
          WHERE  calendar_code = ls_calendar_code
-            AND calendar_ymd = ps_disburse_date;
+           AND calendar_ymd = ps_disburse_date;
         IF ls_day_type <> cs_OPTION_0 AND ps_demand_pol_cd <> cs_DEMAND_2  THEN
             rs_err_code  := 'ld.E.LDP10072';
             rs_err_msg   := 'The day you specified is not a working-day.' ||
