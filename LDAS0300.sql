@@ -249,12 +249,12 @@ BEGIN
           		      ,ls_synchro_control_code
           FROM la_itemmast item
           JOIN le_mst_mrp_information mrp
-            ON mrp.itemno = item.itemno
-           AND mrp.supplier = item.supplier
-           AND mrp.usercd = item.usercd
-         WHERE item.itemno = ps_itemno
+            ON mrp.itemno    = item.itemno
+           AND mrp.supplier  = item.supplier
+           AND mrp.usercd    = item.usercd
+         WHERE item.itemno   = ps_itemno
            AND item.supplier = ps_supplier
-           AND item.usercd = ps_usercd;
+           AND item.usercd   = ps_usercd;
         ELSE
         rs_err_code  := cs_err_item_not_exist;
         rs_err_msg   := 'Item does not exist in the item master';
@@ -426,7 +426,7 @@ BEGIN
     RETURN;
     EXCEPTION
     WHEN RAISE_EXCEPTION THEN
-        rn_status   :=  cn_STATUS_PROGRAM_ERROR;
+        rn_status   := cn_STATUS_PROGRAM_ERROR;
         rs_sql_code := cs_SPACE;
         RETURN NEXT;
         RETURN;

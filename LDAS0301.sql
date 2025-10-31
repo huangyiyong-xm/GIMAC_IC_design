@@ -157,9 +157,9 @@ BEGIN
         SELECT     fix_period_id
           INTO     STRICT ls_fix_to_ymd
           FROM     le_mst_mrp_information
-         WHERE     itemno = ps_itemno
+         WHERE     itemno   = ps_itemno
            AND     supplier = ps_supplier
-           AND     usercd = ps_usercd;
+           AND     usercd   = ps_usercd;
         SELECT rn_status
               ,rs_sql_code
               ,rs_err_code
@@ -250,9 +250,9 @@ BEGIN
     /* Get Item Type */
     IF EXISTS ( SELECT 1
                   FROM la_itemmast
-                 WHERE itemno = ps_itemno
+                 WHERE itemno   = ps_itemno
                    AND supplier = ps_supplier
-                   AND usercd = ps_usercd )THEN
+                   AND usercd   = ps_usercd )THEN
                 SELECT item_type
                   INTO STRICT ls_item_type
                   FROM la_itemmast
@@ -279,7 +279,7 @@ BEGIN
     IF EXISTS ( SELECT 1
                   FROM le_mst_calendar_sum
                  WHERE calendar_code = ls_calendar_code
-                   AND calendar_ymd = ps_due_date ) THEN
+                   AND calendar_ymd  = ps_due_date ) THEN
         SELECT day_type
           INTO STRICT ls_day_type
           FROM le_mst_calendar_sum
@@ -319,12 +319,12 @@ BEGIN
     IF EXISTS ( SELECT 1
                   FROM le_mst_calendar_sum
                  WHERE calendar_code = ls_calendar_code
-                   AND calendar_ymd = ps_disburse_date) THEN
+                   AND calendar_ymd  = ps_disburse_date) THEN
         SELECT day_type
           INTO STRICT ls_day_type
           FROM le_mst_calendar_sum
          WHERE  calendar_code = ls_calendar_code
-           AND calendar_ymd = ps_disburse_date;
+           AND calendar_ymd   = ps_disburse_date;
         IF ls_day_type <> cs_OPTION_0 AND ps_demand_pol_cd <> cs_DEMAND_2  THEN
             rs_err_code  := 'ld.E.LDP10072';
             rs_err_msg   := 'The day you specified is not a working-day.' ||
