@@ -194,7 +194,6 @@ BEGIN
         rs_err_code  := cs_err_no_operation_id;
         rs_err_msg   := 'Specify the Deal Flag.' ||
                         COALESCE(ps_operation_id, 'NULL');
-        rs_err_focus := 'operation_id ';
         RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
     END IF;
 
@@ -202,7 +201,6 @@ BEGIN
         rs_err_code  := cs_err_no_itemno;
         rs_err_msg   := 'Specify the Item Number' ||
                         COALESCE(ps_itemno, 'NULL');
-        rs_err_focus := 'itemno';
         RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
     END IF;
 
@@ -210,15 +208,13 @@ BEGIN
         rs_err_code  := cs_err_no_supplier;
         rs_err_msg   := 'Specify the Supplier' ||
                         COALESCE(ps_supplier, 'NULL');
-        rs_err_focus := 'supplier';
-        RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
+      RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
     END IF;
 
     IF ps_usercd IS NULL OR TRIM(ps_usercd) = cs_EMPTY THEN
         rs_err_code  := cs_err_no_usercd;
         rs_err_msg   := 'Specify the User.' ||
                         COALESCE(ps_usercd, 'NULL');
-        rs_err_focus := 'usercd';
         RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
     END IF;
 
@@ -262,7 +258,6 @@ BEGIN
         ELSE
         rs_err_code  := cs_err_item_not_exist;
         rs_err_msg   := 'Item does not exist in the item master';
-        rs_err_focus := 'LDAS0300';
         rn_status    := cn_STATUS_PROGRAM_ERROR;
         RETURN NEXT;
         RETURN;
@@ -272,14 +267,12 @@ BEGIN
         IF ls_item_class = cs_ITEM_CLASS_M OR ls_item_class = cs_ITEM_CLASS_K THEN
         rs_err_code  := cs_err_invalid_item_class;
         rs_err_msg   := 'You cannot specify Product, CBU Model or CKD Model';
-        rs_err_focus := 'LDAS0300';
         RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
         END IF;
         --Product status check
         IF ls_item_status = cs_ITEM_STATUS_1 THEN
         rs_err_code  := cs_err_item_status_trial;
         rs_err_msg   := 'You cannot specify the item of which Item Status is 1(Technical Trial)' ;
-        rs_err_focus := 'LDAS0300';
         RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
         END IF;
         --By processing the identification settings to verify the flag
@@ -337,7 +330,6 @@ BEGIN
             rs_err_code  := cs_err_item_type_trial;
             rs_err_msg   := 'You cannot specify the item of which Item Status'||
                             ' is 1(Technical Trial) ' ;
-            rs_err_focus := 'LDAS0300';
             RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
             END IF;
         END IF;
@@ -347,7 +339,6 @@ BEGIN
             rs_err_code  := cs_err_item_type_standard;
             rs_err_msg   := 'You can specify only the item of which Item Type' ||
                             ' is 1(Standard) or 2(B/T)' ;
-            rs_err_focus := 'LDAS0300';
             RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
             END IF;
         END IF;
@@ -360,7 +351,6 @@ BEGIN
                 rs_err_code  := cs_err_item_class_materials;
                 rs_err_msg   := 'You can specify only the item of which Item Cl. ' ||
                             'is 0(Packing Materials) or 1(Raw Materials) or 2(Parts)  ';
-                rs_err_focus := 'LDAS0300';
                 RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
             END IF;
         END IF;
@@ -369,7 +359,6 @@ BEGIN
             IF ls_item_class <> cs_ITEM_CLASS_E AND ls_item_class <> cs_ITEM_CLASS_F THEN
             rs_err_code  := cs_err_item_class_parts;
             rs_err_msg   := 'You cannot specify Parts';
-            rs_err_focus := 'LDAS0300';
             RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
             END IF;
         END IF;
@@ -379,7 +368,6 @@ BEGIN
             IF ls_demand_policy_code < cs_DEMAND_1 OR ls_demand_policy_code > cs_DEMAND_6 THEN
             rs_err_code  := cs_err_demand_policy_range;
             rs_err_msg   := 'You can specify only the item of which MRP Demand Policy Code is 1 to 6';
-            rs_err_focus := 'LDAS0300';
             RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
             END IF;
         END IF;
@@ -389,7 +377,6 @@ BEGIN
             rs_err_code  := cs_err_demand_policy_manual;
             rs_err_msg   := 'You can specify only the item of which ' ||
                             'MRP Demand Policy Code is 2(Manual Control) ';
-            rs_err_focus := 'LDAS0300';
             RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
             END IF;
         END IF;
@@ -400,7 +387,6 @@ BEGIN
             rs_err_code  := cs_err_wbin_out_control;
             rs_err_msg   := 'You can specify only the item of which ' ||
                             'W-bin Control Code is 0(Out of an object of control)';
-            rs_err_focus := 'LDAS0300';
             RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
         END IF;
     END IF;
@@ -410,7 +396,6 @@ BEGIN
             rs_err_code  := cs_err_wbin_in_control;
             rs_err_msg   := 'You can specify only the item of which  ' ||
                             'W-bin Control Code is 1(An object of control)';
-            rs_err_focus := 'LDAS0300';
             RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
         END IF;
     END IF;
@@ -420,7 +405,6 @@ BEGIN
         IF ls_airs_sign = cs_AIRS_1 THEN
             rs_err_code  := cs_err_airs_item;
             rs_err_msg   := 'You cannot specify AIRS Item';
-            rs_err_focus := 'LDAS0300';
             RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
         END IF;
     END IF;
@@ -451,7 +435,7 @@ BEGIN
         rs_sql_code  := SQLSTATE;
         rs_err_code  := cs_SPACE;
         rs_err_msg   := SQLERRM;
-        rs_err_focus := cs_SPACE;
+        rs_err_focus := 'LDAS0300';
         RETURN NEXT;
         RETURN;
 END;
