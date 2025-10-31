@@ -4,11 +4,13 @@
 --
 --    @Written : 1.0.0                   2025.10.14 Sun Sheng / YMSLX
 --    --------------------------------------------------------------------------
+--    @Update  : xxxxxxxxxxxx         xxxx.xx.xx  xxxxxxxx  / xx
+--     Reason  : xxx
+--               xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+--    --------------------------------------------------------------------------
 --
 --    @Version : 1.0.0
 --
---------------------------------------------------------------------------------
---@SEE << Valid Common/Item Validity Check >>
 --------------------------------------------------------------------------------
 --  < INPUT Parameter >
 --    @ps_operation_id           <I/ > VARCHAR   : Operation Id
@@ -31,27 +33,30 @@
 --    @rn_float_safety_stock_qty < /O> DECIMAL   : Float Safety Stock Qty
 --    @rs_synchro_control_code   < /O> VARCHAR   : Synchro Control Code
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION ldas0300(
-    ps_operation_id character varying,  --1.処理識別
-    ps_itemno character varying,        --2.品目番号
-    ps_supplier character varying,      --3.供給者
-    ps_usercd character varying)        --4.使用者
+CREATE OR REPLACE FUNCTION LDAS0300(
+    ps_operation_id VARCHAR,        --1.処理識別
+    ps_itemno       VARCHAR,        --2.品目番号
+    ps_supplier     VARCHAR,        --3.供給者
+    ps_usercd       VARCHAR)        --4.使用者
  RETURNS TABLE(
-    rn_status integer,                         --1.ステータス
-    rs_sql_code character varying,             --2.SQLコード
-    rs_err_code character varying,             --3.エラーコード
-    rs_err_msg character varying,              --4.エラーメッセージ
-    rs_err_focus character varying,            --5.エラー位置
-    rs_item_class character varying,           --6.品目クラス
-    rs_item_status character varying,          --7.品目ステータス
-    rs_demand_policy_code character varying,   --8.MRP需要方針コード
-    rs_airs_sign character varying,            --9.AIRSサイン
-    rn_float_safety_stock_qty numeric,         --10.変動安全在庫数
-    rs_synchro_control_code character varying  --11.シンクロ管理コード
+    rn_status                 INTEGER,   --1.ステータス
+    rs_sql_code               VARCHAR,   --2.SQLコード
+    rs_err_code               VARCHAR,   --3.エラーコード
+    rs_err_msg                VARCHAR,   --4.エラーメッセージ
+    rs_err_focus              VARCHAR,   --5.エラー位置
+    rs_item_class             VARCHAR,   --6.品目クラス
+    rs_item_status            VARCHAR,   --7.品目ステータス
+    rs_demand_policy_code     VARCHAR,   --8.MRP需要方針コード
+    rs_airs_sign              VARCHAR,   --9.AIRSサイン
+    rn_float_safety_stock_qty DECIMAL,   --10.変動安全在庫数
+    rs_synchro_control_code   VARCHAR    --11.シンクロ管理コード
     )
 AS
 $BODY$
 DECLARE
+    --------------------------------------------------
+    --  < Definition Local Paramater >
+    --------------------------------------------------
     ls_item_type                 la_itemmast.item_type%TYPE;
     ls_item_class                la_itemmast.item_class%TYPE;
     ls_item_status               la_itemmast.item_status%TYPE;
@@ -60,25 +65,8 @@ DECLARE
     ls_airs_sign                 le_mst_mrp_information.airs_sign%TYPE;
     ln_float_safety_stock_qty    le_mst_mrp_information.float_safety_stock_qty%TYPE;
     ls_synchro_control_code      le_mst_mrp_information.synchro_control_code%TYPE;
-    -- Error Code Constants
-    cs_err_no_operation_id       CONSTANT VARCHAR := 'ld.E.LDP10054';
-    cs_err_no_itemno             CONSTANT VARCHAR := 'ld.E.LDP10055';
-    cs_err_no_supplier           CONSTANT VARCHAR := 'ld.E.LDP10056';
-    cs_err_no_usercd             CONSTANT VARCHAR := 'ld.E.LDP10057';
-    cs_err_item_not_exist        CONSTANT VARCHAR := 'ld.E.LDP10019';
-    cs_err_invalid_item_class    CONSTANT VARCHAR := 'ld.E.LDP10037';
-    cs_err_item_status_trial     CONSTANT VARCHAR := 'ld.E.LDP10024';
-    cs_err_item_type_trial       CONSTANT VARCHAR := 'ld.E.LDP10020';
-    cs_err_item_type_standard    CONSTANT VARCHAR := 'ld.E.LDP10021';
-    cs_err_item_class_materials  CONSTANT VARCHAR := 'ld.E.LDP10022';
-    cs_err_item_class_parts      CONSTANT VARCHAR := 'ld.E.LDP10058';
-    cs_err_demand_policy_range   CONSTANT VARCHAR := 'ld.E.LDP10026';
-    cs_err_demand_policy_manual  CONSTANT VARCHAR := 'ld.E.LDP10028';
-    cs_err_wbin_out_control      CONSTANT VARCHAR := 'ld.E.LDP10029';
-    cs_err_wbin_in_control       CONSTANT VARCHAR := 'ld.E.LDP10030';
-    cs_err_airs_item             CONSTANT VARCHAR := 'ld.E.LDP10034';
 
-    -- Operation IDs
+   -- Operation IDs
     cs_LD11                      CONSTANT VARCHAR := 'LD11';
     cs_LD41                      CONSTANT VARCHAR := 'LD41';
     cs_LD71                      CONSTANT VARCHAR := 'LD71';
@@ -149,12 +137,13 @@ DECLARE
     ls_wbin_control_code_flag_7  VARCHAR(01);
     ls_wbin_control_code_flag_8  VARCHAR(01);
     ls_airs_sign_flag_9          VARCHAR(01);
+
 BEGIN
     --------------------------------------------------
     --  < STEP1 : Initialization >
     --------------------------------------------------
     /* Return Value Set */
-    rn_status                 := cn_STATUS_NORMAL;
+    rn_status                 := 0;
     rs_sql_code               := cs_ZERO;
     rs_err_code               := cs_ZERO;
     rs_err_msg                := cs_SPACE;
@@ -187,66 +176,60 @@ BEGIN
     ls_wbin_control_code_flag_7  := cs_FLAG_N;
     ls_wbin_control_code_flag_8  := cs_FLAG_N;
     ls_airs_sign_flag_9          := cs_FLAG_N;
-    --------------------------------------------------
 
     /* Argument Check */
-       IF ps_operation_id IS NULL OR TRIM(ps_operation_id) = cs_EMPTY THEN
-        rs_err_code  := cs_err_no_operation_id;
-        rs_err_msg   := 'Specify the Deal Flag.' ||
-                        COALESCE(ps_operation_id, 'NULL');
+    IF ps_operation_id IS NULL OR TRIM(ps_operation_id) = cs_EMPTY THEN
+        rs_err_code  := 'ld.E.LDP10054';
+        rs_err_msg   := 'Specify the Deal Flag.';
         RAISE EXCEPTION ' ';
     END IF;
 
-        IF ps_itemno IS NULL OR TRIM(ps_itemno) = cs_EMPTY THEN
-        rs_err_code  := cs_err_no_itemno;
-        rs_err_msg   := 'Specify the Item Number' ||
-                        COALESCE(ps_itemno, 'NULL');
-       RAISE EXCEPTION ' ';
+    IF ps_itemno IS NULL OR TRIM(ps_itemno) = cs_EMPTY THEN
+        rs_err_code  := 'ld.E.LDP10055';
+        rs_err_msg   := 'Specify the Item Number.';
+        RAISE EXCEPTION ' ';
     END IF;
 
     IF ps_supplier IS NULL OR TRIM(ps_supplier) = cs_EMPTY THEN
-        rs_err_code  := cs_err_no_supplier;
-        rs_err_msg   := 'Specify the Supplier' ||
-                        COALESCE(ps_supplier, 'NULL');
-      RAISE EXCEPTION ' ';
+        rs_err_code  := 'ld.E.LDP10056';
+        rs_err_msg   := 'Specify the Supplier.';
+        RAISE EXCEPTION ' ';
     END IF;
 
     IF ps_usercd IS NULL OR TRIM(ps_usercd) = cs_EMPTY THEN
-        rs_err_code  := cs_err_no_usercd;
-        rs_err_msg   := 'Specify the User.' ||
-                        COALESCE(ps_usercd, 'NULL');
+        rs_err_code  := 'ld.E.LDP10057';
+        rs_err_msg   := 'Specify the User.';
         RAISE EXCEPTION ' ';
     END IF;
 
     --------------------------------------------------
     --  < STEP2 : Main Processing >
     --------------------------------------------------
-    BEGIN
         IF EXISTS( SELECT 1
-                 FROM la_itemmast item
-                 INNER JOIN le_mst_mrp_information mrp
-                    ON mrp.itemno   = item.itemno
-                   AND mrp.supplier = item.supplier
-                   AND mrp.usercd   = item.usercd
-                WHERE item.itemno   = ps_itemno
-                  AND item.supplier = ps_supplier
-                  AND item.usercd   = ps_usercd) THEN
-        SELECT   item.item_type
-        	    ,item.item_class
-        	    ,item.item_status
-                ,mrp.demand_policy_code
-                ,mrp.wbin_control_code
-                ,mrp.airs_sign
-                ,mrp.float_safety_stock_qty
-                ,mrp.synchro_control_code
-          INTO 	STRICT ls_item_type
-          		      ,ls_item_class
-          		      ,ls_item_status
-          		      ,ls_demand_policy_code
-          		      ,ls_wbin_control_code
-          		      ,ls_airs_sign
-          		      ,ln_float_safety_stock_qty
-          		      ,ls_synchro_control_code
+                     FROM la_itemmast item
+                     JOIN le_mst_mrp_information mrp
+                       ON mrp.itemno    = item.itemno
+                      AND mrp.supplier  = item.supplier
+                      AND mrp.usercd    = item.usercd
+                    WHERE item.itemno   = ps_itemno
+                      AND item.supplier = ps_supplier
+                      AND item.usercd   = ps_usercd) THEN
+        SELECT item.item_type
+             , item.item_class
+             , item.item_status
+             , mrp.demand_policy_code
+             , mrp.wbin_control_code
+             , mrp.airs_sign
+             , mrp.float_safety_stock_qty
+             , mrp.synchro_control_code
+          INTO STRICT ls_item_type
+                    , ls_item_class
+                    , ls_item_status
+                    , ls_demand_policy_code
+                    , ls_wbin_control_code
+                    , ls_airs_sign
+                    , ln_float_safety_stock_qty
+                    , ls_synchro_control_code
           FROM la_itemmast item
           JOIN le_mst_mrp_information mrp
             ON mrp.itemno    = item.itemno
@@ -256,90 +239,92 @@ BEGIN
            AND item.supplier = ps_supplier
            AND item.usercd   = ps_usercd;
         ELSE
-        rs_err_code  := cs_err_item_not_exist;
-        rs_err_msg   := 'Item does not exist in the item master';
-        rn_status    := cn_STATUS_PROGRAM_ERROR;
-        RETURN NEXT;
-        RETURN;
+            rs_err_code  := 'ld.E.LDP10019';
+            rs_err_msg   := 'Item does not exist in the item master';
+            RAISE EXCEPTION ' ';
+            RETURN NEXT;
+            RETURN;
         END IF;
-       END;
+
         -- Item class check (basic validity)
-        IF ls_item_class = cs_ITEM_CLASS_M OR ls_item_class = cs_ITEM_CLASS_K THEN
-        rs_err_code  := cs_err_invalid_item_class;
-        rs_err_msg   := 'You cannot specify Product, CBU Model or CKD Model';
-        RAISE EXCEPTION ' ';
+        IF  ls_item_class = cs_ITEM_CLASS_M OR ls_item_class = cs_ITEM_CLASS_K THEN
+            rs_err_code  := 'ld.E.LDP10037';
+            rs_err_msg   := 'You cannot specify Product, CBU Model or CKD Model';
+            RAISE EXCEPTION ' ';
         END IF;
+
         --Product status check
-        IF ls_item_status = cs_ITEM_STATUS_1 THEN
-        rs_err_code  := cs_err_item_status_trial;
-        rs_err_msg   := 'You cannot specify the item of which Item Status is 1(Technical Trial)' ;
-        RAISE EXCEPTION ' ';
+        IF  ls_item_status = cs_ITEM_STATUS_1 THEN
+            rs_err_code   := 'ld.E.LDP10024';
+            rs_err_msg    := 'You cannot specify the item of which Item Status is 1(Technical Trial)' ;
+            RAISE EXCEPTION ' ';
         END IF;
+
         --By processing the identification settings to verify the flag
-        IF ps_operation_id = cs_LD11 THEN
-        ls_item_type_flag_2          := cs_FLAG_Y;
-        ls_demand_policy_code_flag_5 := cs_FLAG_Y;
-        ls_wbin_control_code_flag_7  := cs_FLAG_Y;
+        IF  ps_operation_id = cs_LD11 THEN
+            ls_item_type_flag_2          := cs_FLAG_Y;
+            ls_demand_policy_code_flag_5 := cs_FLAG_Y;
+            ls_wbin_control_code_flag_7  := cs_FLAG_Y;
 
         ELSIF ps_operation_id = cs_LD41 THEN
-        ls_item_type_flag_2          := cs_FLAG_Y;
-        ls_item_class_flag_3         := cs_FLAG_Y;
-        ls_demand_policy_code_flag_5 := cs_FLAG_Y;
-        ls_wbin_control_code_flag_7  := cs_FLAG_Y;
+              ls_item_type_flag_2          := cs_FLAG_Y;
+              ls_item_class_flag_3         := cs_FLAG_Y;
+              ls_demand_policy_code_flag_5 := cs_FLAG_Y;
+              ls_wbin_control_code_flag_7  := cs_FLAG_Y;
 
         ELSIF ps_operation_id = cs_LD71 THEN
-        ls_item_type_flag_2          := cs_FLAG_Y;
-        ls_item_class_flag_3         := cs_FLAG_Y;
-        ls_demand_policy_code_flag_6 := cs_FLAG_Y;
-        ls_wbin_control_code_flag_8  := cs_FLAG_Y;
+              ls_item_type_flag_2          := cs_FLAG_Y;
+              ls_item_class_flag_3         := cs_FLAG_Y;
+              ls_demand_policy_code_flag_6 := cs_FLAG_Y;
+              ls_wbin_control_code_flag_8  := cs_FLAG_Y;
 
-         ELSIF ps_operation_id = cs_LD21 OR
-          ps_operation_id = cs_LD15 OR ps_operation_id = cs_LD18 OR
-          ps_operation_id = cs_LD28 OR ps_operation_id = cs_LD33 OR
-          ps_operation_id = cs_LD46 OR ps_operation_id = cs_LD48 OR
-          ps_operation_id = cs_LD52 OR ps_operation_id = cs_LD68 THEN
-        ls_item_type_flag_1 := cs_FLAG_Y;
+        ELSIF ps_operation_id = cs_LD21 OR
+              ps_operation_id = cs_LD15 OR ps_operation_id = cs_LD18 OR
+              ps_operation_id = cs_LD28 OR ps_operation_id = cs_LD33 OR
+              ps_operation_id = cs_LD46 OR ps_operation_id = cs_LD48 OR
+              ps_operation_id = cs_LD52 OR ps_operation_id = cs_LD68 THEN
+              ls_item_type_flag_1 := cs_FLAG_Y;
 
-         ELSIF ps_operation_id = cs_LD14 THEN
-        ls_item_type_flag_1         := cs_FLAG_Y;
-        ls_wbin_control_code_flag_7 := cs_FLAG_Y;
-        ls_airs_sign_flag_9         := cs_FLAG_Y;
+        ELSIF ps_operation_id = cs_LD14 THEN
+              ls_item_type_flag_1         := cs_FLAG_Y;
+              ls_wbin_control_code_flag_7 := cs_FLAG_Y;
+              ls_airs_sign_flag_9         := cs_FLAG_Y;
 
         ELSIF ps_operation_id = cs_LD24 THEN
-        ls_item_type_flag_1         := cs_FLAG_Y;
-        ls_wbin_control_code_flag_7 := cs_FLAG_Y;
+              ls_item_type_flag_1         := cs_FLAG_Y;
+              ls_wbin_control_code_flag_7 := cs_FLAG_Y;
 
         ELSIF ps_operation_id = cs_LD44 THEN
-        ls_item_type_flag_1 := cs_FLAG_Y;
-        ls_airs_sign_flag_9 := cs_FLAG_Y;
+              ls_item_type_flag_1         := cs_FLAG_Y;
+              ls_airs_sign_flag_9         := cs_FLAG_Y;
 
         ELSIF ps_operation_id = cs_LD74 THEN
-        ls_item_type_flag_1         := cs_FLAG_Y;
-        ls_wbin_control_code_flag_8 := cs_FLAG_Y;
+              ls_item_type_flag_1         := cs_FLAG_Y;
+              ls_wbin_control_code_flag_8 := cs_FLAG_Y;
 
         ELSIF ps_operation_id = cs_LD78 OR ps_operation_id = cs_LD80 THEN
-        ls_item_type_flag_2 := cs_FLAG_Y;
+              ls_item_type_flag_2         := cs_FLAG_Y;
 
         ELSIF ps_operation_id = cs_LD81 THEN
-        ls_item_class_flag_4 := cs_FLAG_Y;
+              ls_item_class_flag_4        := cs_FLAG_Y;
         END IF;
 
      /*item_type validate*/
         IF ls_item_type_flag_1 = cs_FLAG_Y THEN
-            IF ls_item_type <> cs_ITEM_TYPE_1 THEN
-            rs_err_code  := cs_err_item_type_trial;
-            rs_err_msg   := 'You cannot specify the item of which Item Status'||
-                            ' is 1(Technical Trial) ' ;
-            RAISE EXCEPTION ' ';
+            IF  ls_item_type <> cs_ITEM_TYPE_1 THEN
+                rs_err_code  := 'ld.E.LDP10020';
+                rs_err_msg   := 'You cannot specify the item of which Item Status'||
+                                ' is 1(Technical Trial) ' ;
+                RAISE EXCEPTION ' ';
             END IF;
         END IF;
 
-          IF ls_item_type_flag_2 = cs_FLAG_Y THEN
-            IF ls_item_type <> cs_ITEM_TYPE_1 AND ls_item_type <> cs_ITEM_TYPE_2 THEN
-            rs_err_code  := cs_err_item_type_standard;
-            rs_err_msg   := 'You can specify only the item of which Item Type' ||
-                            ' is 1(Standard) or 2(B/T)' ;
-            RAISE EXCEPTION ' ';
+        IF ls_item_type_flag_2 = cs_FLAG_Y THEN
+           IF ls_item_type <> cs_ITEM_TYPE_1 AND ls_item_type <> cs_ITEM_TYPE_2 THEN
+                rs_err_code  := 'ld.E.LDP10021';
+                rs_err_msg   := 'You can specify only the item of which Item Type' ||
+                                ' is 1(Standard) or 2(B/T)' ;
+                RAISE EXCEPTION ' ';
             END IF;
         END IF;
 
@@ -348,7 +333,7 @@ BEGIN
             IF  ls_item_class <> cs_ITEM_CLASS_0 AND
                 ls_item_class <> cs_ITEM_CLASS_1 AND
                 ls_item_class <> cs_ITEM_CLASS_2 THEN
-                rs_err_code  := cs_err_item_class_materials;
+                rs_err_code  := 'ld.E.LDP10022';
                 rs_err_msg   := 'You can specify only the item of which Item Cl. ' ||
                             'is 0(Packing Materials) or 1(Raw Materials) or 2(Parts)  ';
                 RAISE EXCEPTION ' ';
@@ -357,61 +342,57 @@ BEGIN
 
         IF ls_item_class_flag_4 = cs_FLAG_Y THEN
             IF ls_item_class <> cs_ITEM_CLASS_E AND ls_item_class <> cs_ITEM_CLASS_F THEN
-            rs_err_code  := cs_err_item_class_parts;
-            rs_err_msg   := 'You cannot specify Parts';
-            RAISE EXCEPTION ' ';
+                rs_err_code  := 'ld.E.LDP10058';
+                rs_err_msg   := 'You cannot specify Parts';
+                RAISE EXCEPTION ' ';
             END IF;
         END IF;
 
     /*demand_policy_code  validate*/
         IF ls_demand_policy_code_flag_5 = cs_FLAG_Y THEN
             IF ls_demand_policy_code < cs_DEMAND_1 OR ls_demand_policy_code > cs_DEMAND_6 THEN
-            rs_err_code  := cs_err_demand_policy_range;
-            rs_err_msg   := 'You can specify only the item of which MRP Demand Policy Code is 1 to 6';
-            RAISE EXCEPTION ' ';
+                rs_err_code  := 'ld.E.LDP10026';
+                rs_err_msg   := 'You can specify only the item of which MRP Demand Policy Code is 1 to 6';
+                RAISE EXCEPTION ' ';
             END IF;
         END IF;
 
          IF ls_demand_policy_code_flag_6 = cs_FLAG_Y THEN
             IF ls_demand_policy_code <> cs_DEMAND_2 THEN
-            rs_err_code  := cs_err_demand_policy_manual;
-            rs_err_msg   := 'You can specify only the item of which ' ||
-                            'MRP Demand Policy Code is 2(Manual Control) ';
-            RAISE EXCEPTION ' ';
+                rs_err_code  := 'ld.E.LDP10028';
+                rs_err_msg   := 'You can specify only the item of which ' ||
+                                'MRP Demand Policy Code is 2(Manual Control) ';
+                RAISE EXCEPTION ' ';
             END IF;
         END IF;
 
     /*wbin_control_code  validate*/
-    IF ls_wbin_control_code_flag_7 = cs_FLAG_Y THEN
-        IF ls_wbin_control_code <> cs_WBIN_0 THEN
-            rs_err_code  := cs_err_wbin_out_control;
-            rs_err_msg   := 'You can specify only the item of which ' ||
-                            'W-bin Control Code is 0(Out of an object of control)';
-            RAISE EXCEPTION ' ';
+        IF ls_wbin_control_code_flag_7 = cs_FLAG_Y THEN
+            IF ls_wbin_control_code <> cs_WBIN_0 THEN
+                rs_err_code  := 'ld.E.LDP10029';
+                rs_err_msg   := 'You can specify only the item of which ' ||
+                                'W-bin Control Code is 0(Out of an object of control)';
+                RAISE EXCEPTION ' ';
+            END IF;
         END IF;
-    END IF;
 
-    IF ls_wbin_control_code_flag_8 = cs_FLAG_Y THEN
-        IF ls_wbin_control_code <> cs_WBIN_1 THEN
-            rs_err_code  := cs_err_wbin_in_control;
-            rs_err_msg   := 'You can specify only the item of which  ' ||
-                            'W-bin Control Code is 1(An object of control)';
-            RAISE EXCEPTION ' ';
+        IF ls_wbin_control_code_flag_8 = cs_FLAG_Y THEN
+            IF ls_wbin_control_code <> cs_WBIN_1 THEN
+                rs_err_code  := 'ld.E.LDP10030';
+                rs_err_msg   := 'You can specify only the item of which  ' ||
+                                'W-bin Control Code is 1(An object of control)';
+                RAISE EXCEPTION ' ';
+            END IF;
         END IF;
-    END IF;
 
     /*airs_sign validate */
-    IF ls_airs_sign_flag_9 = cs_FLAG_Y THEN
-        IF ls_airs_sign = cs_AIRS_1 THEN
-            rs_err_code  := cs_err_airs_item;
-            rs_err_msg   := 'You cannot specify AIRS Item';
-            RAISE EXCEPTION ' ';
+        IF ls_airs_sign_flag_9 = cs_FLAG_Y THEN
+            IF ls_airs_sign = cs_AIRS_1 THEN
+                rs_err_code  := 'ld.E.LDP10034';
+                rs_err_msg   := 'You cannot specify AIRS Item';
+                RAISE EXCEPTION ' ';
+            END IF;
         END IF;
-    END IF;
-
-
-
-
 
     --------------------------------------------------
     --  < STEP3 : Return Value Processing >
@@ -424,18 +405,20 @@ BEGIN
     rs_synchro_control_code   := ls_synchro_control_code;
     RETURN NEXT;
     RETURN;
-    EXCEPTION
+EXCEPTION
     WHEN RAISE_EXCEPTION THEN
-        rn_status   := cn_STATUS_PROGRAM_ERROR;
+        rn_status   := -2;
         rs_sql_code := cs_SPACE;
+        rs_err_focus := 'LDAS0300';
         RETURN NEXT;
         RETURN;
     WHEN OTHERS THEN
-        rn_status    := cn_STATUS_SQL_ERROR;
+        rn_status    := -1;
         rs_sql_code  := SQLSTATE;
         rs_err_code  := cs_SPACE;
         rs_err_msg   := SQLERRM;
         rs_err_focus := 'LDAS0300';
+
         RETURN NEXT;
         RETURN;
 END;
