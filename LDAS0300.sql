@@ -194,28 +194,28 @@ BEGIN
         rs_err_code  := cs_err_no_operation_id;
         rs_err_msg   := 'Specify the Deal Flag.' ||
                         COALESCE(ps_operation_id, 'NULL');
-        RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
+        RAISE EXCEPTION ' ';
     END IF;
 
         IF ps_itemno IS NULL OR TRIM(ps_itemno) = cs_EMPTY THEN
         rs_err_code  := cs_err_no_itemno;
         rs_err_msg   := 'Specify the Item Number' ||
                         COALESCE(ps_itemno, 'NULL');
-        RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
+       RAISE EXCEPTION ' ';
     END IF;
 
     IF ps_supplier IS NULL OR TRIM(ps_supplier) = cs_EMPTY THEN
         rs_err_code  := cs_err_no_supplier;
         rs_err_msg   := 'Specify the Supplier' ||
                         COALESCE(ps_supplier, 'NULL');
-      RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
+      RAISE EXCEPTION ' ';
     END IF;
 
     IF ps_usercd IS NULL OR TRIM(ps_usercd) = cs_EMPTY THEN
         rs_err_code  := cs_err_no_usercd;
         rs_err_msg   := 'Specify the User.' ||
                         COALESCE(ps_usercd, 'NULL');
-        RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
+        RAISE EXCEPTION ' ';
     END IF;
 
     --------------------------------------------------
@@ -267,13 +267,13 @@ BEGIN
         IF ls_item_class = cs_ITEM_CLASS_M OR ls_item_class = cs_ITEM_CLASS_K THEN
         rs_err_code  := cs_err_invalid_item_class;
         rs_err_msg   := 'You cannot specify Product, CBU Model or CKD Model';
-        RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
+        RAISE EXCEPTION ' ';
         END IF;
         --Product status check
         IF ls_item_status = cs_ITEM_STATUS_1 THEN
         rs_err_code  := cs_err_item_status_trial;
         rs_err_msg   := 'You cannot specify the item of which Item Status is 1(Technical Trial)' ;
-        RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
+        RAISE EXCEPTION ' ';
         END IF;
         --By processing the identification settings to verify the flag
         IF ps_operation_id = cs_LD11 THEN
@@ -330,7 +330,7 @@ BEGIN
             rs_err_code  := cs_err_item_type_trial;
             rs_err_msg   := 'You cannot specify the item of which Item Status'||
                             ' is 1(Technical Trial) ' ;
-            RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
+            RAISE EXCEPTION ' ';
             END IF;
         END IF;
 
@@ -339,7 +339,7 @@ BEGIN
             rs_err_code  := cs_err_item_type_standard;
             rs_err_msg   := 'You can specify only the item of which Item Type' ||
                             ' is 1(Standard) or 2(B/T)' ;
-            RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
+            RAISE EXCEPTION ' ';
             END IF;
         END IF;
 
@@ -351,7 +351,7 @@ BEGIN
                 rs_err_code  := cs_err_item_class_materials;
                 rs_err_msg   := 'You can specify only the item of which Item Cl. ' ||
                             'is 0(Packing Materials) or 1(Raw Materials) or 2(Parts)  ';
-                RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
+                RAISE EXCEPTION ' ';
             END IF;
         END IF;
 
@@ -359,7 +359,7 @@ BEGIN
             IF ls_item_class <> cs_ITEM_CLASS_E AND ls_item_class <> cs_ITEM_CLASS_F THEN
             rs_err_code  := cs_err_item_class_parts;
             rs_err_msg   := 'You cannot specify Parts';
-            RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
+            RAISE EXCEPTION ' ';
             END IF;
         END IF;
 
@@ -368,7 +368,7 @@ BEGIN
             IF ls_demand_policy_code < cs_DEMAND_1 OR ls_demand_policy_code > cs_DEMAND_6 THEN
             rs_err_code  := cs_err_demand_policy_range;
             rs_err_msg   := 'You can specify only the item of which MRP Demand Policy Code is 1 to 6';
-            RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
+            RAISE EXCEPTION ' ';
             END IF;
         END IF;
 
@@ -377,7 +377,7 @@ BEGIN
             rs_err_code  := cs_err_demand_policy_manual;
             rs_err_msg   := 'You can specify only the item of which ' ||
                             'MRP Demand Policy Code is 2(Manual Control) ';
-            RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
+            RAISE EXCEPTION ' ';
             END IF;
         END IF;
 
@@ -387,7 +387,7 @@ BEGIN
             rs_err_code  := cs_err_wbin_out_control;
             rs_err_msg   := 'You can specify only the item of which ' ||
                             'W-bin Control Code is 0(Out of an object of control)';
-            RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
+            RAISE EXCEPTION ' ';
         END IF;
     END IF;
 
@@ -396,7 +396,7 @@ BEGIN
             rs_err_code  := cs_err_wbin_in_control;
             rs_err_msg   := 'You can specify only the item of which  ' ||
                             'W-bin Control Code is 1(An object of control)';
-            RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
+            RAISE EXCEPTION ' ';
         END IF;
     END IF;
 
@@ -405,7 +405,7 @@ BEGIN
         IF ls_airs_sign = cs_AIRS_1 THEN
             rs_err_code  := cs_err_airs_item;
             rs_err_msg   := 'You cannot specify AIRS Item';
-            RAISE EXCEPTION SQLSTATE 'P0001' USING MESSAGE = rs_err_msg;
+            RAISE EXCEPTION ' ';
         END IF;
     END IF;
 
@@ -425,7 +425,7 @@ BEGIN
     RETURN NEXT;
     RETURN;
     EXCEPTION
-    WHEN SQLSTATE 'P0001' THEN
+    WHEN RAISE_EXCEPTION THEN
         rn_status   :=  cn_STATUS_PROGRAM_ERROR;
         rs_sql_code := cs_SPACE;
         RETURN NEXT;
