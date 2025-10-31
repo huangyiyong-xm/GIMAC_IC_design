@@ -168,18 +168,18 @@ BEGIN
          WHERE     itemno   = ps_itemno
            AND     supplier = ps_supplier
            AND     usercd   = ps_usercd;
-        SELECT rn_status
-             , rs_sql_code
-             , rs_err_code
-             , rs_err_msg
-             , rs_t_fix_to_ymd
-          INTO STRICT rec_fix_period_date
+        SELECT LEBS0010.rn_status
+             , LEBS0010.rs_sql_code
+             , LEBS0010.rs_err_code
+             , LEBS0010.rs_err_msg
+             , LEBS0010.rs_t_fix_to_ymd
+          INTO rec_fix_period_date
           FROM LEBS0010(ls_fix_to_ymd,'T');
          IF rec_fix_period_date.rn_status <> 0 THEN
-            rn_status   := rec_fix_period_date.rn_status;
-            rs_sql_code := rec_fix_period_date.rs_sql_code;
-            rs_err_code := rec_fix_period_date.rs_err_code;
-            rs_err_msg  := rec_fix_period_date.rs_err_msg;
+            rs_err_msg  := '<<SP:LEBS0010 Error Return>> '
+                        || 'Return:  ' ||  rec_fix_period_date.rn_status || ','|| rec_fix_period_date.rs_sql_code || ','
+                        || rec_fix_period_date.rs_err_code || ','|| rec_fix_period_date.rs_err_msg;
+            RAISE EXCEPTION ' ';
         ELSE
             ls_fix_to_ymd  := rec_fix_period_date.rs_t_fix_to_ymd;
         END IF;
@@ -367,6 +367,9 @@ BEGIN
     --------------------------------------------------
     --  < STEP3 : Return Value Processing >
     --------------------------------------------------
+    RETURN NEXT;
+    RETURN;
+
 EXCEPTION
     WHEN RAISE_EXCEPTION THEN
         IF rn_status <> 0 THEN  -- FOR CALL SP ERROR
