@@ -242,8 +242,6 @@ BEGIN
             rs_err_code  := 'ld.E.LDP10019';
             rs_err_msg   := 'Item does not exist in the item master';
             RAISE EXCEPTION ' ';
-            RETURN NEXT;
-            RETURN;
         END IF;
 
         -- Item class check (basic validity)
@@ -403,16 +401,24 @@ BEGIN
     rs_airs_sign              := ls_airs_sign;
     rn_float_safety_stock_qty := ln_float_safety_stock_qty;
     rs_synchro_control_code   := ls_synchro_control_code;
+
     RETURN NEXT;
     RETURN;
+
 EXCEPTION
     WHEN RAISE_EXCEPTION THEN
-        rn_status   := -2;
-        rs_sql_code := cs_SPACE;
-        rs_err_focus := 'LDAS0300';
+        IF rn_status <> 0 THEN  -- FOR CALL SP ERROR
+            NULL;
+        ELSE                    -- FOR PGM ERROR
+            rn_status   := -2;
+            rs_sql_code := cs_SPACE;
+            rs_err_focus := 'LDAS0300';
+        END IF;
+
         RETURN NEXT;
         RETURN;
-    WHEN OTHERS THEN
+
+    WHEN OTHERS THEN            -- FOR SQL ERROR
         rn_status    := -1;
         rs_sql_code  := SQLSTATE;
         rs_err_code  := cs_SPACE;
