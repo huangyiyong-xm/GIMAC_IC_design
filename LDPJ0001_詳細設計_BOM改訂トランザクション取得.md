@@ -100,17 +100,17 @@ flowchart LR
 
 #### 2.2.1. 変数初期化
 
-| No | 名称                             | 物理名称                   | 設定値       | 備考                    |
-| -- | -------------------------------- | -------------------------- | ------------ | ----------------------- |
-| 1  | 前回処理時間                     | g_bf_trn_proc_time         | スペース     | datetime year to second |
-| 2  | 今回処理時間                     | g_now_trn_proc_time        | システム時間 | datetime year to second |
-| 3  | トランザクション数（構成表）     | int_trn_prodstrc           | 0            | integer                 |
-| 4  | トランザクション数（出庫制御）   | int_trn_mrp_req_out        | 0            | integer                 |
-| 5  | トランザクション数（需要方針）   | int_trn_demand_policy_code | 0            | integer                 |
-| 6  | トランザクション数（AIRSフラグ） | int_trn_mrp_airs           | 0            | integer                 |
-| 7  | トランザクション総数             | int_trn_total              | 0            | integer                 |
-| 8  | ログインのユーザーID             | author                     | ログインのユーザーID            | string                 |
-| 9  | プログラムID                     | pgmid                      | 'LDPJ0001'            | string                 |
+| No | 名称                             | 物理名称                   | 設定値               | 備考                    |
+| -- | -------------------------------- | -------------------------- | -------------------- | ----------------------- |
+| 1  | 前回処理時間                     | g_bf_trn_proc_time         | スペース             | datetime year to second |
+| 2  | 今回処理時間                     | g_now_trn_proc_time        | システム時間         | datetime year to second |
+| 3  | トランザクション数（構成表）     | int_trn_prodstrc           | 0                    | integer                 |
+| 4  | トランザクション数（出庫制御）   | int_trn_mrp_req_out        | 0                    | integer                 |
+| 5  | トランザクション数（需要方針）   | int_trn_demand_policy_code | 0                    | integer                 |
+| 6  | トランザクション数（AIRSフラグ） | int_trn_mrp_airs           | 0                    | integer                 |
+| 7  | トランザクション総数             | int_trn_total              | 0                    | integer                 |
+| 8  | ログインのユーザーID             | author                     | ログインのユーザーID | string                  |
+| 9  | プログラムID                     | pgmid                      | 'LDPJ0001'           | string                  |
 
 ### 2.3. 主処理
 
@@ -211,7 +211,7 @@ flowchart LR
              ,g_now_trn_proc_time         -- 更新日時
              ,author                      -- 更新者
              ,pgmid                       -- 更新PGID
-         FROM le_mst_mrp_information  A,  -- MRP情報値
+         FROM le_mst_mrp_information  A   -- MRP情報値
    INNER JOIN la_prodstrc B   -- 製品構成
            ON B.comp_itemno      = A.itemno
           AND B.comp_supplier    = A.supplier
@@ -387,6 +387,6 @@ UPDATE ld_trn_derev_ctrl           -- IC分析BOM改訂コントロール
  WHERE keyfiled = "ICREVC"
 ```
 
-- トランザクション総数を算出し、ログに出力する
+- トランザクション総数を計算し、ログに出力する
   - 変数.トランザクション数（構成表） +トランザクション数（出庫制御） +トランザクション数（需要方針） +トランザクション数（AIRSフラグ）を変数.トランザクション総数にセットする
   - 変数.トランザクション総数をログに出力する
