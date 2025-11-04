@@ -150,13 +150,13 @@ BEGIN
 --------------------------------------------------
 --  < STEP2.1 : Obtain item category >
 --------------------------------------------------
-    SELECT 
+  SELECT 
         item_class 
     INTO ls_item_class
     FROM la_itemmast
-    WHERE itemno   = ps_comp_itemno
-      AND supplier = ps_comp_supplier
-      AND usercd   = ps_comp_usercd;
+   WHERE itemno   = ps_comp_itemno
+     AND supplier = ps_comp_supplier
+     AND usercd   = ps_comp_usercd;
     IF NOT FOUND THEN
         rs_err_code  := 'ld.E.LDP10149';
         rs_err_msg   := 'Data does not exist in the la_itemmast. Item No:' || ps_comp_itemno || 
@@ -174,8 +174,8 @@ BEGIN
         ,LDYS0002.rs_err_msg
         ,LDYS0002.rs_err_focus
         ,LDYS0002.rn_compqty
-    INTO rec_ldys0002_result
-    FROM LDYS0002(
+     INTO rec_ldys0002_result
+     FROM LDYS0002(
          pn_order_qty
         ,ps_comp_sign
         ,pn_comp_qty
@@ -203,8 +203,8 @@ BEGIN
         ,LDYS0002.rs_err_msg
         ,LDYS0002.rs_err_focus
         ,LDYS0002.rn_compqty
-   INTO rec_ldys0002_result
-   FROM LDYS0002(
+    INTO rec_ldys0002_result
+    FROM LDYS0002(
         pn_receipt_qty + pn_scrap_qty
        ,ps_comp_sign
        ,pn_comp_qty
@@ -272,14 +272,15 @@ BEGIN
     --  < STEP2.5 : Design change requirement update log registration >
     --------------------------------------------------
     IF ps_order_status IN ('1', '2') THEN
-        SELECT 
+      SELECT 
              b.area_section_code
             ,b.area_person_code
         INTO ls_department
              ,ls_responsible_person
         FROM la_area_master_su a
-        JOIN la_area_master b ON a.area_code = b.area_code
-        WHERE a.su_code = ps_comp_supplier;
+        JOIN la_area_master b 
+          ON a.area_code = b.area_code
+       WHERE a.su_code = ps_comp_supplier;
         IF NOT FOUND THEN
             ls_department          := ' ';
             ls_responsible_person  := ' ';
