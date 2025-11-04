@@ -144,6 +144,7 @@ flowchart LR
               ,A.comp_supplier             -- 子供給者
               ,A.comp_usercd               -- 子使用者
               ,'200'                       -- メッセージコード  '100'MRP需要　'110','300'AIRSｻｲﾝ　'200'構成変更''210'所要量出庫管理
+              ,g_now_trn_proc_time         -- メンテ日時
               ,A.in_effective_ymd          -- IN発効日
               ,A.out_effective_ymd         -- OUT発効日
               ,C.item_type                 -- 品目タイプ
@@ -194,6 +195,7 @@ flowchart LR
              ,B.comp_supplier             -- 子供給者
              ,B.comp_usercd               -- 子使用者
              ,'210'                       -- メッセージコード  '100'MRP需要　'110','300'AIRSｻｲﾝ　'200'構成変更''210'所要量出庫管理
+             ,g_now_trn_proc_time         -- メンテ日時
              ,B.in_effective_ymd          -- IN発効日
              ,B.out_effective_ymd         -- OUT発効日
              ,C.item_type                 -- 品目タイプ
@@ -255,6 +257,7 @@ flowchart LR
              ,' '                         -- 子供給者
              ,' '                         -- 子使用者
              ,'100'                       -- メッセージコード  '100'MRP需要　'110','300'AIRSｻｲﾝ　'200'構成変更''210'所要量出庫管理
+             ,g_now_trn_proc_time         -- メンテ日時
              ,' '                         -- IN発効日
              ,' '                         -- OUT発効日
              ,' '                         -- 品目タイプ
@@ -297,6 +300,7 @@ flowchart LR
              ,' '                         -- 子供給者
              ,' '                         -- 子使用者
              ,'110'                       -- メッセージコード  '100'MRP需要　'110','300'AIRSｻｲﾝ　'200'構成変更''210'所要量出庫管理
+             ,g_now_trn_proc_time         -- メンテ日時
              ,' '                         -- IN発効日
              ,' '                         -- OUT発効日
              ,' '                         -- 品目タイプ
@@ -341,6 +345,7 @@ flowchart LR
              ,' '                         -- 子供給者
              ,' '                         -- 子使用者
              ,'300'                       -- メッセージコード  '100'MRP需要　'110','300'AIRSｻｲﾝ　'200'構成変更''210'所要量出庫管理
+             ,g_now_trn_proc_time         -- メンテ日時
              ,' '                         -- IN発効日
              ,' '                         -- OUT発効日
              ,' '                         -- 品目タイプ
