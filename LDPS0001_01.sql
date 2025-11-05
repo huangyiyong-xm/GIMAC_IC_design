@@ -24,12 +24,12 @@
 --    @pd_maintenance_datetime  <I/ > TIMESTAMP
 --    @ps_order_status          <I/ > VARCHAR
 --    @ps_start_date            <I/ > VARCHAR
---    @pn_required_qty          <I/ > NUMERIC
---    @pn_delivery_qty          <I/ > NUMERIC
+--    @pn_required_qty          <I/ > DECIMAL
+--    @pn_delivery_qty          <I/ > DECIMAL
 --    @ps_in_effective_date     <I/ > VARCHAR
 --    @ps_out_effective_date    <I/ > VARCHAR
 --    @ps_comp_sign             <I/ > VARCHAR
---    @pn_option_percent        <I/ > NUMERIC
+--    @pn_option_percent        <I/ > DECIMAL
 --    @ps_message_code          <I/ > VARCHAR
 --    @ps_disburse_date         <I/ > VARCHAR
 --  < OUTPUT Parameter >
@@ -56,12 +56,12 @@ CREATE OR REPLACE FUNCTION LDPS0001_01 (
    ,pd_maintenance_datetime TIMESTAMP
    ,ps_order_status         VARCHAR
    ,ps_start_date           VARCHAR
-   ,pn_required_qty         NUMERIC
-   ,pn_delivery_qty         NUMERIC
+   ,pn_required_qty         DECIMAL
+   ,pn_delivery_qty         DECIMAL
    ,ps_in_effective_date    VARCHAR
    ,ps_out_effective_date   VARCHAR
    ,ps_comp_sign            VARCHAR
-   ,pn_option_percent       NUMERIC
+   ,pn_option_percent       DECIMAL
    ,ps_message_code         VARCHAR
    ,ps_disburse_date        VARCHAR
 )
