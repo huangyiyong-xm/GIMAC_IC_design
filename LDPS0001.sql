@@ -1,5 +1,5 @@
 ﻿--------------------------------------------------------------------------------
---@SEE << Product Configuration/Required Quantity Management Change >>
+--@SEE << IC analysis main product construction/required update process >>
 --    @ID      : LDPS0001
 --
 --    @Written : 1.0.0                   2025.10.23 ZhuYong / YMSLX

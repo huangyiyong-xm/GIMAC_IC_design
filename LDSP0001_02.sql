@@ -1,5 +1,5 @@
 -------------------------------------------------------------------------------
---@SEE << Additional Processing Of Dependent Quantity Details >>
+--@SEE << subroutine subordinate required detail registation process >>
 --    @ID      : LDPS0001_02
 --
 --    @Written : 1.0.0                   2025.10.22 GuoYiFeng / YMSLX

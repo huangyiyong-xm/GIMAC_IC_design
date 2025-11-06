@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
---@SEE << Subordinate Requirement Details Deletion Process >>
+--@SEE << subroutine subordinate required detail delete process >>
 --    @ID      : LDPS0001_01
 --
 --    @Written : 1.0.0                   2025.10.23 LiuBinhong / YMSLX
