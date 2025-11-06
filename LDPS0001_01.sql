@@ -41,8 +41,8 @@
 --    @rs_sql_code              < /O> VARCHAR   : Sql Error Code
 --    @rs_err_code              < /O> VARCHAR   : Program Error Code
 --    @rs_err_msg               < /O> VARCHAR   : Error Message
---    @rs_err_focus             < /O> VARCHAR
---    @rn_cnt_ins_lg            < /O> INTEGER
+--    @rs_err_focus             < /O> VARCHAR   : Error Focus Program ID
+--    @rn_cnt_ins_lg            < /O> INTEGER   : Count of Inserted Logs
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION LDPS0001_01 (
     ps_itemno               VARCHAR
