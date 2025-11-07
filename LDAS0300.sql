@@ -77,7 +77,7 @@ DECLARE
     cs_LD33                      CONSTANT VARCHAR := 'LD33';
     cs_LD46                      CONSTANT VARCHAR := 'LD46';
     cs_LD48                      CONSTANT VARCHAR := 'LD48';
-    cs_LD52                      CONSTANT VARCHAR := 'LD52';
+    cs_LD51                      CONSTANT VARCHAR := 'LD51';
     cs_LD68                      CONSTANT VARCHAR := 'LD68';
     cs_LD14                      CONSTANT VARCHAR := 'LD14';
     cs_LD24                      CONSTANT VARCHAR := 'LD24';
@@ -281,7 +281,7 @@ BEGIN
               ps_operation_id = cs_LD15 OR ps_operation_id = cs_LD18 OR
               ps_operation_id = cs_LD28 OR ps_operation_id = cs_LD33 OR
               ps_operation_id = cs_LD46 OR ps_operation_id = cs_LD48 OR
-              ps_operation_id = cs_LD52 OR ps_operation_id = cs_LD68 THEN
+              ps_operation_id = cs_LD51 OR ps_operation_id = cs_LD68 THEN
               ls_item_type_flag_1 := cs_FLAG_Y;
 
         ELSIF ps_operation_id = cs_LD14 THEN
