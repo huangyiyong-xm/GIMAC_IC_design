@@ -59,7 +59,7 @@ CREATE OR REPLACE FUNCTION LDAS0313(
     , ps_due_end_time                    VARCHAR                         -- 14 完了終了時間
     , ps_reason_code                     VARCHAR                         -- 15 理由コード
     , pn_carry_over_qty                  DECIMAL                         -- 16 繰越調整数
-    , ps_pilot_class                     VARCHAR                         -- 17 生試初品区分
+    , ps_pilot_class                     VARCHAR                         -- 17 生試初品区分 (生試=２、量産初品=３、量産=SPACE)
     , ps_input_txn                       VARCHAR                         -- 18 入力元トランザクション
 )
 RETURNS TABLE(
@@ -83,16 +83,9 @@ DECLARE
     ls_due_weekday             VARCHAR(3);
 
     -- Constants definition
-    cs_input_txn_parts_return  CONSTANT VARCHAR := '18';
-    cs_input_txn_scrap_report  CONSTANT VARCHAR := '28';
-    cs_item_status_pilot       CONSTANT VARCHAR := '2';
-    cs_pilot_class_pilot       CONSTANT VARCHAR := '2';
-    cs_pilot_class_first       CONSTANT VARCHAR := '3';
-    cs_item_status_first       CONSTANT VARCHAR := '3';
-    cs_order_policy_standard   CONSTANT VARCHAR := 'S';
-    cs_log_sign_enabled        CONSTANT VARCHAR := '1';
-    cs_space                   CONSTANT VARCHAR := ' ';
     cs_pgmid                   CONSTANT VARCHAR := 'LDAS0313';
+    cs_LD11                    CONSTANT VARCHAR := 'LD11';
+    cs_space                   CONSTANT VARCHAR := ' ';
 BEGIN
     --------------------------------------------------
     --  < STEP1 : Initialization >
@@ -119,7 +112,7 @@ BEGIN
         RAISE EXCEPTION ' ';
     END IF;
 
-    IF ps_pilot_class <> cs_pilot_class_pilot AND ps_pilot_class <> cs_pilot_class_first
+    IF ps_pilot_class <> '2' AND ps_pilot_class <> '3'
                              AND TRIM(ps_pilot_class) <> '' THEN
         rs_err_code  := 'ld.E.LDP10076';
         rs_err_msg   := 'You can specify only 2(Pilot Production),'
@@ -141,12 +134,11 @@ BEGIN
                 , LDAS0300.rs_item_status
                 , LDAS0300.rn_float_safety_stock_qty
           INTO STRICT rec_itemmast_date
-          FROM LDAS0300 ( 'LD11'
+          FROM LDAS0300 ( cs_LD11
                           ,ps_itemno
                           ,ps_supplier
                           ,ps_usercd
                             );
-
     -- return item set --
     rn_status    := rec_itemmast_date.rn_status;
     rs_sql_code  := rec_itemmast_date.rs_sql_code;
@@ -174,7 +166,7 @@ BEGIN
             , LDAS0301.rs_err_msg
             , LDAS0301.rs_err_focus
     INTO STRICT rec_order_date
-    FROM LDAS0301 ( 'LD11'
+    FROM LDAS0301 ( cs_LD11
                    ,ps_start_date
                    ,ps_due_date
                    ,ps_disburse_date
@@ -215,9 +207,9 @@ BEGIN
     END IF;
 
     /* Return Pilot Class Check */
-    IF (ps_input_txn = cs_input_txn_parts_return OR ps_input_txn = cs_input_txn_scrap_report) THEN
-        IF ls_item_status = cs_item_status_pilot THEN
-            IF ps_pilot_class <> cs_pilot_class_pilot THEN
+    IF (ps_input_txn = '18' OR ps_input_txn = '28') THEN
+        IF ls_item_status = '2' THEN
+            IF ps_pilot_class <> '2' THEN
                 rs_err_code  := 'ld.E.LDP10077';
                 rs_err_msg   := 'You cannot register Mass Production Order'
                              || ' for Pilot Production Parts in Parts Return'
@@ -228,7 +220,7 @@ BEGIN
     END IF;
 
     /* Safety Stock Check */
-    IF ps_input_txn = cs_input_txn_scrap_report THEN
+    IF ps_input_txn = '28' THEN
         IF ln_float_safety_stock_qty <> 0 THEN
             rs_err_code  := 'ld.E.LDP10078';
             rs_err_msg   := 'In Scrap Report Operation, you cannot register'
@@ -250,7 +242,7 @@ BEGIN
            AND supplier     = ps_supplier
            AND usercd       = ps_usercd;
 
-        IF ls_order_policy_code = cs_order_policy_standard THEN
+        IF ls_order_policy_code = 'S' THEN
             IF EXISTS ( SELECT 1
                           FROM le_mst_deliv_std_day
                          WHERE supplier        = ps_supplier
@@ -282,9 +274,9 @@ BEGIN
                    AND supplier         = ps_supplier
                    AND usercd           = ps_usercd
                    AND TRIM(delete_ymd) = ''
-                   AND pilot_class      = cs_pilot_class_first ) THEN
-        IF ps_pilot_class = cs_pilot_class_first THEN
-            IF ls_item_status = cs_item_status_first THEN
+                   AND pilot_class      = '3' ) THEN
+        IF ps_pilot_class = '3' THEN
+            IF ls_item_status = '3' THEN
                 rn_status    := 1;
                 rs_err_code  := 'ld.E.LDP10087';
                 rs_err_msg   := 'First production order of'
@@ -296,8 +288,8 @@ BEGIN
         NULL;
     END IF;
 
-    IF ps_pilot_class = cs_pilot_class_first THEN
-        IF ls_item_status > cs_item_status_first THEN
+    IF ps_pilot_class = '3' THEN
+        IF ls_item_status > '3' THEN
             rs_err_code  := 'ld.E.LDP10088';
             rs_err_msg   := 'Because Item Status is not 3(First Production),'
                          || ' you cannot register first production order.';
@@ -311,10 +303,10 @@ BEGIN
                    AND supplier         = ps_supplier
                    AND usercd           = ps_usercd
                    AND TRIM(delete_ymd) = ''
-                   AND pilot_class      = cs_pilot_class_first
+                   AND pilot_class      = '3'
                    AND due_date         > ps_due_date ) THEN
         IF TRIM(ps_pilot_class) = '' THEN
-            IF ls_item_status = cs_item_status_first THEN
+            IF ls_item_status = '3' THEN
                 rn_status    := 1;
                 rs_err_code  := 'ld.E.LDP10080';
                 rs_err_msg   := 'After the mass production order you entered,'
@@ -337,85 +329,86 @@ EXCEPTION
             rs_sql_code  := cs_space;
             rs_err_focus := cs_pgmid;
 
-            IF ps_log_sign = cs_log_sign_enabled THEN
+            IF ps_log_sign = '1' THEN
                 SELECT  LDAS0409.rn_status
                        ,LDAS0409.rs_sql_code
                        ,LDAS0409.rs_err_code
                        ,LDAS0409.rs_err_msg
                        ,LDAS0409.rs_err_focus
                 INTO STRICT rec_err_log_login
-                FROM LDAS0409 (  '99'                                 --1
-                                ,ps_user_id                           --2
-                                ,rs_err_code                          --3
-                                ,'LD11'                               --4
-                                ,'1'                                  --5
-                                ,'9'                                  --6
-                                ,ps_recieve_id                        --7
-                                ,ps_request_system_code               --8
-                                ,ps_input_txn                         --9
-                                ,'LDAS0313'                           --10
-                                ,ps_itemno                            --11
-                                ,ps_supplier                          --12
-                                ,ps_usercd                            --13
-                                ,ps_order_no                          --14
-                                ,' '                                  --15
-                                ,' '                                  --16
-                                ,pn_order_qty                         --17
-                                ,ps_reason_code                       --18
-                                ,' '                                  --19
-                                ,' '                                  --20
-                                ,' '                                  --21
-                                ,' '                                  --22
-                                ,' '                                  --23
-                                ,' '                                  --24
-                                ,ps_start_date                        --25
-                                ,ps_due_date                          --26
-                                ,ps_disburse_date                     --27
-                                ,ps_due_begin_time                    --28
-                                ,ps_due_end_time                      --29
-                                ,pn_carry_over_qty                    --30
-                                ,ps_pilot_class                       --31
-                                ,' '                                  --32
-                                ,' '                                  --33
-                                ,' '                                  --34
-                                ,' '                                  --35
-                                ,' '                                  --36
-                                ,' '                                  --37
-                                ,' '                                  --38
-                                ,' '                                  --39
-                                ,' '                                  --40
-                                ,' '                                  --41
-                                ,' '                                  --42
-                                ,' '                                  --43
-                                ,0                                    --44
-                                ,' '                                  --45
-                                ,' '                                  --46
-                                ,' '                                  --47
-                                ,' '                                  --48
-                                ,' '                                  --49
-                                ,' '                                  --50
-                                ,' '                                  --51
-                                ,' '                                  --52
-                                ,' '                                  --53
-                                ,' '                                  --54
-                                ,' '                                  --55
-                                ,' '                                  --56
-                                ,' '                                  --57
-                                ,' '                                  --58
-                                ,' '                                  --59
-                                ,' '                                  --60
-                                ,' '                                  --61
-                                ,' '                                  --62
-                                ,' '                                  --63
-                                ,' '                                  --64
-                                ,' '                                  --65
-                                ,ps_itemno                            --66
-                                ,ps_supplier                          --67
-                                ,ps_usercd                            --68
-                                ,pn_order_qty                         --69
-                                ,ps_start_date                        --70
-                                ,ps_due_date                          --71
-                                ,ps_disburse_date                     --72
+                               FROM LDAS0409 (
+                                '99'                                 --1
+                                ,ps_user_id                          --2
+                                ,rs_err_code                         --3
+                                ,'LD11'                              --4
+                                ,'1'                                 --5
+                                ,'9'                                 --6
+                                ,ps_recieve_id                       --7
+                                ,ps_request_system_code              --8
+                                ,ps_input_txn                        --9
+                                ,cs_pgmid                            --10
+                                ,ps_itemno                           --11
+                                ,ps_supplier                         --12
+                                ,ps_usercd                           --13
+                                ,ps_order_no                         --14
+                                ,cs_space                            --15
+                                ,cs_space                            --16
+                                ,pn_order_qty                        --17
+                                ,ps_reason_code                      --18
+                                ,cs_space                            --19
+                                ,cs_space                            --20
+                                ,cs_space                            --21
+                                ,cs_space                            --22
+                                ,cs_space                            --23
+                                ,cs_space                            --24
+                                ,ps_start_date                       --25
+                                ,ps_due_date                         --26
+                                ,ps_disburse_date                    --27
+                                ,ps_due_begin_time                   --28
+                                ,ps_due_end_time                     --29
+                                ,pn_carry_over_qty                   --30
+                                ,ps_pilot_class                      --31
+                                ,cs_space                            --32
+                                ,cs_space                            --33
+                                ,cs_space                            --34
+                                ,cs_space                            --35
+                                ,cs_space                            --36
+                                ,cs_space                            --37
+                                ,cs_space                            --38
+                                ,cs_space                            --39
+                                ,cs_space                            --40
+                                ,cs_space                            --41
+                                ,cs_space                            --42
+                                ,cs_space                            --43
+                                ,0                                   --44
+                                ,cs_space                            --45
+                                ,cs_space                            --46
+                                ,cs_space                            --47
+                                ,cs_space                            --48
+                                ,cs_space                            --49
+                                ,cs_space                            --50
+                                ,cs_space                            --51
+                                ,cs_space                            --52
+                                ,cs_space                            --53
+                                ,cs_space                            --54
+                                ,cs_space                            --55
+                                ,cs_space                            --56
+                                ,cs_space                            --57
+                                ,cs_space                            --58
+                                ,cs_space                            --59
+                                ,cs_space                            --60
+                                ,cs_space                            --61
+                                ,cs_space                            --62
+                                ,cs_space                            --63
+                                ,cs_space                            --64
+                                ,cs_space                            --65
+                                ,ps_itemno                           --66
+                                ,ps_supplier                         --67
+                                ,ps_usercd                           --68
+                                ,pn_order_qty                        --69
+                                ,ps_start_date                       --70
+                                ,ps_due_date                         --71
+                                ,ps_disburse_date                    --72
                                );
 
             -- status judgement --

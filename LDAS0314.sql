@@ -64,19 +64,20 @@ DECLARE
     pn_carry_over_qty DECIMAL;
     ps_pilot_class    VARCHAR;
     cs_pgmid          CONSTANT VARCHAR := 'LDAS0314';
+    cs_space          CONSTANT VARCHAR := ' ';
     BEGIN
     --------------------------------------------------
     --  < STEP1 : Initialization >
     --------------------------------------------------
     /* Return Value Set */
     rn_status               :=   0;
-    rs_sql_code             := ' ';
-    rs_err_code             := ' ';
-    rs_err_msg              := ' ';
-    rs_err_focus            := ' ';
+    rs_sql_code             := cs_space;
+    rs_err_code             := cs_space;
+    rs_err_msg              := cs_space;
+    rs_err_focus            := cs_space;
 
     /* Variable Initialization */
-    ls_order_status         := ' ';
+    ls_order_status         := cs_space;
 
     /* Argument Check */
     IF ps_order_no IS NULL OR TRIM(ps_order_no) = '' THEN
@@ -178,7 +179,7 @@ EXCEPTION
              NULL;
     ELSE                    -- FOR PGM ERROR
         rn_status   :=  -2;
-        rs_sql_code := ' ';
+        rs_sql_code := cs_space;
         rs_err_focus:= cs_pgmid;
 
         IF ps_log_sign = '1' THEN
@@ -188,7 +189,7 @@ EXCEPTION
                   ,LDAS0409.rs_err_msg
                   ,LDAS0409.rs_err_focus
             INTO STRICT rec_err_log_login
-            FROM LDAS0409 ( '99'                                  --1
+            FROM LDAS0409 ( '99'                                 --1
                            ,ps_user_id                           --2
                            ,rs_err_code                          --3
                            ,'LD11'                               --4
@@ -202,16 +203,16 @@ EXCEPTION
                            ,ps_supplier                          --12
                            ,ps_usercd                            --13
                            ,ps_order_no                          --14
-                           ,' '                                  --15
-                           ,' '                                  --16
+                           ,cs_space                             --15
+                           ,cs_space                             --16
                            ,pn_order_qty                         --17
                            ,ps_reason_code                       --18
-                           ,' '                                  --19
-                           ,' '                                  --20
-                           ,' '                                  --21
-                           ,' '                                  --22
-                           ,' '                                  --23
-                           ,' '                                  --24
+                           ,cs_space                             --19
+                           ,cs_space                             --20
+                           ,cs_space                             --21
+                           ,cs_space                             --22
+                           ,cs_space                             --23
+                           ,cs_space                             --24
                            ,ps_start_date                        --25
                            ,ps_due_date                          --26
                            ,ps_disburse_date                     --27
@@ -219,40 +220,40 @@ EXCEPTION
                            ,ps_due_end_time                      --29
                            ,pn_carry_over_qty                    --30
                            ,ps_pilot_class                       --31
-                           ,' '                                  --32
-                           ,' '                                  --33
-                           ,' '                                  --34
-                           ,' '                                  --35
-                           ,' '                                  --36
-                           ,' '                                  --37
-                           ,' '                                  --38
-                           ,' '                                  --39
-                           ,' '                                  --40
-                           ,' '                                  --41
-                           ,' '                                  --42
-                           ,' '                                  --43
+                           ,cs_space                             --32
+                           ,cs_space                             --33
+                           ,cs_space                             --34
+                           ,cs_space                             --35
+                           ,cs_space                             --36
+                           ,cs_space                             --37
+                           ,cs_space                             --38
+                           ,cs_space                             --39
+                           ,cs_space                             --40
+                           ,cs_space                             --41
+                           ,cs_space                             --42
+                           ,cs_space                             --43
                            ,0                                    --44
-                           ,' '                                  --45
-                           ,' '                                  --46
-                           ,' '                                  --47
-                           ,' '                                  --48
-                           ,' '                                  --49
-                           ,' '                                  --50
-                           ,' '                                  --51
-                           ,' '                                  --52
-                           ,' '                                  --53
-                           ,' '                                  --54
-                           ,' '                                  --55
-                           ,' '                                  --56
-                           ,' '                                  --57
-                           ,' '                                  --58
-                           ,' '                                  --59
-                           ,' '                                  --60
-                           ,' '                                  --61
-                           ,' '                                  --62
-                           ,' '                                  --63
-                           ,' '                                  --64
-                           ,' '                                  --65
+                           ,cs_space                             --45
+                           ,cs_space                             --46
+                           ,cs_space                             --47
+                           ,cs_space                             --48
+                           ,cs_space                             --49
+                           ,cs_space                             --50
+                           ,cs_space                             --51
+                           ,cs_space                             --52
+                           ,cs_space                             --53
+                           ,cs_space                             --54
+                           ,cs_space                             --55
+                           ,cs_space                             --56
+                           ,cs_space                             --57
+                           ,cs_space                             --58
+                           ,cs_space                             --59
+                           ,cs_space                             --60
+                           ,cs_space                             --61
+                           ,cs_space                             --62
+                           ,cs_space                             --63
+                           ,cs_space                             --64
+                           ,cs_space                             --65
                            ,ps_itemno                            --66
                            ,ps_supplier                          --67
                            ,ps_usercd                            --68
