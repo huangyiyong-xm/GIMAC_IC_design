@@ -1,19 +1,16 @@
 --------------------------------------------------------------------------------
---@SEE << Valid / Order Login >>
+--@SEE << Valid / Regist Order >>
 --    @ID      : LDAS0313
 --
---    @Written : 1.0.0                2012.08.01 Lian Zhibin / YMSLX
---    @Written : 1.0.0                2017.02.01 Y.Mochiduki / YMSL
+--    @Written : 1.0.0                2025.10.16 Sun Sheng / YMSL
 --    --------------------------------------------------------------------------
---    @Update  : xxxxxxxxxxxx         xxxx.xx.xx xxxxxxxx / xx
+--    @Update  : xxxxxxxxxxxx         xxxx.xx.xx  xxxxxxxx  / xx
 --     Reason  : xxx
---              xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+--               xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 --    --------------------------------------------------------------------------
 --
 --    @Version : 1.0.0
 --
-----------------------------------------------------------------------------
---@SEE << Validation for Order Enter >>
 ----------------------------------------------------------------------------
 --  < INPUT Parameter >
 --    @ps_user_id                 <I/ > VARCHAR     : User ID
@@ -28,8 +25,8 @@
 --    @ps_start_date              <I/ > VARCHAR     : Start Date
 --    @ps_due_date                <I/ > VARCHAR     : Due Date
 --    @ps_disburse_date           <I/ > VARCHAR     : Disburse Date
---    @ps_due_begin_time          <I/ > VARCHAR     : Begin Time   
---    @ps_due_end_time            <I/ > VARCHAR     : End Time     
+--    @ps_due_begin_time          <I/ > VARCHAR     : Begin Time
+--    @ps_due_end_time            <I/ > VARCHAR     : End Time
 --    @ps_reason_code             <I/ > VARCHAR     : Reason Code
 --    @pn_carry_over_qty          <I/ > DECIMAL     : Carry Over Qty
 --    @ps_pilot_class             <I/ > VARCHAR     : Pilot Class
@@ -45,25 +42,25 @@
 --    @rs_err_msg                 < /O> VARCHAR     : Error Message
 --    @rs_err_focus               < /O> VARCHAR     : Error Focus
 ----------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION gimac.ldas0313(
-      ps_user_id                         IN VARCHAR                         -- 1
-    , ps_log_sign                        IN VARCHAR                         -- 2
-    , ps_recieve_id                      IN VARCHAR                         -- 3
-    , ps_request_system_code             IN VARCHAR                         -- 4
-    , ps_itemno                          IN VARCHAR                         -- 5
-    , ps_supplier                        IN VARCHAR                         -- 6
-    , ps_usercd                          IN VARCHAR                         -- 7
-    , ps_order_no                        IN VARCHAR                         -- 8
-    , pn_order_qty                       IN DECIMAL                         -- 9
-    , ps_start_date                      IN VARCHAR                         -- 10
-    , ps_due_date                        IN VARCHAR                         -- 11
-    , ps_disburse_date                   IN VARCHAR                         -- 12
-    , ps_due_begin_time                  IN VARCHAR                         -- 13
-    , ps_due_end_time                    IN VARCHAR                         -- 14
-    , ps_reason_code                     IN VARCHAR                         -- 15
-    , pn_carry_over_qty                  IN DECIMAL                         -- 16
-    , ps_pilot_class                     IN VARCHAR                         -- 17
-    , ps_input_txn                       IN VARCHAR                         -- 18
+CREATE OR REPLACE FUNCTION LDAS0313(
+      ps_user_id                         VARCHAR                         -- 1  ユーザーＩＤ
+    , ps_log_sign                        VARCHAR                         -- 2  ログ出力サイン
+    , ps_recieve_id                      VARCHAR                         -- 3  受信ID
+    , ps_request_system_code             VARCHAR                         -- 4  相手先システム識別
+    , ps_itemno                          VARCHAR                         -- 5  品目番号
+    , ps_supplier                        VARCHAR                         -- 6  供給者
+    , ps_usercd                          VARCHAR                         -- 7  使用者
+    , ps_order_no                        VARCHAR                         -- 8  オーダー番号
+    , pn_order_qty                       DECIMAL                         -- 9  オーダー数
+    , ps_start_date                      VARCHAR                         -- 10 着手日
+    , ps_due_date                        VARCHAR                         -- 11 完了日
+    , ps_disburse_date                   VARCHAR                         -- 12 払出日
+    , ps_due_begin_time                  VARCHAR                         -- 13 完了開始時間
+    , ps_due_end_time                    VARCHAR                         -- 14 完了終了時間
+    , ps_reason_code                     VARCHAR                         -- 15 理由コード
+    , pn_carry_over_qty                  DECIMAL                         -- 16 繰越調整数
+    , ps_pilot_class                     VARCHAR                         -- 17 生試初品区分
+    , ps_input_txn                       VARCHAR                         -- 18 入力元トランザクション
 )
 RETURNS TABLE(
       rn_status    INTEGER
@@ -71,67 +68,85 @@ RETURNS TABLE(
     , rs_err_code  VARCHAR
     , rs_err_msg   VARCHAR
     , rs_err_focus VARCHAR
-) LANGUAGE plpgsql
-AS $function$
+) AS
+$BODY$
 DECLARE
     -- SP return record  --
-    rec_itemmast_date RECORD;
-    rec_err_log_login RECORD;
-    rec_order_date    RECORD;
-    ls_demand_policy_code      gimac.le_mst_mrp_information.demand_policy_code%type;
-    ls_item_status             gimac.la_itemmast.item_status%type;
-    ln_float_safety_stock_qty  gimac.le_mst_mrp_information.float_safety_stock_qty%type;
-    ls_order_policy_code       gimac.le_mst_mrp_information.order_policy_code%type;
+    rec_itemmast_date          RECORD;
+    rec_err_log_login          RECORD;
+    rec_order_date             RECORD;
+    ls_demand_policy_code      le_mst_mrp_information.demand_policy_code%TYPE;
+    ls_item_status             la_itemmast.item_status%TYPE;
+    ln_float_safety_stock_qty  le_mst_mrp_information.float_safety_stock_qty%TYPE;
+    ls_order_policy_code       le_mst_mrp_information.order_policy_code%TYPE;
     ld_due_date                TIMESTAMP;
     ls_due_weekday             VARCHAR(3);
+
+    -- Constants definition
+    cs_input_txn_parts_return  CONSTANT VARCHAR := '18';
+    cs_input_txn_scrap_report  CONSTANT VARCHAR := '28';
+    cs_item_status_pilot       CONSTANT VARCHAR := '2';
+    cs_pilot_class_pilot       CONSTANT VARCHAR := '2';
+    cs_pilot_class_first       CONSTANT VARCHAR := '3';
+    cs_item_status_first       CONSTANT VARCHAR := '3';
+    cs_order_policy_standard   CONSTANT VARCHAR := 'S';
+    cs_log_sign_enabled        CONSTANT VARCHAR := '1';
+    cs_space                   CONSTANT VARCHAR := ' ';
+    cs_pgmid                   CONSTANT VARCHAR := 'LDAS0313';
 BEGIN
     --------------------------------------------------
     --  < STEP1 : Initialization >
     --------------------------------------------------
     /* Return Value Set */
     rn_status               :=   0;
-    rs_sql_code             := ' ';
-    rs_err_code             := ' ';
-    rs_err_msg              := ' ';
-    rs_err_focus            := ' ';
+    rs_sql_code             := cs_space;
+    rs_err_code             := cs_space;
+    rs_err_msg              := cs_space;
+    rs_err_focus            := cs_space;
 
     /* Variable Initialization */
-    ls_demand_policy_code     := ' ';
-    ls_item_status            := ' ';
+    ls_demand_policy_code     := cs_space;
+    ls_item_status            := cs_space;
     ln_float_safety_stock_qty :=   0;
-    ls_order_policy_code      := ' ';
+    ls_order_policy_code      := cs_space;
     ld_due_date    := TO_TIMESTAMP(ps_due_date,'YYYYMMDD');
     ls_due_weekday := TO_CHAR(ld_due_date,'DY');
+
     /* Argument Check */
     IF pn_order_qty <= 0 THEN
-        rs_err_code  := 'E.LDP10307';
+        rs_err_code  := 'ld.E.LDP10075';
         rs_err_msg   := 'You cannot specify 0 or less than 0.';
-        rs_err_focus := 'orderQty';
         RAISE EXCEPTION ' ';
     END IF;
 
-    IF ps_pilot_class <> '2' AND ps_pilot_class <> '3'
+    IF ps_pilot_class <> cs_pilot_class_pilot AND ps_pilot_class <> cs_pilot_class_first
                              AND TRIM(ps_pilot_class) <> '' THEN
-        rs_err_code  := 'E.LDP10426';
+        rs_err_code  := 'ld.E.LDP10076';
         rs_err_msg   := 'You can specify only 2(Pilot Production),'
                      || ' 3(First Production) or Blank(Mass Production)'
                      || ' for Producion Classsification.';
-        rs_err_focus := 'pilotClass';
         RAISE EXCEPTION ' ';
     END IF;
+
     --------------------------------------------------
     --  < STEP2 : Main Processing >
     --------------------------------------------------
-  
-
     /* Get Itemmast Date Record */
-        SELECT *
+        SELECT    LDAS0300.rn_status
+                , LDAS0300.rs_sql_code
+                , LDAS0300.rs_err_code
+                , LDAS0300.rs_err_msg
+                , LDAS0300.rs_err_focus
+                , LDAS0300.rs_demand_policy_code
+                , LDAS0300.rs_item_status
+                , LDAS0300.rn_float_safety_stock_qty
           INTO STRICT rec_itemmast_date
           FROM LDAS0300 ( 'LD11'
                           ,ps_itemno
                           ,ps_supplier
                           ,ps_usercd
                             );
+
     -- return item set --
     rn_status    := rec_itemmast_date.rn_status;
     rs_sql_code  := rec_itemmast_date.rs_sql_code;
@@ -149,12 +164,15 @@ BEGIN
     ELSE
         ls_demand_policy_code     := rec_itemmast_date.rs_demand_policy_code;
         ls_item_status            := rec_itemmast_date.rs_item_status;
-        ln_float_safety_stock_qty
-                                  := rec_itemmast_date.rn_float_safety_stock_qty;
+        ln_float_safety_stock_qty := rec_itemmast_date.rn_float_safety_stock_qty;
     END IF;
 
     /* Get Order Date Record */
-    SELECT *
+    SELECT    LDAS0301.rn_status
+            , LDAS0301.rs_sql_code
+            , LDAS0301.rs_err_code
+            , LDAS0301.rs_err_msg
+            , LDAS0301.rs_err_focus
     INTO STRICT rec_order_date
     FROM LDAS0301 ( 'LD11'
                    ,ps_start_date
@@ -165,6 +183,7 @@ BEGIN
                    ,ps_usercd
                    ,ls_demand_policy_code
                    );
+
     -- return item set --
     rn_status    := rec_order_date.rn_status;
     rs_sql_code  := rec_order_date.rs_sql_code;
@@ -189,34 +208,31 @@ BEGIN
                  WHERE order_reason_code     =  ps_reason_code )THEN
         NULL;
     ELSE
-        rs_err_code  := 'E.LDP10023';
+        rs_err_code  := 'ld.E.LDP10081';
         rs_err_msg   := 'Reason Code does not exist'
                      || ' in the order reason code table.';
-        rs_err_focus := 'reasonCode';
         RAISE EXCEPTION ' ';
     END IF;
 
     /* Return Pilot Class Check */
-    IF ps_input_txn = '18' OR ps_input_txn = '28' THEN
-        IF ls_item_status = '2' THEN
-            IF ps_pilot_class <> '2' THEN
-                rs_err_code  := 'E.LDP10509';
+    IF (ps_input_txn = cs_input_txn_parts_return OR ps_input_txn = cs_input_txn_scrap_report) THEN
+        IF ls_item_status = cs_item_status_pilot THEN
+            IF ps_pilot_class <> cs_pilot_class_pilot THEN
+                rs_err_code  := 'ld.E.LDP10077';
                 rs_err_msg   := 'You cannot register Mass Production Order'
                              || ' for Pilot Production Parts in Parts Return'
                              || ' and Scrap Report Operation.';
-                rs_err_focus := 'pilotClass';
                 RAISE EXCEPTION ' ';
             END IF;
         END IF;
     END IF;
 
     /* Safety Stock Check */
-    IF ps_input_txn = '28' THEN
+    IF ps_input_txn = cs_input_txn_scrap_report THEN
         IF ln_float_safety_stock_qty <> 0 THEN
-            rs_err_code  := 'E.LDP10510';
+            rs_err_code  := 'ld.E.LDP10078';
             rs_err_msg   := 'In Scrap Report Operation, you cannot register'
                          || ' the order for the item that has safety stock.';
-            rs_err_focus := 'itemno';
             RAISE EXCEPTION ' ';
         END IF;
     END IF;
@@ -234,7 +250,7 @@ BEGIN
            AND supplier     = ps_supplier
            AND usercd       = ps_usercd;
 
-        IF ls_order_policy_code = 'S' THEN
+        IF ls_order_policy_code = cs_order_policy_standard THEN
             IF EXISTS ( SELECT 1
                           FROM le_mst_deliv_std_day
                          WHERE supplier        = ps_supplier
@@ -250,11 +266,10 @@ BEGIN
                     NULL;
                 ELSE
                     rn_status    := 1;
-                    rs_sql_code  := ' ';
-                    rs_err_code  := 'E.LDP10372';
+                    rs_err_code  := 'ld.E.LDP10079';
                     rs_err_msg   := 'Due Date you entered does not meet with the'
                                  || ' setting of DELIVERY STANDARD DAY TABLE.';
-                    rs_err_focus := 'dueDate';
+                    RAISE EXCEPTION ' ';
                 END IF;
             END IF;
         END IF;
@@ -267,237 +282,151 @@ BEGIN
                    AND supplier         = ps_supplier
                    AND usercd           = ps_usercd
                    AND TRIM(delete_ymd) = ''
-                   AND pilot_class      = '3' ) THEN
-        IF ps_pilot_class = '3' THEN
-            IF ls_item_status = '3' THEN
+                   AND pilot_class      = cs_pilot_class_first ) THEN
+        IF ps_pilot_class = cs_pilot_class_first THEN
+            IF ls_item_status = cs_item_status_first THEN
                 rn_status    := 1;
-                rs_sql_code  := ' ';
-                rs_err_code  := 'E.LDP10473';
+                rs_err_code  := 'ld.E.LDP10087';
                 rs_err_msg   := 'First production order of'
                              || ' the same item already exists.';
-                rs_err_focus := 'pilotClass';
+                RAISE EXCEPTION ' ';
             END IF;
         END IF;
     ELSE
         NULL;
     END IF;
 
-    /* Item Status Does Not Exist */
-    IF ps_pilot_class = '3' THEN
-        IF ls_item_status > '3' THEN
-        rs_err_code  := 'E.LDP10474';
-        rs_err_msg   := 'Because Item Status is not 3(First Production),'
-                     || ' you cannot register first production order.';
-        rs_err_focus := 'pilotClass';
-        RAISE EXCEPTION ' ';
+    IF ps_pilot_class = cs_pilot_class_first THEN
+        IF ls_item_status > cs_item_status_first THEN
+            rs_err_code  := 'ld.E.LDP10088';
+            rs_err_msg   := 'Because Item Status is not 3(First Production),'
+                         || ' you cannot register first production order.';
+            RAISE EXCEPTION ' ';
         END IF;
     END IF;
 
-    /* Order Does Not Exist */
     IF EXISTS ( SELECT 1
                   FROM le_trn_order
                  WHERE itemno           = ps_itemno
                    AND supplier         = ps_supplier
                    AND usercd           = ps_usercd
                    AND TRIM(delete_ymd) = ''
-                   AND pilot_class      = '3'
+                   AND pilot_class      = cs_pilot_class_first
                    AND due_date         > ps_due_date ) THEN
         IF TRIM(ps_pilot_class) = '' THEN
-            IF ls_item_status = '3' THEN
+            IF ls_item_status = cs_item_status_first THEN
                 rn_status    := 1;
-                rs_sql_code  := ' ';
-                rs_err_code  := 'E.LDP10475';
+                rs_err_code  := 'ld.E.LDP10080';
                 rs_err_msg   := 'After the mass production order you entered,'
                              || ' first production order exists.';
-                rs_err_focus := 'pilotClass';
             END IF;
         END IF;
-    ELSE
-        NULL;
     END IF;
+
     --------------------------------------------------
     --  < STEP3 : Return Value Processing >
     --------------------------------------------------
-    IF rn_status = 1 THEN
-        IF ps_log_sign = '1' THEN
-            SELECT *
-            INTO STRICT rec_err_log_login
-            FROM LDAS0409 ( '99'                                 --1
-                           ,ps_user_id                           --2
-                           ,rs_err_code                          --3
-                           ,'LD11'                               --4
-                           ,'1'                                  --5
-                           ,'9'                                  --6
-                           ,ps_recieve_id                        --7
-                           ,ps_request_system_code               --8
-                           ,ps_input_txn                         --9
-                           ,'LDAS0313'                           --10
-                           ,ps_itemno                            --11
-                           ,ps_supplier                          --12
-                           ,ps_usercd                            --13
-                           ,ps_order_no                          --14
-                           ,' '                                  --15
-                           ,' '                                  --16        
-                           ,pn_order_qty                         --17
-                           ,ps_reason_code                       --18
-                           ,' '                                  --19
-                           ,' '                                  --20
-                           ,' '                                  --21
-                           ,' '                                  --22
-                           ,' '                                  --23
-                           ,' '                                  --24
-                           ,ps_start_date                        --25
-                           ,ps_due_date                          --26
-                           ,ps_disburse_date                     --27
-                           ,ps_due_begin_time                    --28
-                           ,ps_due_end_time                      --29
-                           ,pn_carry_over_qty                    --30
-                           ,ps_pilot_class                       --31
-                           ,' '                                  --32           
-                           ,' '                                  --33           
-                           ,' '                                  --34           
-                           ,' '                                  --35           
-                           ,' '                                  --36           
-                           ,' '                                  --37
-                           ,' '                                  --38
-                           ,' '                                  --39
-                           ,' '                                  --40
-                           ,' '                                  --41
-                           ,' '                                  --42
-                           ,' '                                  --43
-                           ,0                                    --44
-                           ,' '                                  --45
-                           ,' '                                  --46
-                           ,' '                                  --47
-                           ,' '                                  --48
-                           ,' '                                  --49
-                           ,' '                                  --50
-                           ,' '                                  --51
-                           ,' '                                  --52
-                           ,' '                                  --53
-                           ,' '                                  --54
-                           ,' '                                  --55
-                           ,' '                                  --56
-                           ,' '                                  --57
-                           ,' '                                  --58
-                           ,' '                                  --59
-                           ,' '                                  --60
-                           ,' '                                  --61
-                           ,' '                                  --62
-                           ,' '                                  --63
-                           ,' '                                  --64
-                           ,' '                                  --65  
-                           ,ps_itemno                            --66
-                           ,ps_supplier                          --67
-                           ,ps_usercd                            --68
-                           ,pn_order_qty                         --69
-                           ,ps_start_date                        --70
-                           ,ps_due_date                          --71
-                           ,ps_disburse_date                     --72
-                           );
-            -- status judgement --
-            IF rec_err_log_login.rn_status <> 0 THEN
-                rn_status   := rec_err_log_login.rn_status;
-                rs_sql_code := rec_err_log_login.rs_sql_code;
-                rs_err_code := rec_err_log_login.rs_err_code;
-                rs_err_msg  := rec_err_log_login.rs_err_msg;
-                RETURN NEXT;
-                RETURN;
-            END IF;
-        END IF;
-    END IF;
     RETURN NEXT;
     RETURN;
-
 EXCEPTION
     WHEN RAISE_EXCEPTION THEN
-        rn_status   :=  -2;
-        rs_sql_code := ' ';
+        IF rn_status <> 0 THEN  -- FOR CALL SP ERROR
+             NULL;
+        ELSE
+            rn_status    :=  -2;
+            rs_sql_code  := cs_space;
+            rs_err_focus := cs_pgmid;
 
-        IF ps_log_sign = '1' THEN
-            SELECT *
-            INTO STRICT rec_err_log_login
-            FROM LDAS0409 ( '99'                                 --1
-                           ,ps_user_id                           --2
-                           ,rs_err_code                          --3
-                           ,'LD11'                               --4
-                           ,'1'                                  --5
-                           ,'9'                                  --6
-                           ,ps_recieve_id                        --7
-                           ,ps_request_system_code               --8
-                           ,ps_input_txn                         --9
-                           ,'LDAS0313'                           --10
-                           ,ps_itemno                            --11
-                           ,ps_supplier                          --12
-                           ,ps_usercd                            --13
-                           ,ps_order_no                          --14
-                           ,' '                                  --15
-                           ,' '                                  --16        
-                           ,pn_order_qty                         --17
-                           ,ps_reason_code                       --18
-                           ,' '                                  --19
-                           ,' '                                  --20
-                           ,' '                                  --21
-                           ,' '                                  --22
-                           ,' '                                  --23
-                           ,' '                                  --24
-                           ,ps_start_date                        --25
-                           ,ps_due_date                          --26
-                           ,ps_disburse_date                     --27
-                           ,ps_due_begin_time                    --28
-                           ,ps_due_end_time                      --29
-                           ,pn_carry_over_qty                    --30
-                           ,ps_pilot_class                       --31
-                           ,' '                                  --32           
-                           ,' '                                  --33           
-                           ,' '                                  --34           
-                           ,' '                                  --35           
-                           ,' '                                  --36           
-                           ,' '                                  --37
-                           ,' '                                  --38
-                           ,' '                                  --39
-                           ,' '                                  --40
-                           ,' '                                  --41
-                           ,' '                                  --42
-                           ,' '                                  --43
-                           ,0                                    --44
-                           ,' '                                  --45
-                           ,' '                                  --46
-                           ,' '                                  --47
-                           ,' '                                  --48
-                           ,' '                                  --49
-                           ,' '                                  --50
-                           ,' '                                  --51
-                           ,' '                                  --52
-                           ,' '                                  --53
-                           ,' '                                  --54
-                           ,' '                                  --55
-                           ,' '                                  --56
-                           ,' '                                  --57
-                           ,' '                                  --58
-                           ,' '                                  --59
-                           ,' '                                  --60
-                           ,' '                                  --61
-                           ,' '                                  --62
-                           ,' '                                  --63
-                           ,' '                                  --64
-                           ,' '                                  --65  
-                           ,ps_itemno                            --66
-                           ,ps_supplier                          --67
-                           ,ps_usercd                            --68
-                           ,pn_order_qty                         --69
-                           ,ps_start_date                        --70
-                           ,ps_due_date                          --71
-                           ,ps_disburse_date                     --72
-                           );
+            IF ps_log_sign = cs_log_sign_enabled THEN
+                SELECT  LDAS0409.rn_status
+                       ,LDAS0409.rs_sql_code
+                       ,LDAS0409.rs_err_code
+                       ,LDAS0409.rs_err_msg
+                       ,LDAS0409.rs_err_focus
+                INTO STRICT rec_err_log_login
+                FROM LDAS0409 (  '99'                                 --1
+                                ,ps_user_id                           --2
+                                ,rs_err_code                          --3
+                                ,'LD11'                               --4
+                                ,'1'                                  --5
+                                ,'9'                                  --6
+                                ,ps_recieve_id                        --7
+                                ,ps_request_system_code               --8
+                                ,ps_input_txn                         --9
+                                ,'LDAS0313'                           --10
+                                ,ps_itemno                            --11
+                                ,ps_supplier                          --12
+                                ,ps_usercd                            --13
+                                ,ps_order_no                          --14
+                                ,' '                                  --15
+                                ,' '                                  --16
+                                ,pn_order_qty                         --17
+                                ,ps_reason_code                       --18
+                                ,' '                                  --19
+                                ,' '                                  --20
+                                ,' '                                  --21
+                                ,' '                                  --22
+                                ,' '                                  --23
+                                ,' '                                  --24
+                                ,ps_start_date                        --25
+                                ,ps_due_date                          --26
+                                ,ps_disburse_date                     --27
+                                ,ps_due_begin_time                    --28
+                                ,ps_due_end_time                      --29
+                                ,pn_carry_over_qty                    --30
+                                ,ps_pilot_class                       --31
+                                ,' '                                  --32
+                                ,' '                                  --33
+                                ,' '                                  --34
+                                ,' '                                  --35
+                                ,' '                                  --36
+                                ,' '                                  --37
+                                ,' '                                  --38
+                                ,' '                                  --39
+                                ,' '                                  --40
+                                ,' '                                  --41
+                                ,' '                                  --42
+                                ,' '                                  --43
+                                ,0                                    --44
+                                ,' '                                  --45
+                                ,' '                                  --46
+                                ,' '                                  --47
+                                ,' '                                  --48
+                                ,' '                                  --49
+                                ,' '                                  --50
+                                ,' '                                  --51
+                                ,' '                                  --52
+                                ,' '                                  --53
+                                ,' '                                  --54
+                                ,' '                                  --55
+                                ,' '                                  --56
+                                ,' '                                  --57
+                                ,' '                                  --58
+                                ,' '                                  --59
+                                ,' '                                  --60
+                                ,' '                                  --61
+                                ,' '                                  --62
+                                ,' '                                  --63
+                                ,' '                                  --64
+                                ,' '                                  --65
+                                ,ps_itemno                            --66
+                                ,ps_supplier                          --67
+                                ,ps_usercd                            --68
+                                ,pn_order_qty                         --69
+                                ,ps_start_date                        --70
+                                ,ps_due_date                          --71
+                                ,ps_disburse_date                     --72
+                               );
+
             -- status judgement --
-            IF rec_err_log_login.rn_status <> 0 THEN
-                rn_status   := rec_err_log_login.rn_status;
-                rs_sql_code := rec_err_log_login.rs_sql_code;
-                rs_err_code := rec_err_log_login.rs_err_code;
-                rs_err_msg  := rec_err_log_login.rs_err_msg;
-                RETURN NEXT;
-                RETURN;
+                IF rec_err_log_login.rn_status <> 0 THEN
+                    rn_status   := rec_err_log_login.rn_status;
+                    rs_sql_code := rec_err_log_login.rs_sql_code;
+                    rs_err_code := rec_err_log_login.rs_err_code;
+                    rs_err_msg  := rec_err_log_login.rs_err_msg;
+                    RETURN NEXT;
+                    RETURN;
+                END IF;
             END IF;
         END IF;
 
@@ -507,11 +436,12 @@ EXCEPTION
     WHEN OTHERS THEN
         rn_status    := -1;
         rs_sql_code  := SQLSTATE;
-        rs_err_code  := ' ';
+        rs_err_code  := cs_space;
         rs_err_msg   := SQLERRM;
-        rs_err_focus := ' ';
+        rs_err_focus := cs_pgmid;
 
         RETURN NEXT;
         RETURN;
 END;
-$function$;;
+$BODY$
+LANGUAGE 'plpgsql';
