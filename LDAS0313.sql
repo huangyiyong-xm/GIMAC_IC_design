@@ -372,7 +372,7 @@ BEGIN
                                 ,cs_space                            --48
                                 ,cs_space                            --49
                                 ,cs_space                            --50
-                                ,cs_space                            --51
+                                ,0                                   --51
                                 ,cs_space                            --52
                                 ,cs_space                            --53
                                 ,cs_space                            --54
@@ -476,7 +476,7 @@ EXCEPTION
                                 ,cs_space                            --48
                                 ,cs_space                            --49
                                 ,cs_space                            --50
-                                ,cs_space                            --51
+                                ,0                                   --51
                                 ,cs_space                            --52
                                 ,cs_space                            --53
                                 ,cs_space                            --54
