@@ -84,26 +84,25 @@ DECLARE
 
     -- Constants definition
     cs_pgmid                   CONSTANT VARCHAR := 'LDAS0313';
-    cs_LD11                    CONSTANT VARCHAR := 'LD11';
     cs_space                   CONSTANT VARCHAR := ' ';
 BEGIN
     --------------------------------------------------
     --  < STEP1 : Initialization >
     --------------------------------------------------
     /* Return Value Set */
-    rn_status               :=   0;
-    rs_sql_code             := cs_space;
-    rs_err_code             := cs_space;
-    rs_err_msg              := cs_space;
-    rs_err_focus            := cs_space;
+    rn_status                 :=   0;
+    rs_sql_code               := cs_space;
+    rs_err_code               := cs_space;
+    rs_err_msg                := cs_space;
+    rs_err_focus              := cs_space;
 
     /* Variable Initialization */
     ls_demand_policy_code     := cs_space;
     ls_item_status            := cs_space;
     ln_float_safety_stock_qty :=   0;
     ls_order_policy_code      := cs_space;
-    ld_due_date    := TO_TIMESTAMP(ps_due_date,'YYYYMMDD');
-    ls_due_weekday := TO_CHAR(ld_due_date,'DY');
+    ld_due_date               := TO_TIMESTAMP(ps_due_date,'YYYYMMDD');
+    ls_due_weekday            := TO_CHAR(ld_due_date,'DY');
 
     /* Argument Check */
     IF pn_order_qty <= 0 THEN
@@ -117,7 +116,7 @@ BEGIN
         rs_err_code  := 'ld.E.LDP10076';
         rs_err_msg   := 'You can specify only 2(Pilot Production),'
                      || ' 3(First Production) or Blank(Mass Production)'
-                     || ' for Production Classification';
+                     || ' for Production Classification.';
         RAISE EXCEPTION ' ';
     END IF;
 
@@ -133,7 +132,7 @@ BEGIN
                 , LDAS0300.rs_item_status
                 , LDAS0300.rn_float_safety_stock_qty
           INTO STRICT rec_itemmast_date
-          FROM LDAS0300 ( cs_LD11
+          FROM LDAS0300 ( 'LD11'
                           ,ps_itemno
                           ,ps_supplier
                           ,ps_usercd
@@ -145,6 +144,7 @@ BEGIN
 
     IF rec_itemmast_date.rn_status = -1 THEN
         rn_status    := rec_itemmast_date.rn_status;
+        rs_err_focus := cs_pgmid;
 
         RETURN NEXT;
         RETURN;
@@ -163,7 +163,7 @@ BEGIN
             , LDAS0301.rs_err_code
             , LDAS0301.rs_err_msg
     INTO STRICT rec_order_date
-    FROM LDAS0301 ( cs_LD11
+    FROM LDAS0301 ( 'LD11'
                    ,ps_start_date
                    ,ps_due_date
                    ,ps_disburse_date
@@ -180,6 +180,7 @@ BEGIN
 
     IF rec_order_date.rn_status = -1 THEN
         rn_status    := rec_order_date.rn_status;
+        rs_err_focus := cs_pgmid;
 
         RETURN NEXT;
         RETURN;
@@ -315,6 +316,7 @@ BEGIN
     --  < STEP3 : Return Value Processing >
     --------------------------------------------------
     IF rn_status = 1 THEN
+        rs_err_focus := cs_pgmid;
         IF ps_log_sign = '1' THEN
                 SELECT  LDAS0409.rn_status
                        ,LDAS0409.rs_sql_code

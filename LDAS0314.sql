@@ -54,15 +54,6 @@ DECLARE
     rec_itemmast_date RECORD;
     rec_err_log_login RECORD;
     ls_order_status   le_trn_order.order_status%TYPE;
-    pn_order_qty      DECIMAL;
-    ps_reason_code    VARCHAR;
-    ps_start_date     VARCHAR;
-    ps_due_date       VARCHAR;
-    ps_disburse_date  VARCHAR;
-    ps_due_begin_time VARCHAR;
-    ps_due_end_time   VARCHAR;
-    pn_carry_over_qty DECIMAL;
-    ps_pilot_class    VARCHAR;
     cs_pgmid          CONSTANT VARCHAR := 'LDAS0314';
     cs_space          CONSTANT VARCHAR := ' ';
     BEGIN
@@ -81,8 +72,8 @@ DECLARE
 
     /* Argument Check */
     IF ps_order_no IS NULL OR TRIM(ps_order_no) = '' THEN
-        rs_err_code  := 'ld.E.LDP10050';
-        rs_err_msg   := 'Enter Order Number.';
+        rs_err_code         := 'ld.E.LDP10050';
+        rs_err_msg          := 'Enter Order Number.';
         RAISE EXCEPTION ' ';
     END IF;
     --------------------------------------------------
@@ -107,6 +98,7 @@ DECLARE
     -- status judgement --
     IF rec_itemmast_date.rn_status = -1 THEN
         rn_status    := rec_itemmast_date.rn_status;
+        rs_err_focus := cs_pgmid;
 
         RETURN NEXT;
         RETURN;
@@ -158,9 +150,9 @@ DECLARE
     END IF;
 
     /* Order Status Check */
-    IF ls_order_status = '9' THEN
-        rs_err_code  := 'ld.E.LDP10038';
-        rs_err_msg   := 'You cannot specify the closed order.';
+    IF ls_order_status    = '9' THEN
+        rs_err_code      := 'ld.E.LDP10038';
+        rs_err_msg       := 'You cannot specify the closed order.';
         RAISE EXCEPTION ' ';
     END IF;
 
@@ -201,21 +193,21 @@ EXCEPTION
                            ,ps_order_no                          --14
                            ,cs_space                             --15
                            ,cs_space                             --16
-                           ,pn_order_qty                         --17
-                           ,ps_reason_code                       --18
+                           ,0                                    --17
+                           ,cs_space                             --18
                            ,cs_space                             --19
                            ,cs_space                             --20
                            ,cs_space                             --21
                            ,cs_space                             --22
                            ,cs_space                             --23
                            ,cs_space                             --24
-                           ,ps_start_date                        --25
-                           ,ps_due_date                          --26
-                           ,ps_disburse_date                     --27
-                           ,ps_due_begin_time                    --28
-                           ,ps_due_end_time                      --29
-                           ,pn_carry_over_qty                    --30
-                           ,ps_pilot_class                       --31
+                           ,cs_space                             --25
+                           ,cs_space                             --26
+                           ,cs_space                             --27
+                           ,cs_space                             --28
+                           ,cs_space                             --29
+                           ,0                                    --30
+                           ,cs_space                             --31
                            ,cs_space                             --32
                            ,cs_space                             --33
                            ,cs_space                             --34
@@ -253,10 +245,10 @@ EXCEPTION
                            ,ps_itemno                            --66
                            ,ps_supplier                          --67
                            ,ps_usercd                            --68
-                           ,pn_order_qty                         --69
-                           ,ps_start_date                        --70
-                           ,ps_due_date                          --71
-                           ,ps_disburse_date                     --72
+                           ,0                                    --69
+                           ,cs_space                             --70
+                           ,cs_space                             --71
+                           ,cs_space                             --72
                            );
             IF rec_err_log_login.rn_status <> 0 THEN
                 rn_status   := rec_err_log_login.rn_status;
