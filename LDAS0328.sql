@@ -8,6 +8,7 @@
 --     Reason  : xxx
 --              xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 --    --------------------------------------------------------------------------
+--
 --    @Version : 1.0.0
 --
 --------------------------------------------------------------------------------
@@ -66,6 +67,13 @@ BEGIN
     --------------------------------------------------
     --  < STEP1 : Initialization >
     --------------------------------------------------
+    /* Return Value Set */
+    rn_status    :=   0;
+    rs_sql_code  := ' ';
+    rs_err_code  := ' ';
+    rs_err_msg   := ' ';
+    rs_err_focus := ' ';
+
     /* Argument Check */
     IF ps_user_id IS NULL THEN
         rs_err_code  := 'ld.E.LDP10110';
@@ -151,43 +159,37 @@ BEGIN
         RAISE EXCEPTION ' ';
     END IF;
 
-    /* Return Value Set */
-    rn_status    :=   0;
-    rs_sql_code  := ' ';
-    rs_err_code  := ' ';
-    rs_err_msg   := ' ';
-    rs_err_focus := ' ';
-
-    /* Variable Initialization */
---    ls_line_order_class := ' ';            -- 2017/02/01 Y.Mochiduki DEL
-
     --------------------------------------------------
     --  < STEP2 : Main Processing >
     --------------------------------------------------
-    SELECT *
+    SELECT    LDAS0300.rn_status
+            , LDAS0300.rs_sql_code
+            , LDAS0300.rs_err_code
+            , LDAS0300.rs_err_msg
       INTO STRICT rec_sp_ldas0300
       FROM LDAS0300 ( 'LD71'
                        , ps_itemno
                        , ps_supplier
                        , ps_usercd
                     );
-    rn_status           := rec_sp_ldas0300.rn_status;
     rs_sql_code         := rec_sp_ldas0300.rs_sql_code;
     rs_err_code         := rec_sp_ldas0300.rs_err_code;
     rs_err_msg          := rec_sp_ldas0300.rs_err_msg;
-    rs_err_focus        := rec_sp_ldas0300.rs_err_focus;
 
-    IF rn_status = -1 THEN
-        rs_err_msg  := '<<SP:LDAS0300 Error Return>> '
-                || 'Return:  ' ||  rec_sp_ldas0300.rn_status || ','|| rec_sp_ldas0300.rs_sql_code || ','
-                || rec_sp_ldas0300.rs_err_code || ','|| rec_sp_ldas0300.rs_err_msg || ','|| rec_sp_ldas0300.rs_err_focus;
-        RAISE EXCEPTION ' ';
-    END IF;
-    IF rn_status = -2 THEN
-        RAISE EXCEPTION ' ';
+    IF rec_sp_ldas0300.rn_status = -1 THEN
+        rn_status       := rec_sp_ldas0300.rn_status;
+        RETURN NEXT;
+        RETURN;
     END IF;
 
-    SELECT *
+    IF rec_sp_ldas0300.rn_status = -2 THEN
+        RAISE EXCEPTION ' ';
+    END IF;
+
+    SELECT LDAS0301.rn_status
+         , LDAS0301.rs_sql_code
+         , LDAS0301.rs_err_code
+         , LDAS0301.rs_err_msg
       INTO STRICT rec_sp_ldas0301
       FROM LDAS0301 ( 'LD71'
                     , ps_start_date
@@ -198,22 +200,19 @@ BEGIN
                     , ps_usercd
                     , ' '
                     );
-    rn_status    := rec_sp_ldas0301.rn_status;
     rs_sql_code  := rec_sp_ldas0301.rs_sql_code;
     rs_err_code  := rec_sp_ldas0301.rs_err_code;
     rs_err_msg   := rec_sp_ldas0301.rs_err_msg;
-    rs_err_focus := rec_sp_ldas0301.rs_err_focus;
 
-    IF rn_status = -1 THEN
-        rs_err_msg  := '<<SP:LDAS0301 Error Return>> '
-                || 'Return:  ' ||  rec_sp_ldas0301.rn_status || ','|| rec_sp_ldas0301.rs_sql_code || ','
-                || rec_sp_ldas0301.rs_err_code || ','|| rec_sp_ldas0301.rs_err_msg || ','|| rec_sp_ldas0301.rs_err_focus;
-        RAISE EXCEPTION ' ';
-    END IF;
-    IF rn_status = -2 THEN
-        RAISE EXCEPTION ' ';
+    IF rec_sp_ldas0301.rn_status = -1 THEN
+        rn_status    := rec_sp_ldas0301.rn_status;
+        RETURN NEXT;
+        RETURN;
     END IF;
 
+    IF rec_sp_ldas0301.rn_status = -2 THEN
+        RAISE EXCEPTION ' ';
+    END IF;
 
     --------------------------------------------------
     --  < STEP3 : Return Value Processing >
@@ -224,15 +223,18 @@ BEGIN
 
 EXCEPTION
     WHEN RAISE_EXCEPTION THEN
-    IF rn_status <> 0 THEN  -- FOR CALL SP ERROR
+        IF rn_status <> 0 THEN  -- FOR CALL SP ERROR
             NULL;
-    ELSE                    -- FOR PGM ERROR
+        ELSE                    -- FOR PGM ERROR
             rn_status    :=  -2;
             rs_sql_code  := ' ';
             rs_err_focus := cs_pgmid;
 
         IF ps_log_sign = '1' THEN
-            SELECT *
+            SELECT LDAS0409.rn_status
+                 , LDAS0409.rs_sql_code
+                 , LDAS0409.rs_err_code
+                 , LDAS0409.rs_err_msg
               INTO STRICT rec_sp_ldas0409
               FROM LDAS0409 ( '99'                               --1
                            ,ps_user_id                           --2
@@ -307,19 +309,18 @@ EXCEPTION
                            ,' '                                  --71
                            ,' '                                  --72
                            );
-            rn_status    := rec_sp_ldas0409.rn_status;
-            rs_sql_code  := rec_sp_ldas0409.rs_sql_code;
-            rs_err_code  := rec_sp_ldas0409.rs_err_code;
-            rs_err_msg   := rec_sp_ldas0409.rs_err_msg;
-            rs_err_focus := rec_sp_ldas0409.rs_err_focus;
-            IF rec_sp_ldas0409.rn_status <> 0 THEN
-                rs_err_msg  := '<<SP:LDAS0409 Error Return>> '
-                || 'Return:  ' ||  rec_sp_ldas0409.rn_status || ','|| rec_sp_ldas0409.rs_sql_code || ','
-                || rec_sp_ldas0409.rs_err_code || ','|| rec_sp_ldas0409.rs_err_msg || ','|| rec_sp_ldas0409.rs_err_focus;
 
+            IF rec_sp_ldas0409.rn_status <> 0 THEN
+                rn_status    := rec_sp_ldas0409.rn_status;
+                rs_sql_code  := rec_sp_ldas0409.rs_sql_code;
+                rs_err_code  := rec_sp_ldas0409.rs_err_code;
+                rs_err_msg   := rec_sp_ldas0409.rs_err_msg;
+                RETURN NEXT;
+                RETURN;
             END IF;
         END IF;
     END IF;
+
     RETURN NEXT;
     RETURN;
 
