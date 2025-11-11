@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
---@SEE << Valid / Order Delete >>
+--@SEE << Validation for Order Delete >>
 --    @ID      : LDAS0314
 --
 --    @Written : 1.0.0                2025.10.16 Sun Sheng / YMSLX

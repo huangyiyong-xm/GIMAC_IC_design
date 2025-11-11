@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
---@SEE << Valid / Regist Order >>
+--@SEE << Validation for Order Enter >>
 --    @ID      : LDAS0313
 --
 --    @Written : 1.0.0                2025.10.16 Sun Sheng / YMSLX
