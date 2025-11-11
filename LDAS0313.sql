@@ -2,7 +2,7 @@
 --@SEE << Valid / Regist Order >>
 --    @ID      : LDAS0313
 --
---    @Written : 1.0.0                2025.10.16 Sun Sheng / YMSL
+--    @Written : 1.0.0                2025.10.16 Sun Sheng / YMSLX
 --    --------------------------------------------------------------------------
 --    @Update  : xxxxxxxxxxxx         xxxx.xx.xx  xxxxxxxx  / xx
 --     Reason  : xxx
@@ -117,7 +117,7 @@ BEGIN
         rs_err_code  := 'ld.E.LDP10076';
         rs_err_msg   := 'You can specify only 2(Pilot Production),'
                      || ' 3(First Production) or Blank(Mass Production)'
-                     || ' for Producion Classsification.';
+                     || ' for Production Classification';
         RAISE EXCEPTION ' ';
     END IF;
 
@@ -261,7 +261,6 @@ BEGIN
                     rs_err_code  := 'ld.E.LDP10079';
                     rs_err_msg   := 'Due Date you entered does not meet with the'
                                  || ' setting of DELIVERY STANDARD DAY TABLE.';
-                    RAISE EXCEPTION ' ';
                 END IF;
             END IF;
         END IF;
@@ -281,7 +280,6 @@ BEGIN
                 rs_err_code  := 'ld.E.LDP10087';
                 rs_err_msg   := 'First production order of'
                              || ' the same item already exists.';
-                RAISE EXCEPTION ' ';
             END IF;
         END IF;
     ELSE
@@ -313,13 +311,110 @@ BEGIN
                              || ' first production order exists.';
             END IF;
         END IF;
+    ELSE
+        NULL;
     END IF;
 
     --------------------------------------------------
     --  < STEP3 : Return Value Processing >
     --------------------------------------------------
-    RETURN NEXT;
-    RETURN;
+    IF rn_status = 1 THEN
+        IF ps_log_sign = '1' THEN
+                SELECT  LDAS0409.rn_status
+                       ,LDAS0409.rs_sql_code
+                       ,LDAS0409.rs_err_code
+                       ,LDAS0409.rs_err_msg
+                       ,LDAS0409.rs_err_focus
+                  INTO STRICT rec_err_log_login
+                  FROM LDAS0409 (
+                                '99'                                 --1
+                                ,ps_user_id                          --2
+                                ,rs_err_code                         --3
+                                ,'LD11'                              --4
+                                ,'1'                                 --5
+                                ,'9'                                 --6
+                                ,ps_recieve_id                       --7
+                                ,ps_request_system_code              --8
+                                ,ps_input_txn                        --9
+                                ,cs_pgmid                            --10
+                                ,ps_itemno                           --11
+                                ,ps_supplier                         --12
+                                ,ps_usercd                           --13
+                                ,ps_order_no                         --14
+                                ,cs_space                            --15
+                                ,cs_space                            --16
+                                ,pn_order_qty                        --17
+                                ,ps_reason_code                      --18
+                                ,cs_space                            --19
+                                ,cs_space                            --20
+                                ,cs_space                            --21
+                                ,cs_space                            --22
+                                ,cs_space                            --23
+                                ,cs_space                            --24
+                                ,ps_start_date                       --25
+                                ,ps_due_date                         --26
+                                ,ps_disburse_date                    --27
+                                ,ps_due_begin_time                   --28
+                                ,ps_due_end_time                     --29
+                                ,pn_carry_over_qty                   --30
+                                ,ps_pilot_class                      --31
+                                ,cs_space                            --32
+                                ,cs_space                            --33
+                                ,cs_space                            --34
+                                ,cs_space                            --35
+                                ,cs_space                            --36
+                                ,cs_space                            --37
+                                ,cs_space                            --38
+                                ,cs_space                            --39
+                                ,cs_space                            --40
+                                ,cs_space                            --41
+                                ,cs_space                            --42
+                                ,cs_space                            --43
+                                ,0                                   --44
+                                ,cs_space                            --45
+                                ,cs_space                            --46
+                                ,cs_space                            --47
+                                ,cs_space                            --48
+                                ,cs_space                            --49
+                                ,cs_space                            --50
+                                ,cs_space                            --51
+                                ,cs_space                            --52
+                                ,cs_space                            --53
+                                ,cs_space                            --54
+                                ,cs_space                            --55
+                                ,cs_space                            --56
+                                ,cs_space                            --57
+                                ,cs_space                            --58
+                                ,cs_space                            --59
+                                ,cs_space                            --60
+                                ,cs_space                            --61
+                                ,cs_space                            --62
+                                ,cs_space                            --63
+                                ,cs_space                            --64
+                                ,cs_space                            --65
+                                ,ps_itemno                           --66
+                                ,ps_supplier                         --67
+                                ,ps_usercd                           --68
+                                ,pn_order_qty                        --69
+                                ,ps_start_date                       --70
+                                ,ps_due_date                         --71
+                                ,ps_disburse_date                    --72
+                               );
+
+            -- status judgement --
+                IF rec_err_log_login.rn_status <> 0 THEN
+                    rn_status   := rec_err_log_login.rn_status;
+                    rs_sql_code := rec_err_log_login.rs_sql_code;
+                    rs_err_code := rec_err_log_login.rs_err_code;
+                    rs_err_msg  := rec_err_log_login.rs_err_msg;
+                    RETURN NEXT;
+                    RETURN;
+                END IF;
+            END IF;
+        END IF;
+        RETURN NEXT;
+        RETURN;
+
 EXCEPTION
     WHEN RAISE_EXCEPTION THEN
         IF rn_status <> 0 THEN  -- FOR CALL SP ERROR
@@ -335,8 +430,8 @@ EXCEPTION
                        ,LDAS0409.rs_err_code
                        ,LDAS0409.rs_err_msg
                        ,LDAS0409.rs_err_focus
-                INTO STRICT rec_err_log_login
-                               FROM LDAS0409 (
+                  INTO STRICT rec_err_log_login
+                  FROM LDAS0409 (
                                 '99'                                 --1
                                 ,ps_user_id                          --2
                                 ,rs_err_code                         --3
