@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
---    @SEE <<VALID W BIN ORDER DELETE >>
+--    @SEE << PYMAC MRP/WBIN ORDER DELETE >>
 --    @ID      : LDAS0329
 --
 --    @Written : 1.0.0                   205.11.03 Sun Sheng / YMSLx
@@ -52,6 +52,7 @@ RETURNS TABLE(
 $BODY$
 DECLARE
     cs_pgmid           CONSTANT VARCHAR := 'LDAS0329';
+    cs_space           CONSTANT VARCHAR := cs_space;
 
     rec_sp_ldas0300    RECORD;
     rec_sp_ldas0409    RECORD;
@@ -61,11 +62,11 @@ BEGIN
     --  < STEP1 : Initialization >
     --------------------------------------------------
     /* Return Value Set */
-    rn_status    :=   0;
-    rs_sql_code  := ' ';
-    rs_err_code  := ' ';
-    rs_err_msg   := ' ';
-    rs_err_focus := ' ';
+    rn_status        :=   0;
+    rs_sql_code      := cs_space;
+    rs_err_code      := cs_space;
+    rs_err_msg       := cs_space;
+    rs_err_focus     := cs_space;
 
     /* Argument Check */
     IF ps_user_id IS NULL THEN
@@ -123,7 +124,7 @@ BEGIN
     END IF;
 
     /* Variable Initialization */
-    ls_order_status := ' ';
+    ls_order_status  := cs_space;
 
     --------------------------------------------------
     --  < STEP2 : Main Processing >
@@ -137,13 +138,13 @@ BEGIN
                     ,ps_itemno
                     ,ps_supplier
                     ,ps_usercd);
-    rs_sql_code  := rec_sp_ldas0300.rs_sql_code;
-    rs_err_code  := rec_sp_ldas0300.rs_err_code;
-    rs_err_msg   := rec_sp_ldas0300.rs_err_msg;
+    rs_sql_code      := rec_sp_ldas0300.rs_sql_code;
+    rs_err_code      := rec_sp_ldas0300.rs_err_code;
+    rs_err_msg       := rec_sp_ldas0300.rs_err_msg;
 
     IF rec_sp_ldas0300.rn_status = -1 THEN
-        rn_status := rec_sp_ldas0300.rn_status;
-
+        rn_status    := rec_sp_ldas0300.rn_status;
+        rs_err_focus := cs_pgmid;
         RETURN NEXT;
         RETURN;
     END IF;
@@ -200,7 +201,7 @@ EXCEPTION
             NULL;
     ELSE                    -- FOR PGM ERROR
             rn_status   :=  -2;
-            rs_sql_code := ' ';
+            rs_sql_code := cs_space;
             rs_err_focus:= cs_pgmid;
 
         IF ps_log_sign = '1' THEN
@@ -209,78 +210,78 @@ EXCEPTION
                  , LDAS0409.rs_err_code
                  , LDAS0409.rs_err_msg
               INTO STRICT rec_sp_ldas0409
-              FROM LDAS0409 ( '99'               --1
-                            , ps_user_id         --2
-                            , rs_err_code        --3
-                            , 'LD71'             --4
-                            , '3'                --5
-                            , '9'                --6
-                            , ps_receive_id      --7
-                            , ps_system_id       --8
-                            , ' '                --9
-                            , cs_pgmid           --10
-                            , ps_itemno          --11
-                            , ps_supplier        --12
-                            , ps_usercd          --13
-                            , ps_order_no        --14
-                            , ' '                --15
-                            , ' '                --16
-                            , 0                  --17
-                            , ' '                --18
-                            , ' '                --19
-                            , ' '                --20
-                            , ' '                --21
-                            , ' '                --22
-                            , ' '                --23
-                            , ' '                --24
-                            , ' '                --25
-                            , ' '                --26
-                            , ' '                --27
-                            , ' '                --28
-                            ,' '                 --29
-                            ,' '                 --30
-                            ,' '                 --31
-                            ,' '                 --32
-                            ,' '                 --33
-                            ,' '                 --34
-                            ,' '                 --35
-                            , 0                  --36
-                            , ' '                --37
-                            , ' '                --38
-                            , ' '                --39
-                            , ' '                --40
-                            , ' '                --41
-                            , ' '                --42
-                            , ' '                --43
-                            , ' '                --44
-                            , ' '                --45
-                            , ' '                --46
-                            , ' '                --47
-                            , ' '                --48
-                            , ' '                --49
-                            , 0                  --50
-                            , ' '                --51
-                            , ' '                --52
-                            , ' '                --53
-                            , ' '                --54
-                            , ' '                --55
-                            , ' '                --56
-                            , 0                  --57
-                            , ' '                --58
-                            , ' '                --59
-                            , ' '                --60
-                            , ' '                --61
-                            , ' '                --62
-                            , ' '                --63
-                            , ' '                --64
-                            , ' '                --65
-                            , ps_itemno          --66
-                            , ps_supplier        --67
-                            , ps_usercd          --68
-                            , 0                  --69
-                            , ' '                --70
-                            , ' '                --71
-                            , ' '                --72
+              FROM LDAS0409 ( '99'                    --1
+                            , ps_user_id              --2
+                            , rs_err_code             --3
+                            , 'LD71'                  --4
+                            , '3'                     --5
+                            , '9'                     --6
+                            , ps_receive_id           --7
+                            , ps_system_id            --8
+                            , cs_space                --9
+                            , cs_pgmid                --10
+                            , ps_itemno               --11
+                            , ps_supplier             --12
+                            , ps_usercd               --13
+                            , ps_order_no             --14
+                            , cs_space                --15
+                            , cs_space                --16
+                            , 0                       --17
+                            , cs_space                --18
+                            , cs_space                --19
+                            , cs_space                --20
+                            , cs_space                --21
+                            , cs_space                --22
+                            , cs_space                --23
+                            , cs_space                --24
+                            , cs_space                --25
+                            , cs_space                --26
+                            , cs_space                --27
+                            , cs_space                --28
+                            , cs_space                --29
+                            , 0                       --30
+                            , cs_space                --31
+                            , cs_space                --32
+                            , cs_space                --33
+                            , cs_space                --34
+                            , cs_space                --35
+                            , cs_space                --36
+                            , cs_space                --37
+                            , cs_space                --38
+                            , cs_space                --39
+                            , cs_space                --40
+                            , cs_space                --41
+                            , cs_space                --42
+                            , cs_space                --43
+                            , 0                       --44
+                            , cs_space                --45
+                            , cs_space                --46
+                            , cs_space                --47
+                            , cs_space                --48
+                            , cs_space                --49
+                            , cs_space                --50
+                            , 0                       --51
+                            , cs_space                --52
+                            , cs_space                --53
+                            , cs_space                --54
+                            , cs_space                --55
+                            , cs_space                --56
+                            , cs_space                --57
+                            , cs_space                --58
+                            , cs_space                --59
+                            , cs_space                --60
+                            , cs_space                --61
+                            , cs_space                --62
+                            , cs_space                --63
+                            , cs_space                --64
+                            , cs_space                --65
+                            , ps_itemno               --66
+                            , ps_supplier             --67
+                            , ps_usercd               --68
+                            , 0                       --69
+                            , cs_space                --70
+                            , cs_space                --71
+                            , cs_space                --72
                             );
             IF rec_sp_ldas0409.rn_status <> 0 THEN
                 rn_status   := rec_sp_ldas0409.rn_status;
@@ -299,7 +300,7 @@ EXCEPTION
 WHEN OTHERS THEN      -- FOR SQL ERROR
         rn_status    := -1;
         rs_sql_code  := SQLSTATE;
-        rs_err_code  := ' ';
+        rs_err_code  := cs_space;
         rs_err_msg   := SQLERRM;
         rs_err_focus := cs_pgmid;
 
