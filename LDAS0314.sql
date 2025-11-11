@@ -93,7 +93,6 @@ DECLARE
          , LDAS0300.rs_sql_code
          , LDAS0300.rs_err_code
          , LDAS0300.rs_err_msg
-         , LDAS0300.rs_err_focus
     INTO STRICT rec_itemmast_date
     FROM LDAS0300 ( 'LD11'
                    ,ps_itemno
@@ -102,12 +101,12 @@ DECLARE
                    );
 
     -- return item set --
-        rn_status    := rec_itemmast_date.rn_status;
         rs_sql_code  := rec_itemmast_date.rs_sql_code;
         rs_err_code  := rec_itemmast_date.rs_err_code;
         rs_err_msg   := rec_itemmast_date.rs_err_msg;
     -- status judgement --
     IF rec_itemmast_date.rn_status = -1 THEN
+        rn_status    := rec_itemmast_date.rn_status;
 
         RETURN NEXT;
         RETURN;
@@ -173,6 +172,9 @@ DECLARE
     RETURN;
 EXCEPTION
     WHEN RAISE_EXCEPTION THEN
+    IF rn_status <> 0 THEN
+          NULL;
+    ELSE
         rn_status   :=  -2;
         rs_sql_code := cs_space;
         rs_err_focus:= cs_pgmid;
@@ -182,7 +184,6 @@ EXCEPTION
                   ,LDAS0409.rs_sql_code
                   ,LDAS0409.rs_err_code
                   ,LDAS0409.rs_err_msg
-                  ,LDAS0409.rs_err_focus
             INTO STRICT rec_err_log_login
             FROM LDAS0409 ( '99'                                 --1
                            ,ps_user_id                           --2
@@ -266,8 +267,10 @@ EXCEPTION
                 RETURN;
             END IF;
         END IF;
-        RETURN NEXT;
-        RETURN;
+    END IF;
+
+    RETURN NEXT;
+    RETURN;
 
     WHEN OTHERS THEN       -- FOR SQL ERROR
         rn_status    := -1;

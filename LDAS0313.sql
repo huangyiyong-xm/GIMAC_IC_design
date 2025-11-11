@@ -129,7 +129,6 @@ BEGIN
                 , LDAS0300.rs_sql_code
                 , LDAS0300.rs_err_code
                 , LDAS0300.rs_err_msg
-                , LDAS0300.rs_err_focus
                 , LDAS0300.rs_demand_policy_code
                 , LDAS0300.rs_item_status
                 , LDAS0300.rn_float_safety_stock_qty
@@ -140,13 +139,12 @@ BEGIN
                           ,ps_usercd
                             );
     -- return item set --
-    rn_status    := rec_itemmast_date.rn_status;
     rs_sql_code  := rec_itemmast_date.rs_sql_code;
     rs_err_code  := rec_itemmast_date.rs_err_code;
     rs_err_msg   := rec_itemmast_date.rs_err_msg;
-    rs_err_focus := rec_itemmast_date.rs_err_focus;
 
     IF rec_itemmast_date.rn_status = -1 THEN
+        rn_status    := rec_itemmast_date.rn_status;
 
         RETURN NEXT;
         RETURN;
@@ -164,7 +162,6 @@ BEGIN
             , LDAS0301.rs_sql_code
             , LDAS0301.rs_err_code
             , LDAS0301.rs_err_msg
-            , LDAS0301.rs_err_focus
     INTO STRICT rec_order_date
     FROM LDAS0301 ( cs_LD11
                    ,ps_start_date
@@ -177,13 +174,12 @@ BEGIN
                    );
 
     -- return item set --
-    rn_status    := rec_order_date.rn_status;
     rs_sql_code  := rec_order_date.rs_sql_code;
     rs_err_code  := rec_order_date.rs_err_code;
     rs_err_msg   := rec_order_date.rs_err_msg;
-    rs_err_focus := rec_order_date.rs_err_focus;
 
     IF rec_order_date.rn_status = -1 THEN
+        rn_status    := rec_order_date.rn_status;
 
         RETURN NEXT;
         RETURN;
@@ -324,7 +320,6 @@ BEGIN
                        ,LDAS0409.rs_sql_code
                        ,LDAS0409.rs_err_code
                        ,LDAS0409.rs_err_msg
-                       ,LDAS0409.rs_err_focus
                   INTO STRICT rec_err_log_login
                   FROM LDAS0409 (
                                 '99'                                 --1
@@ -429,7 +424,6 @@ EXCEPTION
                        ,LDAS0409.rs_sql_code
                        ,LDAS0409.rs_err_code
                        ,LDAS0409.rs_err_msg
-                       ,LDAS0409.rs_err_focus
                   INTO STRICT rec_err_log_login
                   FROM LDAS0409 (
                                 '99'                                 --1
