@@ -185,8 +185,8 @@ EXCEPTION
                            ,'9'                                  --6
                            ,ps_receive_id                        --7
                            ,ps_request_system_code               --8
-                           ,''                                   --9
-                           ,'LDAS0314'                           --10
+                           ,cs_space                             --9
+                           ,cs_pgmid                             --10
                            ,ps_itemno                            --11
                            ,ps_supplier                          --12
                            ,ps_usercd                            --13
