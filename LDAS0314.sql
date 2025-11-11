@@ -106,8 +106,6 @@ DECLARE
         rs_sql_code  := rec_itemmast_date.rs_sql_code;
         rs_err_code  := rec_itemmast_date.rs_err_code;
         rs_err_msg   := rec_itemmast_date.rs_err_msg;
-        rs_err_focus := rec_itemmast_date.rs_err_focus;
-
     -- status judgement --
     IF rec_itemmast_date.rn_status = -1 THEN
 
@@ -115,7 +113,7 @@ DECLARE
         RETURN;
     ELSIF rec_itemmast_date.rn_status = -2 THEN
 
-        RAISE EXCEPTION USING MESSAGE = rs_err_msg;
+        RAISE EXCEPTION ' ';
     ELSE
         NULL;
     END IF;
@@ -175,9 +173,6 @@ DECLARE
     RETURN;
 EXCEPTION
     WHEN RAISE_EXCEPTION THEN
-    IF rn_status <> 0 THEN  -- FOR CALL SP ERROR
-             NULL;
-    ELSE                    -- FOR PGM ERROR
         rn_status   :=  -2;
         rs_sql_code := cs_space;
         rs_err_focus:= cs_pgmid;
@@ -271,7 +266,6 @@ EXCEPTION
                 RETURN;
             END IF;
         END IF;
-    END IF;
         RETURN NEXT;
         RETURN;
 
