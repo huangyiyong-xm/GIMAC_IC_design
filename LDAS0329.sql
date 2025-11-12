@@ -2,7 +2,7 @@
 --    @SEE << PYMAC MRP/WBIN ORDER DELETE >>
 --    @ID      : LDAS0329
 --
---    @Written : 1.0.0                   205.11.03 Sun Sheng / YMSLx
+--    @Written : 1.0.0                   2025.11.03 Sun Sheng / YMSLx
 --    --------------------------------------------------------------------------
 --    @Update  : xxxxxxxxxxxx            xxxx.xx.xx xxxxxxxx / xx
 --     Reason  : xxx
@@ -52,7 +52,7 @@ RETURNS TABLE(
 $BODY$
 DECLARE
     cs_pgmid           CONSTANT VARCHAR := 'LDAS0329';
-    cs_space           CONSTANT VARCHAR := cs_space;
+    cs_space           CONSTANT VARCHAR := ' ';
 
     rec_sp_ldas0300    RECORD;
     rec_sp_ldas0409    RECORD;
@@ -119,7 +119,7 @@ BEGIN
 
     IF SUBSTRING(ps_order_no,1,1) <> 'W' THEN
         rs_err_code  := 'ld.E.LDP10131';
-        rs_err_msg   := ' Specify "W" in the first digit of Order Number.';
+        rs_err_msg   := 'Specify "W" in the first digit of Order Number.';
         RAISE EXCEPTION ' ';
     END IF;
 
@@ -182,7 +182,7 @@ BEGIN
 
     IF ls_order_status = '9' THEN
         rs_err_code  := 'ld.E.LDP10018';
-        rs_err_msg   := ' You cannot specify the closed order Number ' ||
+        rs_err_msg   := 'You cannot specify the closed order Number ' ||
                         '[ ls_order_status  ] = ' ||
                         COALESCE( ls_order_status , 'NULL' );
         RAISE EXCEPTION ' ';
