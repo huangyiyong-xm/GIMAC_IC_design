@@ -258,7 +258,7 @@ WHERE IC処理済サイン = '0'  ※未処理
 
 ```sql
 SELECT   a.手持在庫数
-        ,c.AIRSサイン
+        ,b.AIRSサイン
   into   変数.手持在庫数
         ,変数.AIRSサイン
 FROM 在庫ファイル a
@@ -268,7 +268,7 @@ FROM 在庫ファイル a
        a.使用者      = b.親使用者
   INNER JOIN SUマスタ c
     ON a.供給者 = c.SUコード
-WHERE   a.品目番号    = 変数.BOM改訂トランザクション_品目番号
+WHERE   a.品目番号    = 変数.BOM改訂トランザクション_親品目番号
     AND a.供給者      = 変数.BOM改訂トランザクション_供給者 
     AND a.使用者      = 変数.BOM改訂トランザクション_使用者
     AND a.手持在庫数 <> 0 

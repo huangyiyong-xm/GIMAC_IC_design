@@ -165,17 +165,13 @@ SELECT  親品目番号
     MRP情報値を検索する
 
 ```sql
-SELECT  DECODE(a.AIRSサイン, " ", b.AIRSサイン, a.AIRSサイン)
+SELECT  AIRSサイン
   INTO  変数.AIRSサイン
-  FROM  MRP情報値 a 
-  JOIN SUマスタ b
-    ON a.供給者 = b.SUコード
- WHERE a.品目番号    = 変数.親品目番号
-   AND a.供給者      = 変数.親供給者 
-   AND a.使用者      = 変数.親使用者  
-   AND (a.AIRSサイン = '1' 
-        OR  a.AIRSサイン = ' ' AND b.AIRSサイン = '1' 
-        )
+  FROM  MRP情報値 
+ WHERE 品目番号    = 変数.親品目番号
+   AND 供給者      = 変数.親供給者 
+   AND 使用者      = 変数.親使用者  
+   AND AIRSサイン  = '1'
   
 ```
 
