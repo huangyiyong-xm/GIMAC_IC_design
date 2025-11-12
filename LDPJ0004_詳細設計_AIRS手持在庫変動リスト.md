@@ -6,7 +6,7 @@
 
 | RFC       | Version | 更新日     | 更新者 | 更新内容 | 確認日     | 確認者 | 承認日     | 承認者 |
 | --------- | :-----: | ---------- | :----: | -------- | ---------- | :----: | ---------- | :----: |
-| XXXX-XXXX |  1.0.0  | 2025/11/07 | 陳培煌 | 初版作成 | 2025/XX/XX |  XXX  | 2025/XX/XX |  XXX  |
+| XXXX-XXXX |  1.0.0  | 2025/11/19 | 陳培煌 | 初版作成 | 2025/XX/XX |  XXX  | 2025/XX/XX |  XXX  |
 
 ## 1. 処理概要
 
@@ -51,7 +51,6 @@
 | 2  | テーブル   | 品目共通               | la_itemcomn      | -  | ○ | -  | - |             |
 | 3  | テーブル   | IC工場処理日           | ld_mst_slip_date | -  | ○ | -  | - |             |
 | 4  | 帳票       | AIRS手持在庫変動リスト | LDAR23           | ○ | -  | -  | - | PDFファイル |
-| 5  | 共通関数   | オーダ番号(5桁→3桁)   | LDYS0006         |    |    |    |   |             |
 
 ## 2. 詳細処理
 
@@ -59,13 +58,16 @@
 
 ### 2.2. 初期処理
 
-- 工場処理日を検索する、変数.工場処理日にセットする
+- 工場処理日を検索する
 
-```sql
-      SELECT ic_slip_date    -- IC工場処理日
-        FROM ld_mst_slip_date -- IC工場処理日
-       WHERE operation_type = 'STD'
-```
+  ```sql
+        SELECT ic_slip_date    -- IC工場処理日
+          FROM ld_mst_slip_date -- IC工場処理日
+         WHERE operation_type = 'STD'
+  ```
+
+  - 取得した工場処理日が存在しない場合、エラーロゴを出力する、異常終了する。
+  - 存在する場合、変数.工場処理日にセットする
 
 #### 2.2.1. 変数初期化
 
@@ -77,7 +79,7 @@
      SELECT A.org_section_mrp          AS orgSectionMrp        -- 課
            ,A.org_person_mrp           AS orgPersonMrp         -- 担当者コード
            ,A.ic_slip_date             AS icSlipDate           -- 日付
-           ,A.itemno                   AS itemno               -- 品目番号
+           ,B.global_itemno            AS globalItemno         -- 編集品目番号
            ,A.supplier                 AS supplier             -- 供給者
            ,A.usercd                   AS usercd               -- 使用者
            ,A.maintenance_datetime     AS maintenanceDatetime  -- メンテナンス日時
@@ -105,8 +107,6 @@
 
 #### 2.3.2. 帳票出力
 
-- 未出力リストのデータが無くなるまで、以下の処理を繰り返す
-  - オーダ番号(5桁→3桁)LDYS0006(未出力リスト.オーダー番号)
 - 帳票出力
   - 担当課毎にリストファイルを分割する　ファイル名「AIRS手持在庫変動リストyyyymmdd_xx」（リスト名＋工場処理日＋担当課）
   - 改ページ条件：担当者、担当課が変更された時また明細行が最大表示行数を超えた時
