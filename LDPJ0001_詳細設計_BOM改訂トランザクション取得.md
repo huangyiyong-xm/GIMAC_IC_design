@@ -100,17 +100,16 @@ flowchart LR
 
 #### 2.2.1. 変数初期化
 
-| No | 名称                             | 物理名称                   | 設定値               | 備考                    |
-| -- | -------------------------------- | -------------------------- | -------------------- | ----------------------- |
-| 1  | 前回処理時間                     | g_bf_trn_proc_time         | スペース             | datetime year to second |
-| 2  | 今回処理時間                     | g_now_trn_proc_time        | システム時間         | datetime year to second |
-| 3  | トランザクション数（構成表）     | int_trn_prodstrc           | 0                    | integer                 |
-| 4  | トランザクション数（出庫制御）   | int_trn_mrp_req_out        | 0                    | integer                 |
-| 5  | トランザクション数（需要方針）   | int_trn_demand_policy_code | 0                    | integer                 |
-| 6  | トランザクション数（AIRSフラグ） | int_trn_mrp_airs           | 0                    | integer                 |
-| 7  | トランザクション総数             | int_trn_total              | 0                    | integer                 |
-| 8  | ログインのユーザーID             | author                     | ログインのユーザーID | string                  |
-| 9  | プログラムID                     | pgmid                      | 'LDPJ0001'           | string                  |
+| No | 名称                             | 物理名称                   | 設定値       | 備考                    |
+| -- | -------------------------------- | -------------------------- | ------------ | ----------------------- |
+| 1  | 前回処理時間                     | g_bf_trn_proc_time         | スペース     | datetime year to second |
+| 2  | 今回処理時間                     | g_now_trn_proc_time        | システム時間 | datetime year to second |
+| 3  | トランザクション数（構成表）     | int_trn_prodstrc           | 0            | integer                 |
+| 4  | トランザクション数（出庫制御）   | int_trn_mrp_req_out        | 0            | integer                 |
+| 5  | トランザクション数（需要方針）   | int_trn_demand_policy_code | 0            | integer                 |
+| 6  | トランザクション数（AIRSフラグ） | int_trn_mrp_airs           | 0            | integer                 |
+| 7  | トランザクション総数             | int_trn_total              | 0            | integer                 |
+| 8  | プログラムID                     | pgmid                      | 'Ldjp0001'   | string                  |
 
 ### 2.3. 主処理
 
@@ -157,10 +156,10 @@ flowchart LR
               ,B.airs_sign                 -- AIRSサイン
               ,0                           -- 更新カウンタ
               ,g_now_trn_proc_time         -- 登録日時
-              ,author                      -- 登録者
+              ,pgmid                       -- 登録者
               ,pgmid                       -- 登録PGID
               ,g_now_trn_proc_time         -- 更新日時
-              ,author                      -- 更新者
+              ,pgmid                       -- 更新者
               ,pgmid                       -- 更新PGID
           FROM la_prodstrc  A              -- 製品構成
     INNER JOIN le_mst_mrp_information  B   -- MRP情報値
@@ -171,8 +170,8 @@ flowchart LR
             ON A.comp_itemno   = C.itemno
            AND A.comp_supplier = C.supplier
            AND A.comp_usercd   = C.usercd
-         WHERE A.current_datetime >= g_bf_trn_proc_time
-           AND A.current_datetime <  g_now_trn_proc_time
+         WHERE A.update_datetime  >= g_bf_trn_proc_time
+           AND A.update_datetime  <  g_now_trn_proc_time
   ```
 
   - 正常処理の場合
@@ -208,10 +207,10 @@ flowchart LR
              ,A.airs_sign                 -- AIRSサイン
              ,0                           -- 更新カウンタ
              ,g_now_trn_proc_time         -- 登録日時
-             ,author                      -- 登録者
+             ,pgmid                       -- 登録者
              ,pgmid                       -- 登録PGID
              ,g_now_trn_proc_time         -- 更新日時
-             ,author                      -- 更新者
+             ,pgmid                       -- 更新者
              ,pgmid                       -- 更新PGID
          FROM le_mst_mrp_information  A   -- MRP情報値
    INNER JOIN la_prodstrc B   -- 製品構成
@@ -222,8 +221,8 @@ flowchart LR
            ON A.comp_itemno      = C.itemno
           AND A.comp_supplier    = C.supplier
           AND A.comp_usercd      = C.usercd
-        WHERE A.current_datetime >= g_bf_trn_proc_time
-          AND A.current_datetime <  g_now_trn_proc_time
+        WHERE A.update_datetime  >= g_bf_trn_proc_time
+          AND A.update_datetime  <  g_now_trn_proc_time
           AND NOT EXISTS  (SELECT 1
                              FROM ld_trn_derev_trn            -- IC分析BOM改訂トランザクション
                             WHERE close_sign             =  '0'
@@ -270,14 +269,14 @@ flowchart LR
              ,airs_sign                   -- AIRSサイン
              ,0                           -- 更新カウンタ
              ,g_now_trn_proc_time         -- 登録日時
-             ,author                      -- 登録者
+             ,pgmid                       -- 登録者
              ,pgmid                       -- 登録PGID
              ,g_now_trn_proc_time         -- 更新日時
-             ,author                      -- 更新者
+             ,pgmid                       -- 更新者
              ,pgmid                       -- 更新PGID
          FROM le_mst_mrp_information       -- MRP情報値
-        WHERE current_datetime >= g_bf_trn_proc_time
-          AND current_datetime <  g_now_trn_proc_time
+        WHERE update_datetime  >= g_bf_trn_proc_time
+          AND update_datetime  <  g_now_trn_proc_time
   ```
 
   - 正常処理の場合
@@ -313,10 +312,10 @@ flowchart LR
              ,A.airs_sign                 -- AIRSサイン
              ,0                           -- 更新カウンタ
              ,g_now_trn_proc_time         -- 登録日時
-             ,author                      -- 登録者
+             ,pgmid                       -- 登録者
              ,pgmid                       -- 登録PGID
              ,g_now_trn_proc_time         -- 更新日時
-             ,author                      -- 更新者
+             ,pgmid                       -- 更新者
              ,pgmid                       -- 更新PGID
          FROM le_mst_mrp_information A     -- MRP情報値
    INNER JOIN ld_trn_inv  B                -- 在庫ファイル
@@ -324,8 +323,8 @@ flowchart LR
           AND B.supplier         =  A.supplier
           AND B.usercd           =  A.usercd
           AND B.oh_qty           <> 0
-        WHERE current_datetime >= g_bf_trn_proc_time
-          AND current_datetime <  g_now_trn_proc_time
+        WHERE update_datetime  >= g_bf_trn_proc_time
+          AND update_datetime  <  g_now_trn_proc_time
           AND A.airs_sign        = '1'
   ```
 
@@ -358,14 +357,14 @@ flowchart LR
              ,airs_sign                   -- AIRSサイン
              ,0                           -- 更新カウンタ
              ,g_now_trn_proc_time         -- 登録日時
-             ,author                      -- 登録者
+             ,pgmid                       -- 登録者
              ,pgmid                       -- 登録PGID
              ,g_now_trn_proc_time         -- 更新日時
-             ,author                      -- 更新者
+             ,pgmid                       -- 更新者
              ,pgmid                       -- 更新PGID
          FROM le_mst_mrp_information      -- MRP情報値
-        WHERE current_datetime >= g_bf_trn_proc_time
-          AND current_datetime <  g_now_trn_proc_time
+        WHERE update_datetime  >= g_bf_trn_proc_time
+          AND update_datetime  <  g_now_trn_proc_time
           AND airs_sign        = '1'
           AND supplier         <>  usercd
   ```
@@ -382,12 +381,9 @@ flowchart LR
 ```sql
 UPDATE ld_trn_derev_ctrl           -- IC分析BOM改訂コントロール
    SET bf_trn_proc_time = g_now_trn_proc_time
-      ,update_counter   = 0
-      ,create_datetime  = g_now_trn_proc_time
-      ,create_author    = author
-      ,create_pgmid     = pgmid
+      ,update_counter   = update_counter + 1
       ,update_datetime  = g_now_trn_proc_time
-      ,update_author    = author
+      ,update_pgmid     = pgmid
       ,update_pgmid     = pgmid
  WHERE keyfiled = "ICREVC"
 ```
