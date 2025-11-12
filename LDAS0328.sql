@@ -266,8 +266,8 @@ EXCEPTION
                            ,cs_space                                  --23
                            ,cs_space                                  --24
                            ,ps_start_date                             --25
-                           ,cs_space                                  --26
-                           ,cs_space                                  --27
+                           ,ps_end_date                               --26
+                           ,ps_disburse_date                          --27
                            ,cs_space                                  --28
                            ,cs_space                                  --29
                            ,0                                         --30
@@ -311,8 +311,8 @@ EXCEPTION
                            ,ps_usercd                                 --68
                            ,0                                         --69
                            ,ps_start_date                             --70
-                           ,cs_space                                  --71
-                           ,cs_space                                  --72
+                           ,ps_end_date                               --71
+                           ,ps_disburse_date                          --72
                            );
 
             IF rec_sp_ldas0409.rn_status <> 0 THEN
@@ -320,6 +320,7 @@ EXCEPTION
                 rs_sql_code  := rec_sp_ldas0409.rs_sql_code;
                 rs_err_code  := rec_sp_ldas0409.rs_err_code;
                 rs_err_msg   := rec_sp_ldas0409.rs_err_msg;
+
                 RETURN NEXT;
                 RETURN;
             END IF;
