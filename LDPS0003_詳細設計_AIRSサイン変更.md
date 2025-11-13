@@ -38,7 +38,7 @@ flowchart LR
      flagCheck --> Situation["<div style='white-space: nowrap;'>2.3.2.2.変数.対象品目フラグ　= '1' の場合</div>"]   
      flagCheck --> Situation1["<div style='white-space: nowrap;'>2.3.2.3.変数.対象品目フラグ　= '1' 以外の場合</div>"]   
      Situation --> updateTrn1["<div style='white-space: nowrap;'>2.3.2.2.1.親品目の在庫ファイル更新</div>"] 
-     updateTrn1 --> getSection["<div style='white-space: nowrap;'>2.3.2.2.2.担当課、担当者</div>"] 
+     updateTrn1 --> getSection["<div style='white-space: nowrap;'>2.3.2.2.2.担当課、担当者取得</div>"] 
      getSection --> Situation1_1["<div style='white-space: nowrap;'>2.3.2.2.2.1.変数.AIRSサイン = '1' かつ　変数.手持在庫数　<> 0 の場合</div>"]
      getSection --> Situation1_2["<div style='white-space: nowrap;'>2.3.2.2.2.2.変数.AIRSサイン = '1' かつ　変数.手持在庫数　<> 0 以外の場合</div>"]
      Situation1_1 --> logInsert1["<div style='white-space: nowrap;'>2.3.2.2.3.親品目の手持在庫変動ログ作成</div>"] 
@@ -49,7 +49,7 @@ flowchart LR
      callLDYS0002By1 --> Situation2_1["<div style='white-space: nowrap;'>2.3.2.2.4.3.変数.製品構成_AIRSサイン = '1'の場合</div>"]
      callLDYS0002By1 --> Situation2_2["<div style='white-space: nowrap;'>2.3.2.2.4.4.変数.製品構成_AIRSサイン = '1'以外の場合</div>"]
      Situation2_2 --> updateTrn2["<div style='white-space: nowrap;'>2.3.2.2.4.4.1.在庫ファイル更新</div>"] 
-     updateTrn2 --> getSection2["<div style='white-space: nowrap;'>2.3.2.2.4.4.2.担当課、担当者</div>"] 
+     updateTrn2 --> getSection2["<div style='white-space: nowrap;'>2.3.2.2.4.4.2.担当課、担当者取得</div>"] 
      getSection2 --> Situation2_2_1["<div style='white-space: nowrap;'>2.3.2.2.4.4.3.変数.AIRSサイン = '1' かつ　変数.手持在庫フラグ = '1' の場合</div>"] 
      getSection2 --> Situation2_2_2["<div style='white-space: nowrap;'>2.3.2.2.4.4.4.変数.AIRSサイン = '1' かつ　変数.手持在庫フラグ = '1' 以外の場合</div>"] 
      Situation2_2_1 --> logInsert2["<div style='white-space: nowrap;'>2.3.2.2.4.4.5.子品目の手持在庫変動ログ作成</div>"] 
@@ -61,7 +61,7 @@ flowchart LR
      getItemClass2 --> callLDYS0002By2["<div style='white-space: nowrap;'>2.3.2.2.5.1.2.員数計算</div>"] 
      callLDYS0002By2 --> Situation3_1["<div style='white-space: nowrap;'>2.3.2.2.5.1.3.変数.製品構成_AIRSサイン = '1'の場合</div>"] 
      callLDYS0002By2 --> Situation3_2["<div style='white-space: nowrap;'>2.3.2.2.5.1.4.変数.製品構成_AIRSサイン = '1'以外の場合</div>"] 
-     Situation3_2 --> getSection3["<div style='white-space: nowrap;'>2.3.2.2.5.1.4.1. 担当課、担当者、品目タイプ取得</div>"] 
+     Situation3_2 --> getSection3["<div style='white-space: nowrap;'>2.3.2.2.5.1.4.1. 担当課、担当者取得</div>"] 
      getSection3 --> Situation3_2_1["<div style='white-space: nowrap;'>2.3.2.2.5.1.4.2.変数.AIRSサイン = '1' かつ　変数.手持在庫フラグ = '1' の場合</div>"]  
      getSection3 --> Situation3_2_2["<div style='white-space: nowrap;'>2.3.2.2.5.1.4.3.変数.AIRSサイン = '1' かつ　変数.手持在庫フラグ = '1' 以外の場合</div>"]  
      Situation3_2_1 --> logInsert3["<div style='white-space: nowrap;'>2.3.2.2.5.1.4.4.孫品目の手持在庫変動ログ作成</div>"] 
@@ -581,7 +581,7 @@ SELECT
        品目クラス
   INTO
        変数.品目クラス
-  FROM MRP情報値
+  FROM 品目マスター
  WHERE 品目番号    = 変数.製品構成_子品目番号
    AND 供給者      = 変数.製品構成_子供給者 
    AND 使用者      = 変数.製品構成_子使用者  
@@ -954,7 +954,7 @@ SELECT
        品目クラス
   INTO
        変数.品目クラス
-  FROM MRP情報値
+  FROM 品目マスター
  WHERE 品目番号    = 変数.製品構成_子品目番号
    AND 供給者      = 変数.製品構成_子供給者 
    AND 使用者      = 変数.製品構成_子使用者  
@@ -984,7 +984,7 @@ SELECT
     変数.エラー位置,
     変数.移動在庫数
   FROM
-    LDYS0002( 変数.手持在庫数
+    LDYS0002( 変数.一時移動在庫数
         ,変数.製品構成_構成品サイン
         ,変数.製品構成_員数
         ,変数.製品構成_OP率
