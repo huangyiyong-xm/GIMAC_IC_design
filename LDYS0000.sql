@@ -46,7 +46,7 @@ DECLARE
     ls_ope_status                      lz_ope_state.ope_status%TYPE;
     ls_system_msg                      VARCHAR;
     ls_ope_remark                      lz_ope_state.ope_remark%TYPE;
-    ld_update_update_datetime          lz_ope_state.update_datetime%TYPE;
+    ld_update_datetime                 lz_ope_state.update_datetime%TYPE;
     ls_supply_status                   ld_mst_st_control.supply_status%TYPE;
     ls_st_status                       ld_mst_st_control.st_status%TYPE;
     cs_pgmid                           CONSTANT VARCHAR := 'LDYS0000';
@@ -65,7 +65,7 @@ BEGIN
     ls_ope_status            := ' ';
     ls_system_msg            := ' ';
     ls_ope_remark            := ' ';
-    ld_update_update_datetime:= NULL;
+    ld_update_datetime       := NULL;
     ls_supply_status         := ' ';
     ls_st_status             := ' ';
 
@@ -109,17 +109,17 @@ BEGIN
                  , update_datetime
               INTO ls_ope_status
                  , ls_ope_remark
-                 , ld_update_update_datetime
+                 , ld_update_datetime
               FROM lz_ope_state
              WHERE system_code = 'LD';
         END IF;
 
         IF ls_ope_status = 'U' THEN
-            ls_system_msg := ld_update_update_datetime || ' より通常業務稼働中';
+            ls_system_msg := ld_update_datetime || ' より通常業務稼働中';
         ELSIF ls_ope_status = 'X' THEN
-            ls_system_msg := ld_update_update_datetime || ' よりシステム処理中';
+            ls_system_msg := ld_update_datetime || ' よりシステム処理中';
         ELSIF ls_ope_status = 'S' THEN
-            ls_system_msg := ld_update_update_datetime || ' より一時機能制限中';
+            ls_system_msg := ld_update_datetime || ' より一時機能制限中';
         ELSE
             ls_system_msg := 'ＳＴＳ判定不能！ 担当者に連絡して下さい。';
         END IF;
