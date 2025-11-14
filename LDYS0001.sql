@@ -1,8 +1,8 @@
 --------------------------------------------------------------------------------
---@SEE << Date Edit (6 digits → 8 digits) >>
+--@SEE << Date Edit yyMMdd -> yyyyMMdd >>
 --    @ID      : LDYS0001
 --
---    @Written : 1.0.0                   2025.09.10 Zhang Yulin / YMSL
+--    @Written : 1.0.0                   2025.09.10 Zhang Yulin / YMSLX
 --    --------------------------------------------------------------------------
 --    @Update  : xxxxxxxxxxxx            xxxx.xx.xx xxxxxxxx / xx
 --     Reason  : xxx
@@ -11,8 +11,6 @@
 --
 --    @Version : 1.0.0
 --
---------------------------------------------------------------------------------
---@SEE < Date Edit (6 digits → 8 digits) >
 --------------------------------------------------------------------------------
 --  < INPUT Parameter >
 --    @ps_date_yymmdd                < /I> VARCHAR   : Date (yyMMdd)
@@ -29,55 +27,58 @@
 --    @rs_date_yyyymmdd              < /O> VARCHAR   : Date (yyyyMMdd)
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION LDYS0001(
-    ps_date_yymmdd VARCHAR
+    ps_date_yymmdd   VARCHAR     --1
 )
 RETURNS TABLE(
-    rn_status        INTEGER,   --1
-    rs_sql_code      VARCHAR,   --2
-    rs_err_code      VARCHAR,   --3
-    rs_err_msg       VARCHAR,   --4
-    rs_err_focus     VARCHAR,   --5
-    rs_date_yyyymmdd VARCHAR    --6
+    rn_status        INTEGER,    --1. 処理ステータス
+    rs_sql_code      VARCHAR,    --2. SQLコード
+    rs_err_code      VARCHAR,    --3. エラーコード
+    rs_err_msg       VARCHAR,    --4. エラーメッセージ
+    rs_err_focus     VARCHAR,    --5. エラー位置
+    rs_date_yyyymmdd VARCHAR     --6. 日付（８桁）
 ) AS
-$$
+$BODY$
 DECLARE
-    ls_date_yyyymmdd VARCHAR := ' ';
+    ls_date            VARCHAR;
+    cs_pgmid           VARCHAR := 'LDYS0001';
 BEGIN
-    --------------------------------------------------------------------------------
+    --------------------------------------------------
     --  < STEP1 : Initialization >
-    --------------------------------------------------------------------------------
-    rn_status        := 0;
+    --------------------------------------------------
+    /* Return Value Set */
+    rn_status         :=   0;
+    rs_sql_code       := ' ';
+    rs_err_code       := ' ';
+    rs_err_msg        := ' ';
+    rs_err_focus      := ' ';
+    rs_date_yyyymmdd  := ' ';
+    /* Local Variable Set */
+    ls_date           := ' ';
+
+    --------------------------------------------------
+    --  < STEP2 : Main Processing >
+    --------------------------------------------------
+    IF ps_date_yymmdd = '999999' THEN
+        ls_date := '99999999';
+    ELSE
+        IF TRIM(ps_date_yymmdd) = '' THEN
+            ls_date := ' ';
+        ELSE
+            IF SUBSTR(ps_date_yymmdd, 1, 2) > '80' THEN
+                ls_date := '19' || ps_date_yymmdd;
+            ELSE
+                ls_date := '20' || ps_date_yymmdd;
+            END IF;
+        END IF;
+    END IF;
+
+    rn_status        :=   0;
     rs_sql_code      := ' ';
     rs_err_code      := ' ';
     rs_err_msg       := ' ';
     rs_err_focus     := ' ';
-    rs_date_yyyymmdd := ' ';
-    ls_date_yyyymmdd := ' ';
+    rs_date_yyyymmdd := ls_date;
 
-    --------------------------------------------------------------------------------
-    --  < STEP2 : Argument Check >
-    --------------------------------------------------------------------------------
-    --(none)
-    --------------------------------------------------------------------------------
-    --  < STEP3 : Main Processing >
-    --------------------------------------------------------------------------------
-    IF ps_date_yymmdd = '999999' THEN
-        ls_date_yyyymmdd := '999999';
-    ELSIF ps_date_yymmdd = '' OR ps_date_yymmdd IS NULL THEN
-        ls_date_yyyymmdd := '';
-    ELSE
-        IF SUBSTRING(ps_date_yymmdd, 1, 2) > '80' THEN
-            ls_date_yyyymmdd := '19' || ps_date_yymmdd;
-        ELSE
-            ls_date_yyyymmdd := '20' || ps_date_yymmdd;
-        END IF;
-    END IF;
-
-    --------------------------------------------------------------------------------
-    --  < STEP4 : Return Value Setting >
-    --------------------------------------------------------------------------------
-    rs_date_yyyymmdd := ls_date_yyyymmdd;
-    rn_status := 0;
     RETURN NEXT;
     RETURN;
 
@@ -85,31 +86,30 @@ EXCEPTION
     --------------------------------------------------
     --  Error Handle
     --------------------------------------------------
-    --  # Indispensability(End)
-    --------------------------------------------------
-    WHEN raise_exception THEN
-        IF rn_status <> 0 THEN
+    WHEN RAISE_EXCEPTION THEN
+        IF rn_status <> 0 THEN  -- FOR CALL SP ERROR
             NULL;
-        ELSE
-            rn_status    := -2;
-            rs_sql_code  := ' ';
-            rs_err_code  := ' ';
-            rs_err_msg   := 'PGM Error';
-            rs_err_focus := 'LDYS0001';
+        ELSE                    -- FOR PGM ERROR
+            rn_status     :=  -2;
+            rs_sql_code   := ' ';
         END IF;
+
+        rs_err_focus      := cs_pgmid;
+        rs_date_yyyymmdd  := ' ';
 
         RETURN NEXT;
         RETURN;
 
-    WHEN OTHERS THEN
-        rn_status    := -1;
-        rs_sql_code  := SQLSTATE;
-        rs_err_code  := ' ';
-        rs_err_msg   := SQLERRM;
-        rs_err_focus := 'LDYS0001';
+    WHEN OTHERS THEN            -- FOR SQL ERROR
+        rn_status         := -1;
+        rs_sql_code       := SQLSTATE;
+        rs_err_code       := ' ';
+        rs_err_msg        := SQLERRM;
+        rs_err_focus      := cs_pgmid;
+        rs_date_yyyymmdd  := ' ';
 
         RETURN NEXT;
         RETURN;
 END;
-$$
+$BODY$
 LANGUAGE plpgsql;
