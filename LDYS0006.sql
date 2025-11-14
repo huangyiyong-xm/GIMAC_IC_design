@@ -2,13 +2,15 @@
 --@SEE << CHANGE ORDER NO(5 to 3) >>
 --    @ID      : LDYS0006
 --
---    @Written : 1.0.0                   2025.10.14 Sun Sheng / YMSL
+--    @Written : 1.0.0                   2025.10.14 Sun Sheng / YMSLX
+--    --------------------------------------------------------------------------
+--    @Update  : xxxxxxxxxxxx            xxxx.xx.xx xxxxxxxx / xx
+--     Reason  : xxx
+--              xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 --    --------------------------------------------------------------------------
 --
 --    @Version : 1.0.0
 --
-----------------------------------------------------------------------------
---@SEE << CHANGE ORDER NO(5 to 3) >>
 ----------------------------------------------------------------------------
 --  < INPUT Parameter >
 --    @ps_orderno           <I/ >VARCHAR  : Order No (5 digits)
