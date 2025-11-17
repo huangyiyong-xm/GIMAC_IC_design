@@ -141,16 +141,15 @@ EXCEPTION
     --  Error Handle
     --------------------------------------------------------------------------------
     WHEN RAISE_EXCEPTION THEN
+    WHEN RAISE_EXCEPTION THEN
         IF rn_status <> 0 THEN  -- FOR CALL SP ERROR
             NULL;
         ELSE                    -- FOR PGM ERROR
-            rn_status     :=  -2;
-            rs_sql_code   := ' ';
+            rn_status         :=  -2;
+            rs_sql_code       := ' ';
         END IF;
 
         rs_err_focus      := cs_pgmid;
-        rs_date_yyyymmdd  := ' ';
-
         RETURN NEXT;
         RETURN;
 
@@ -160,7 +159,6 @@ EXCEPTION
         rs_err_code       := ' ';
         rs_err_msg        := SQLERRM;
         rs_err_focus      := cs_pgmid;
-        rs_date_yyyymmdd  := ' ';
 
         RETURN NEXT;
         RETURN;
