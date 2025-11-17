@@ -141,7 +141,6 @@ EXCEPTION
     --  Error Handle
     --------------------------------------------------------------------------------
     WHEN RAISE_EXCEPTION THEN
-    WHEN RAISE_EXCEPTION THEN
         IF rn_status <> 0 THEN  -- FOR CALL SP ERROR
             NULL;
         ELSE                    -- FOR PGM ERROR
