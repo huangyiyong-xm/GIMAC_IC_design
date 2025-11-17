@@ -140,17 +140,27 @@ EXCEPTION
     --------------------------------------------------------------------------------
     --  Error Handle
     --------------------------------------------------------------------------------
-    WHEN OTHERS THEN
-    rn_status           := -1;
-    rs_sql_code         := SQLSTATE;
-    rs_err_code         := ' ';
-    rs_err_msg          := SQLERRM;
-    rs_err_focus        := cs_pgmid;
-    rs_operation_status := ' ';
-    rs_system_msg       := ' ';
-    rs_operation_msg    := ' ';
-    RETURN NEXT;
-    RETURN;
+    WHEN RAISE_EXCEPTION THEN
+        IF rn_status <> 0 THEN  -- FOR CALL SP ERROR
+            NULL;
+        ELSE                    -- FOR PGM ERROR
+            rn_status         :=  -2;
+            rs_sql_code       := ' ';
+        END IF;
+
+        rs_err_focus      := cs_pgmid;
+        RETURN NEXT;
+        RETURN;
+
+    WHEN OTHERS THEN            -- FOR SQL ERROR
+        rn_status         := -1;
+        rs_sql_code       := SQLSTATE;
+        rs_err_code       := ' ';
+        rs_err_msg        := SQLERRM;
+        rs_err_focus      := cs_pgmid;
+
+        RETURN NEXT;
+        RETURN;
 END;
 $BODY$
 LANGUAGE plpgsql;
