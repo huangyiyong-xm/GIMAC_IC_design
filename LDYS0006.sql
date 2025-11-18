@@ -1,8 +1,8 @@
 --------------------------------------------------------------------------------
---@SEE << Order number (5 digits → 3 digits) >>
+--@SEE << CHANGE ORDER NO(5 to 3) >>
 --    @ID      : LDYS0006
 --
---    @Written : 1.0.0                   2012.06.12 T.Ishizuka / YMSL
+--    @Written : 1.0.0                   2025.10.14 Sun Sheng / YMSLX
 --    --------------------------------------------------------------------------
 --    @Update  : xxxxxxxxxxxx            xxxx.xx.xx xxxxxxxx / xx
 --     Reason  : xxx
@@ -11,10 +11,10 @@
 --
 --    @Version : 1.0.0
 --
---------------------------------------------------------------------------------
+----------------------------------------------------------------------------
 --  < INPUT Parameter >
---    @ps_orderno                     <I/ >VARCHAR  : Order No (5 digits)
---    @ps_mrpdatetime                 <I/ >VARCHAR : MRP DateTime (YYYYMMDD)
+--    @ps_orderno           <I/ >VARCHAR  : Order No (5 digits)
+
 --  < OUTPUT Parameter >
 --    @rn_status            : Return Code (0:Normal, -1:SQL Error, -2:PG Error, 1:Warning)
 --    @rs_sql_code          : SQL Code
@@ -23,54 +23,58 @@
 --    @rs_err_focus         : Error Focus
 --    @rs_orderno           : Order No (3 digits)
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION gimac.ldys0006(ps_orderno character varying, ps_mrpdatetime character varying)
- RETURNS TABLE(rn_status integer, rs_sql_code character varying, rs_err_code character varying, rs_err_msg character varying, rs_err_focus character varying, rs_orderno character varying)
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION LDYS0006(
+      ps_orderno   VARCHAR)   --1 ５桁オーダ番号
+RETURNS TABLE(
+      rn_status    INTEGER    --1 処理ステータス
+    , rs_sql_code  VARCHAR    --2 SQLコード
+    , rs_err_code  VARCHAR    --3 エラーコード
+    , rs_err_msg   VARCHAR    --4 エラーメッセージ
+    , rs_err_focus VARCHAR    --5 エラー位置
+    , rs_orderno   VARCHAR)   --6 ３桁オーダ番号
+AS
+$BODY$
 DECLARE
-    ls_orderno3                   VARCHAR := ' ';
+    ls_orderno3  VARCHAR;
+
+    cs_space       CONSTANT VARCHAR := ' ';
+    cs_pgmid       CONSTANT VARCHAR := 'LDYS0006';
 BEGIN
     --------------------------------------------------
     --  < STEP1 : Initialization >
     --------------------------------------------------
     /* Return Value Set */
-    rn_status    :=   0;
-    rs_sql_code  := ' ';
-    rs_err_code  := ' ';
-    rs_err_msg   := ' ';
-    rs_err_focus := ' ';
-    rs_orderno   := ' ';
+    rn_status    := 0;
+    rs_sql_code  := cs_space;
+    rs_err_code  := cs_space;
+    rs_err_msg   := cs_space;
+    rs_err_focus := cs_space;
+    rs_orderno   := cs_space;
 
     /* Variable Initialization */
+    ls_orderno3  := cs_space;
 
-    /* Argument Check */
-    IF ps_orderno IS NULL OR LENGTH(TRIM(ps_orderno)) < 5 THEN
-        rn_status    := -2;
-        rs_err_code  := 'E.LDYS0006.ARG';
-        rs_err_msg   := '5けた桁はただしく正しくありません';
-        rs_err_focus := 'LDYS0006';
-        RETURN NEXT;
-        RETURN;
-    END IF;
-    
     --------------------------------------------------
     --  < STEP2 : Main Processing >
     --------------------------------------------------
-    /* Order number (5 digits → 3 digits) */
-    IF ps_orderno ~ '^[0-9]{5}$' THEN
-        -- The situation where all the numbers from 1 to 5 are within the range of 0 to 9
-        ls_orderno3 := SUBSTRING(ps_orderno FROM 3 FOR 3);
+    IF SUBSTRING(ps_orderno, 1, 1) >= '0' AND SUBSTRING(ps_orderno, 1, 1) <= '9' AND
+       SUBSTRING(ps_orderno, 2, 1) >= '0' AND SUBSTRING(ps_orderno, 2, 1) <= '9' AND
+       SUBSTRING(ps_orderno, 3, 1) >= '0' AND SUBSTRING(ps_orderno, 3, 1) <= '9' AND
+       SUBSTRING(ps_orderno, 4, 1) >= '0' AND SUBSTRING(ps_orderno, 4, 1) <= '9' AND
+       SUBSTRING(ps_orderno, 5, 1) >= '0' AND SUBSTRING(ps_orderno, 5, 1) <= '9' THEN
+        ls_orderno3 := SUBSTRING(ps_orderno, 3, 3);
     ELSE
-        -- Not the case of 0 to 9
-        ls_orderno3 := SUBSTRING(ps_orderno FROM 1 FOR 1) || SUBSTRING(ps_orderno FROM 4 FOR 2);
+        ls_orderno3 := SUBSTRING(ps_orderno, 1, 1) || SUBSTRING(ps_orderno, 4, 2);
     END IF;
+
     /* Return Value Set */
     rn_status    := 0;
-    rs_sql_code  := ' ';
-    rs_err_code  := ' ';
-    rs_err_msg   := ' ';
-    rs_err_focus := ' ';
+    rs_sql_code  := cs_space;
+    rs_err_code  := cs_space;
+    rs_err_msg   := cs_space;
+    rs_err_focus := cs_space;
     rs_orderno   := ls_orderno3;
+
     --------------------------------------------------
     --  < STEP3 : Return Value Processing >
     --------------------------------------------------
@@ -78,22 +82,27 @@ BEGIN
     RETURN;
 EXCEPTION
     WHEN RAISE_EXCEPTION THEN
-        rn_status         :=  -2;
-        rs_sql_code       := ' ';
+        IF rn_status <> 0 THEN  -- FOR CALL SP ERROR
+            NULL;
+        ELSE                    -- FOR PGM ERROR
+            rn_status    := -2;
+            rs_sql_code  := ' ';
+        END IF;
+        rs_err_focus := cs_pgmid;
 
         RETURN NEXT;
         RETURN;
 
-    WHEN OTHERS THEN
-        rn_status         	:= -1;
-        rs_sql_code       	:= SQLSTATE;
-        rs_err_code       	:= ' ';
-        rs_err_msg        	:= SQLERRM;
-        rs_err_focus 		:= 'LDYS0006';
-        rs_orderno   		:= ' ';
+    WHEN OTHERS THEN            -- FOR SQL ERROR
+        rn_status    := -1;
+        rs_sql_code  := SQLSTATE;
+        rs_err_code  := cs_space;
+        rs_err_msg   := SQLERRM;
+        rs_err_focus := cs_pgmid;
+        rs_orderno   := cs_space;
 
         RETURN NEXT;
         RETURN;
 END;
-$function$
-;
+$BODY$
+LANGUAGE 'plpgsql';
