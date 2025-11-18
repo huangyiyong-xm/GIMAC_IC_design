@@ -103,7 +103,7 @@ flowchart LR
 | No | 名称                             | 物理名称                   | 設定値       | 備考                    |
 | -- | -------------------------------- | -------------------------- | ------------ | ----------------------- |
 | 1  | 前回処理時間                     | g_bf_trn_proc_time         | スペース     | datetime year to second |
-| 2  | 今回処理時間                     | g_now_trn_proc_time        | システム時間 | datetime year to second |
+| 2  | 今回処理時間                     | g_now_trn_proc_time        | システム時間 - 10 s | 10 sは処理の遅延を考慮したバッファ時間（今後変更の可能性あり） |
 | 3  | トランザクション数（構成表）     | int_trn_prodstrc           | 0            | integer                 |
 | 4  | トランザクション数（所要量）     | int_trn_mrp_req_out        | 0            | integer                 |
 | 5  | トランザクション数（需要方針）   | int_trn_demand_policy_code | 0            | integer                 |
@@ -143,7 +143,7 @@ flowchart LR
               ,A.comp_supplier             -- 子供給者
               ,A.comp_usercd               -- 子使用者
               ,'200'                       -- メッセージコード  '100'MRP需要　'110','300'AIRSｻｲﾝ　'200'構成変更''210'所要量出庫管理
-              ,g_now_trn_proc_time         -- メンテ日時
+              ,now()                       -- メンテ日時
               ,A.in_effective_ymd          -- IN発効日
               ,A.out_effective_ymd         -- OUT発効日
               ,C.item_type                 -- 品目タイプ
@@ -155,10 +155,10 @@ flowchart LR
               ,B.demand_policy_code        -- MRP需要方針コード
               ,B.airs_sign                 -- AIRSサイン
               ,0                           -- 更新カウンタ
-              ,g_now_trn_proc_time         -- 登録日時
+              ,now()                       -- 登録日時
               ,pgmid                       -- 登録者
               ,pgmid                       -- 登録PGID
-              ,g_now_trn_proc_time         -- 更新日時
+              ,now()                       -- 更新日時
               ,pgmid                       -- 更新者
               ,pgmid                       -- 更新PGID
           FROM la_prodstrc  A              -- 製品構成
@@ -194,7 +194,7 @@ flowchart LR
              ,B.comp_supplier             -- 子供給者
              ,B.comp_usercd               -- 子使用者
              ,'210'                       -- メッセージコード  '100'MRP需要　'110','300'AIRSｻｲﾝ　'200'構成変更''210'所要量出庫管理
-             ,g_now_trn_proc_time         -- メンテ日時
+             ,now()                       -- メンテ日時
              ,B.in_effective_ymd          -- IN発効日
              ,B.out_effective_ymd         -- OUT発効日
              ,C.item_type                 -- 品目タイプ
@@ -206,10 +206,10 @@ flowchart LR
              ,A.demand_policy_code        -- MRP需要方針コード
              ,A.airs_sign                 -- AIRSサイン
              ,0                           -- 更新カウンタ
-             ,g_now_trn_proc_time         -- 登録日時
+             ,now()                       -- 登録日時
              ,pgmid                       -- 登録者
              ,pgmid                       -- 登録PGID
-             ,g_now_trn_proc_time         -- 更新日時
+             ,now()                       -- 更新日時
              ,pgmid                       -- 更新者
              ,pgmid                       -- 更新PGID
          FROM le_mst_mrp_information  A   -- MRP情報値
@@ -256,7 +256,7 @@ flowchart LR
              ,' '                         -- 子供給者
              ,' '                         -- 子使用者
              ,'100'                       -- メッセージコード  '100'MRP需要　'110','300'AIRSｻｲﾝ　'200'構成変更''210'所要量出庫管理
-             ,g_now_trn_proc_time         -- メンテ日時
+             ,now()                       -- メンテ日時
              ,' '                         -- IN発効日
              ,' '                         -- OUT発効日
              ,' '                         -- 品目タイプ
@@ -268,10 +268,10 @@ flowchart LR
              ,demand_policy_code          -- MRP需要方針コード
              ,airs_sign                   -- AIRSサイン
              ,0                           -- 更新カウンタ
-             ,g_now_trn_proc_time         -- 登録日時
+             ,now()                       -- 登録日時
              ,pgmid                       -- 登録者
              ,pgmid                       -- 登録PGID
-             ,g_now_trn_proc_time         -- 更新日時
+             ,now()                       -- 更新日時
              ,pgmid                       -- 更新者
              ,pgmid                       -- 更新PGID
          FROM le_mst_mrp_information       -- MRP情報値
@@ -299,7 +299,7 @@ flowchart LR
              ,' '                         -- 子供給者
              ,' '                         -- 子使用者
              ,'110'                       -- メッセージコード  '100'MRP需要　'110','300'AIRSｻｲﾝ　'200'構成変更''210'所要量出庫管理
-             ,g_now_trn_proc_time         -- メンテ日時
+             ,now()                       -- メンテ日時
              ,' '                         -- IN発効日
              ,' '                         -- OUT発効日
              ,' '                         -- 品目タイプ
@@ -311,10 +311,10 @@ flowchart LR
              ,A.demand_policy_code        -- MRP需要方針コード
              ,A.airs_sign                 -- AIRSサイン
              ,0                           -- 更新カウンタ
-             ,g_now_trn_proc_time         -- 登録日時
+             ,now()                       -- 登録日時
              ,pgmid                       -- 登録者
              ,pgmid                       -- 登録PGID
-             ,g_now_trn_proc_time         -- 更新日時
+             ,now()                       -- 更新日時
              ,pgmid                       -- 更新者
              ,pgmid                       -- 更新PGID
          FROM le_mst_mrp_information A     -- MRP情報値
@@ -344,7 +344,7 @@ flowchart LR
              ,' '                         -- 子供給者
              ,' '                         -- 子使用者
              ,'300'                       -- メッセージコード  '100'MRP需要　'110','300'AIRSｻｲﾝ　'200'構成変更''210'所要量出庫管理
-             ,g_now_trn_proc_time         -- メンテ日時
+             ,now()                       -- メンテ日時
              ,' '                         -- IN発効日
              ,' '                         -- OUT発効日
              ,' '                         -- 品目タイプ
@@ -356,10 +356,10 @@ flowchart LR
              ,demand_policy_code          -- MRP需要方針コード
              ,airs_sign                   -- AIRSサイン
              ,0                           -- 更新カウンタ
-             ,g_now_trn_proc_time         -- 登録日時
+             ,now()                       -- 登録日時
              ,pgmid                       -- 登録者
              ,pgmid                       -- 登録PGID
-             ,g_now_trn_proc_time         -- 更新日時
+             ,now()                       -- 更新日時
              ,pgmid                       -- 更新者
              ,pgmid                       -- 更新PGID
          FROM le_mst_mrp_information      -- MRP情報値
