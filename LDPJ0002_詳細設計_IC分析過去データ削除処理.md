@@ -79,14 +79,12 @@ flowchart LR
 
 ### 1.5. 入出力一覧
 
-| No | 入出力対象 | 名称                          | 物理名称                | C | R  | U | D  | 備考        |
-| -- | ---------- | ----------------------------- | ----------------------- | - | -- | - | -- | ----------- |
-| 1  | テーブル   | ICシステムパラメータ          | ld_mst_system_parameter | - | ○ | - | -  |             |
-| 2  | テーブル   | IC分析BOM改訂トランザクション | ld_trn_derev_trn        | - | -  | - | ○ |             |
-| 3  | テーブル   | 設計変更所要量更新ログ        | ld_trn_reqchg_log       | - | -  | - | ○ |             |
-| 4  | テーブル   | 手持在庫変動ログ              | ld_trn_fluct_log        | - | -  | - | ○ |             |
-| 5  | 帳票       | 設計変更所要量更新リスト      | LDAR022                 | - | -  | - | ○ | PDFファイル |
-| 6  | 帳票       | AIRS手持在庫変動リスト        | LDAR023                 | - | -  | - | ○ | PDFファイル |
+| No | 入出力対象 | 名称                          | 物理名称                | C | R  | U | D  | 備考 |
+| -- | ---------- | ----------------------------- | ----------------------- | - | -- | - | -- | ---- |
+| 1  | テーブル   | ICシステムパラメータ          | ld_mst_system_parameter | - | ○ | - | -  |      |
+| 2  | テーブル   | IC分析BOM改訂トランザクション | ld_trn_derev_trn        | - | -  | - | ○ |      |
+| 3  | テーブル   | 設計変更所要量更新ログ        | ld_trn_reqchg_log       | - | -  | - | ○ |      |
+| 4  | テーブル   | 手持在庫変動ログ              | ld_trn_fluct_log        | - | -  | - | ○ |      |
 
 ## 2. 詳細処理
 
@@ -124,7 +122,7 @@ reqchg_log_retent_days = g_now_trn_proc_time - reqchg_log_holding_days
 ```sql
    DELETE FROM ld_trn_derev_trn
          WHERE close_sign = '1' -- 処理済
-           AND maintenance_datetime < :derev_retent_days
+           AND update_datetime  < :derev_retent_days
 ```
 
 - IC分析BOM改訂トランザクションの削除件数を取得する
@@ -133,17 +131,16 @@ reqchg_log_retent_days = g_now_trn_proc_time - reqchg_log_holding_days
 
 ```sql
    DELETE FROM ld_trn_reqchg_log
-         WHERE maintenance_datetime < :reqchg_log_retent_days
+         WHERE ic_slip_date< :reqchg_log_retent_days
 ```
 
 - 設計変更所要量更新ログの削除件数を取得する
-
 
 #### 2.3.4. 手持在庫変動ログから保管日数を経過したデータを削除する
 
 ```sql
    DELETE FROM ld_trn_fluct_log
-         WHERE maintenance_datetime  <= :ohlog_retent_days
+         WHERE ic_slip_date< :ohlog_retent_days
 ```
 
 - 手持在庫変動ログの削除件数を取得する

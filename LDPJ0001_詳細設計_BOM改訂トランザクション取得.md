@@ -105,7 +105,7 @@ flowchart LR
 | 1  | 前回処理時間                     | g_bf_trn_proc_time         | スペース     | datetime year to second |
 | 2  | 今回処理時間                     | g_now_trn_proc_time        | システム時間 | datetime year to second |
 | 3  | トランザクション数（構成表）     | int_trn_prodstrc           | 0            | integer                 |
-| 4  | トランザクション数（出庫制御）   | int_trn_mrp_req_out        | 0            | integer                 |
+| 4  | トランザクション数（所要量）     | int_trn_mrp_req_out        | 0            | integer                 |
 | 5  | トランザクション数（需要方針）   | int_trn_demand_policy_code | 0            | integer                 |
 | 6  | トランザクション数（AIRSフラグ） | int_trn_mrp_airs           | 0            | integer                 |
 | 7  | トランザクション総数             | int_trn_total              | 0            | integer                 |
@@ -218,9 +218,9 @@ flowchart LR
           AND B.comp_supplier    = A.supplier
           AND B.comp_usercd      = A.usercd
    INNER JOIN la_itemmast C   -- 品目マスター
-           ON A.comp_itemno      = C.itemno
-          AND A.comp_supplier    = C.supplier
-          AND A.comp_usercd      = C.usercd
+           ON A.itemno      = C.itemno
+          AND A.supplier    = C.supplier
+          AND A.usercd      = C.usercd
         WHERE A.update_datetime  >= g_bf_trn_proc_time
           AND A.update_datetime  <  g_now_trn_proc_time
           AND NOT EXISTS  (SELECT 1
@@ -237,8 +237,8 @@ flowchart LR
   ```
 
   - 正常処理の場合
-    - 変数.トランザクション数（出庫制御）を追加数量をセットする
-    - 変数.トランザクション数（出庫制御）をログに出力する
+    - 変数.トランザクション数（所要量）を追加数量をセットする
+    - 変数.トランザクション数（所要量）をログに出力する
   - 処理異常の場合、エラーログを出力し、異常終了する
 
 #### 2.3.4. 品目マスタのMRP需要方針コードが変更された時、IC分析で対象となるBOM改訂情報を抽出する
@@ -323,8 +323,8 @@ flowchart LR
           AND B.supplier         =  A.supplier
           AND B.usercd           =  A.usercd
           AND B.oh_qty           <> 0
-        WHERE update_datetime  >= g_bf_trn_proc_time
-          AND update_datetime  <  g_now_trn_proc_time
+        WHERE A.update_datetime  >= g_bf_trn_proc_time
+          AND A.update_datetime  <  g_now_trn_proc_time
           AND A.airs_sign        = '1'
   ```
 
@@ -389,5 +389,5 @@ UPDATE ld_trn_derev_ctrl           -- IC分析BOM改訂コントロール
 ```
 
 - トランザクション総数を計算し、ログに出力する
-  - 変数.トランザクション数（構成表） +トランザクション数（出庫制御） +トランザクション数（需要方針） +トランザクション数（AIRSフラグ）を変数.トランザクション総数にセットする
+  - 変数.トランザクション数（構成表） +トランザクション数（所要量） +トランザクション数（需要方針） +トランザクション数（AIRSフラグ）を変数.トランザクション総数にセットする
   - 変数.トランザクション総数をログに出力する

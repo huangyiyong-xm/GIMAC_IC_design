@@ -85,20 +85,20 @@
 #### 2.3.1. AIRS手持在庫変動リストから、リスト未出力レコードを抽出し、未出力リストに格納する
 
 ```sql
-     SELECT A.org_section_mrp          AS orgSectionMrp        -- 課
-           ,A.org_person_mrp           AS orgPersonMrp         -- 担当者コード
-           ,A.ic_slip_date             AS icSlipDate           -- 日付
+     SELECT A.org_section_mrp          AS orgSectionMrp        -- 担当課
+           ,A.org_person_mrp           AS orgPersonMrp         -- 担当者
+           ,A.ic_slip_date             AS icSlipDate           -- IC工場処理日
            ,B.global_itemno            AS globalItemno         -- 編集品目番号
            ,A.supplier                 AS supplier             -- 供給者
            ,A.usercd                   AS usercd               -- 使用者
            ,A.maintenance_datetime     AS maintenanceDatetime  -- メンテナンス日時
            ,A.list_flg                 AS listFlg              -- リスト出力フラグ
-           ,A.parent_itemno            AS parentItemno         -- 前品目番号
-           ,A.parent_supplier          AS parentSupplier       -- 前供給者
-           ,A.parent_usercd            AS parentUsercd         -- 前使用者
-           ,A.before_oh_qty            AS beforeOhQty          -- 変更前在庫数量
-           ,A.fluct_qty                AS fluctQty             -- 変動数量
-           ,A.after_oh_qty             AS afterOhQty           -- 変更後在庫数量
+           ,A.parent_itemno            AS parentItemno         -- 親品目番号
+           ,A.parent_supplier          AS parentSupplier       -- 親供給者
+           ,A.parent_usercd            AS parentUsercd         -- 親使用者
+           ,A.before_oh_qty            AS beforeOhQty          -- 更新前手持在庫数
+           ,A.fluct_qty                AS fluctQty             -- 変動数
+           ,A.after_oh_qty             AS afterOhQty           -- 更新後手持在庫数
            ,COALESCE(B.item_name, ' ') AS itemName             -- 品目名称
        FROM ld_trn_fluct_log A    -- 手持在庫変動ログ
   LEFT JOIN la_itemcomn B         -- 品目共通
@@ -106,7 +106,7 @@
       WHERE A.list_flg = '0'
    ORDER BY A.org_section_mrp
            ,A.org_person_mrp
-           ,A.itemno
+           ,B.global_itemno
            ,A.supplier
            ,A.usercd
            ,A.parent_itemno
