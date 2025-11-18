@@ -2,7 +2,7 @@
 --@SEE << Operation State Confirm >>
 --    @ID      : LDYS0000
 --
---    @Written : 1.0.0                   2025.10.13 Zhang Yulin / YMSL
+--    @Written : 1.0.0                   2025.10.13 Zhang Yulin / YMSLX
 --    --------------------------------------------------------------------------
 --    @Update  : xxxxxxxxxxxx            xxxx.xx.xx xxxxxxxx / xx
 --     Reason  : xxx
@@ -10,8 +10,7 @@
 --    --------------------------------------------------------------------------
 --
 --    @Version : 1.0.0
---------------------------------------------------------------------------------
---@SEE < Operation State Confirm >
+--
 --------------------------------------------------------------------------------
 --  < INPUT Parameter >
 --    (none)
@@ -30,88 +29,108 @@
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION LDYS0000()
 RETURNS TABLE(
-    rn_status           INTEGER,              --1
-    rs_sql_code         VARCHAR,              --2
-    rs_err_code         VARCHAR,              --3
-    rs_err_msg          VARCHAR,              --4
-    rs_err_focus        VARCHAR,              --5
-    rs_operation_status VARCHAR,              --6
-    rs_system_msg       VARCHAR,              --7
-    rs_operation_msg    VARCHAR               --8
+    rn_status           INTEGER,              --1. 処理ステータス
+    rs_sql_code         VARCHAR,              --2. SQLコード
+    rs_err_code         VARCHAR,              --3. エラーコード
+    rs_err_msg          VARCHAR,              --4. エラーメッセージ
+    rs_err_focus        VARCHAR,              --5. エラー位置
+    rs_operation_status VARCHAR,              --6. 稼動ステータス
+    rs_system_msg       VARCHAR,              --7. システムメッセージ
+    rs_operation_msg    VARCHAR               --8. 稼動メッセージ
 ) AS
-$$
+$BODY$
 DECLARE
-    ls_ope_status         gimac.lz_ope_state.ope_status%TYPE:= ' ';
-    ls_system_msg         VARCHAR := ' ';
-    ls_operation_msg      gimac.lz_ope_state.ope_remark%TYPE:= ' ';
-    ls_update_dt          gimac.lz_ope_state.update_datetime%TYPE:= ' ';
-    ls_yushi_status       gimac.ld_mst_st_control.supply_status%TYPE:= ' ';
-    ls_shanai_status      gimac.ld_mst_st_control.st_status%TYPE:= ' ';
+    --------------------------------------------------
+    --  < Definition Local Paramater >
+    --------------------------------------------------
+    ls_ope_status                      lz_ope_state.ope_status%TYPE;
+    ls_system_msg                      VARCHAR;
+    ls_ope_remark                      lz_ope_state.ope_remark%TYPE;
+    ld_update_datetime                 lz_ope_state.update_datetime%TYPE;
+    ls_supply_status                   ld_mst_st_control.supply_status%TYPE;
+    ls_st_status                       ld_mst_st_control.st_status%TYPE;
+    cs_pgmid                           CONSTANT VARCHAR := 'LDYS0000';
 BEGIN
-    --------------------------------------------------------------------------------
+    --------------------------------------------------
     --  < STEP1 : Initialization >
-    --------------------------------------------------------------------------------
-    rn_status           := 0;
-    rs_sql_code         := ' ';
-    rs_err_code         := ' ';
-    rs_err_msg          := ' ';
-    rs_err_focus        := ' ';
-    rs_operation_status := ' ';
-    rs_system_msg       := ' ';
-    rs_operation_msg    := ' ';
+    --------------------------------------------------
+    rn_status                := 0;
+    rs_sql_code              := ' ';
+    rs_err_code              := ' ';
+    rs_err_msg               := ' ';
+    rs_err_focus             := ' ';
+    rs_operation_status      := ' ';
+    rs_system_msg            := ' ';
+    rs_operation_msg         := ' ';
+    ls_ope_status            := ' ';
+    ls_system_msg            := ' ';
+    ls_ope_remark            := ' ';
+    ld_update_datetime       := NULL;
+    ls_supply_status         := ' ';
+    ls_st_status             := ' ';
 
     --------------------------------------------------------------------------------
-    --  < STEP2 : Argument Check >
+    --  < STEP2 : Main Processing >
     --------------------------------------------------------------------------------
-    -- No input parameter. No argument check needed.
+    IF EXISTS (
+        SELECT 1
+          FROM ld_mst_st_control a
+         WHERE a.st_ymd = (
+                SELECT MAX(st_ymd)
+                  FROM ld_mst_st_control b
+                 WHERE b.st_class IN('1','2')
+             )
+    ) THEN
+        SELECT supply_status
+             , st_status
+          INTO ls_supply_status
+             , ls_st_status
+          FROM ld_mst_st_control a
+         WHERE a.st_ymd = (
+                SELECT MAX(st_ymd)
+                  FROM ld_mst_st_control b
+                 WHERE b.st_class IN('1','2')
+             );
+    END IF;
 
-    --------------------------------------------------------------------------------
-    --  < STEP3 : Main Processing >
-    --------------------------------------------------------------------------------
-    SELECT supply_status
-         , st_status
-      INTO ls_yushi_status
-         , ls_shanai_status
-      FROM ld_mst_st_control a
-     WHERE a.st_ymd = (
-            SELECT MAX(st_ymd)
-              FROM ld_mst_st_control b
-             WHERE b.st_class IN('1','2')
-         );
-
-    IF ls_yushi_status IS NOT NULL AND ls_yushi_status <> ' ' 
-       AND ls_yushi_status = '1' 
-       AND ls_shanai_status IN ('0','1','2','3','4','5','6','9') THEN
+    IF ls_supply_status = '1' 
+       AND ls_st_status IN ('0','1','2','3','4') THEN
         ls_ope_status    := 'U';
         ls_system_msg    := '有償支給残高 報告可能';
-        ls_operation_msg := '有償支給残高 報告可能';
+        ls_ope_remark    := '有償支給残高 報告可能';
     ELSE
-        SELECT ope_status
-             , ope_remark
-             , update_datetime
-          INTO ls_ope_status
-             , ls_operation_msg
-             , ls_update_dt
-          FROM lz_ope_state
-         WHERE system_code = 'LD';
+        IF EXISTS (
+            SELECT 1
+              FROM lz_ope_state
+             WHERE system_code = 'LD'
+        ) THEN
+            SELECT ope_status
+                 , ope_remark
+                 , update_datetime
+              INTO ls_ope_status
+                 , ls_ope_remark
+                 , ld_update_datetime
+              FROM lz_ope_state
+             WHERE system_code = 'LD';
+        END IF;
 
         IF ls_ope_status = 'U' THEN
-            ls_system_msg := ls_update_dt || ' より通常業務稼働中';
+            ls_system_msg := ld_update_datetime || ' より通常業務稼働中';
         ELSIF ls_ope_status = 'X' THEN
-            ls_system_msg := ls_update_dt || ' よりシステム処理中';
+            ls_system_msg := ld_update_datetime || ' よりシステム処理中';
         ELSIF ls_ope_status = 'S' THEN
-            ls_system_msg := ls_update_dt || ' より一時機能制限中';
+            ls_system_msg := ld_update_datetime || ' より一時機能制限中';
         ELSE
             ls_system_msg := 'ＳＴＳ判定不能！ 担当者に連絡して下さい。';
         END IF;
     END IF;
 
     --------------------------------------------------------------------------------
-    --  < STEP4 : Return Value Setting >
+    --  < STEP3 : Return Value Setting >
     --------------------------------------------------------------------------------
     rs_operation_status := ls_ope_status;
-    rs_system_msg      := ls_system_msg;
-    rs_operation_msg   := ls_operation_msg;
+    rs_system_msg       := ls_system_msg;
+    rs_operation_msg    := ls_ope_remark;
 
     rn_status := 0;
     RETURN NEXT;
@@ -122,31 +141,26 @@ EXCEPTION
     --  Error Handle
     --------------------------------------------------------------------------------
     WHEN RAISE_EXCEPTION THEN
-        IF rn_status <> 0 THEN
+        IF rn_status <> 0 THEN  -- FOR CALL SP ERROR
             NULL;
-        ELSE
-            rn_status         := -2;
+        ELSE                    -- FOR PGM ERROR
+            rn_status         :=  -2;
             rs_sql_code       := ' ';
-            rs_err_code       := ' ';
-            rs_err_msg        := 'PGM Error';
-            rs_err_focus      := 'LDYS0000';
         END IF;
 
+        rs_err_focus      := cs_pgmid;
         RETURN NEXT;
         RETURN;
 
-    WHEN OTHERS THEN
-        rn_status             := -1;
-        rs_sql_code           := SQLSTATE;
-        rs_err_code           := ' ';
-        rs_err_msg            := SQLERRM;
-        rs_err_focus          := 'LDYS0000';
-        rs_operation_status   := ' ';
-        rs_system_msg         := ' ';
-        rs_operation_msg      := ' ';
+    WHEN OTHERS THEN            -- FOR SQL ERROR
+        rn_status         := -1;
+        rs_sql_code       := SQLSTATE;
+        rs_err_code       := ' ';
+        rs_err_msg        := SQLERRM;
+        rs_err_focus      := cs_pgmid;
 
         RETURN NEXT;
         RETURN;
 END;
-$$
-LANGUAGE 'plpgsql';
+$BODY$
+LANGUAGE plpgsql;
