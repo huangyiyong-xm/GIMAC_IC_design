@@ -74,11 +74,11 @@ BEGIN
     --------------------------------------------------------------------------------
     IF EXISTS (
         SELECT 1
-          FROM ld_mst_st_control b
-         WHERE b.st_ymd = (
+          FROM ld_mst_st_control a
+         WHERE a.st_ymd = (
                 SELECT MAX(st_ymd)
-                  FROM ld_mst_st_control b
-                 WHERE b.st_class IN('1','2')
+                  FROM ld_mst_st_control a
+                 WHERE a.st_class IN('1','2')
              )
     ) THEN
         SELECT supply_status
@@ -88,8 +88,8 @@ BEGIN
           FROM ld_mst_st_control a
          WHERE a.st_ymd = (
                 SELECT MAX(st_ymd)
-                  FROM ld_mst_st_control b
-                 WHERE b.st_class IN('1','2')
+                  FROM ld_mst_st_control a
+                 WHERE a.st_class IN('1','2')
              );
     END IF;
 
