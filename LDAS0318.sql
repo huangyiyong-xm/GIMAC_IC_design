@@ -12,12 +12,10 @@
 --    @Version : 1.0.0
 --
 ----------------------------------------------------------------------------
---@SEE << Valid / Required Quantity Registration>>
-----------------------------------------------------------------------------
 --  < INPUT Parameter >
 --    @ps_user_id              <I/ > VARCHAR       : User ID
 --    @ps_log_sign             <I/ > VARCHAR       : Log Sign
---    @ps_receive_id           <I/ > VARCHAR       : Recieve ID
+--    @ps_receive_id           <I/ > VARCHAR       : Receive ID
 --    @ps_request_system_code  <I/ > VARCHAR       : Request System Code
 --    @ps_itemno               <I/ > VARCHAR       : Itemno
 --    @ps_supplier             <I/ > VARCHAR       : Supplier
@@ -348,18 +346,18 @@ BEGIN
 
     /* 2.3.5.2 */
     IF ps_rd_class = '2' AND ls_operation_flag <> '1' THEN
-        IF TRIM(ps_transfer_class) <> '' OR TRIM(ps_transfer_code) <> '' THEN
+        IF TRIM(ps_transfer_class) = '' OR TRIM(ps_transfer_code) = '' THEN
             rs_err_code  := 'ld.E.LDP10092';
             rs_err_msg   := 'Enter the value for Charged'
                          || ' Section Classification and Code.';
             RAISE EXCEPTION ' ';
         END IF;
 
-        IF ls_item_class <> '6' AND ls_item_class <> '1' AND ls_item_class <> '2' THEN
+        IF   ls_item_class <> '1' AND ls_item_class <> '2' AND ls_item_class <> '6' THEN
             rs_err_code  := 'ld.E.LDP10022';
             rs_err_msg   := 'You can specify only the item of which '
-                         || 'Item Cl. is 6(Packing Materials) or '
-                         || '1(Raw Materials) or 2(Parts).';
+                         || 'Item Cl. is 1(Raw Materials) or '
+                         || '2(Parts) or 6(Packing Materials).';
             RAISE EXCEPTION ' ';
         END IF;
 
@@ -401,7 +399,7 @@ BEGIN
         /* 2.3.5.3.2 */
         IF ps_ind_user_class <> '1' AND ps_ind_user_class <> '2' THEN
             rs_err_code  := 'ld.E.LDP10094';
-            rs_err_msg   := 'You can specify only 1(S/U), 2(Accounting Code)'
+            rs_err_msg   := 'You can specify only 1(S/UorP/F), 2(Accounting Code)'
                          || ' or "X" for Independent Requirements'
                          || ' Destination Classificaton.';
             RAISE EXCEPTION ' ';
@@ -689,7 +687,11 @@ BEGIN
 
     /* 2.3.12 S#U. Item Registration Check */
     IF ps_rd_class = '0' AND ps_supplier <> ps_usercd THEN
-        IF ls_area_category = '56' THEN
+        SELECT area_category
+          INTO STRICT ls_area_category3
+          FROM la_area_master_su
+         WHERE su_code = ps_usercd;
+        IF ls_area_category3 = '56' THEN
             rs_err_code  := 'ld.E.LDP10104';
             rs_err_msg   := 'In case User is vendor, you cannot register the item of "S#U."';
             RAISE EXCEPTION ' ';
