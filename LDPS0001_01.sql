@@ -139,7 +139,7 @@ BEGIN
         RAISE EXCEPTION ' ';
     END IF;
 
-    IF ps_order_status IN ('1', '2') THEN
+    IF ps_order_status = '2' THEN
         IF EXISTS (
             SELECT 1
               FROM la_area_master_su a
