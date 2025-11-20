@@ -158,19 +158,19 @@ flowchart LR
 品目マスターとMRP情報値から該当品目の情報を取得する。
 
 ```sql
-SELECT item.item_type              -- item.品目タイプ
-  , item.item_class                -- item.品目クラス
-  , item.item_status               -- item.品目ステータス
-  , mrp.demand_policy_code         -- mrp.MRP需要方針コード
-  , mrp.wbin_control_code          -- mrp.Wビン管理コード
-  , mrp.airs_sign                  -- mrp.AIRSサイン
-  , mrp.float_safety_stock_qty     -- mrp.変動安全在庫数
-  , mrp.synchro_control_code       -- mrp.シンクロ管理コード
-FROM la_itemmast item      
- JOIN le_mst_mrp_information mrp   
-  ON mrp.itemno = item.itemno  
- AND mrp.supplier   = item.supplier  
- AND mrp.usercd     = item.usercd  
+SELECT item.item_type                 -- item.品目タイプ
+      ,item.item_class                -- item.品目クラス
+      ,item.item_status               -- item.品目ステータス
+      ,mrp.demand_policy_code         -- mrp.MRP需要方針コード
+      ,mrp.wbin_control_code          -- mrp.Wビン管理コード
+      ,mrp.airs_sign                  -- mrp.AIRSサイン
+      ,mrp.float_safety_stock_qty     -- mrp.変動安全在庫数
+      ,mrp.synchro_control_code       -- mrp.シンクロ管理コード
+ FROM la_itemmast item　　　　　　　　 -- 品目マスター
+ JOIN le_mst_mrp_information mrp      -- MRP情報値
+   ON mrp.itemno = item.itemno  
+  AND mrp.supplier   = item.supplier  
+  AND mrp.usercd     = item.usercd  
 WHERE item.itemno = ps_itemno
   AND item.supplier   = ps_supplier
   AND item.usercd   = ps_usercd;
@@ -217,7 +217,7 @@ mrp.シンクロ管理コード ⇒ 変数.シンクロ管理コード
 | LD11                                         |                        | Y                      |                        |                        | Y                       |                         | Y                     |                       |                        |
 | LD41                                         |                        | Y                      | Y                      |                        | Y                       |                         | Y                     |                       |                        |
 | LD71                                         |                        | Y                      | Y                      |                        |                         | Y                       |                       | Y                     |                        |
-| LD21,LD15,LD18,LD28,LD33,LD46,LD48,LD52,LD68 | Y                      |                        |                        |                        |                         |                         |                       |                       |                        |
+| LD21,LD15,LD18,LD28,LD33,LD46,LD48,LD51,LD68 | Y                      |                        |                        |                        |                         |                         |                       |                       |                        |
 | LD14                                         | Y                      |                        |                        |                        |                         |                         | Y                     |                       | Y                      |
 | LD24                                         | Y                      |                        |                        |                        |                         |                         | Y                     |                       |                        |
 | LD44                                         | Y                      |                        |                        |                        |                         |                         |                       |                       | Y                      |

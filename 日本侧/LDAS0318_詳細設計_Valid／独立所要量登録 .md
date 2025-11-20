@@ -320,17 +320,17 @@ IF EXIST(SELECT 1
 
 ###### 2.3.5.2.1. 費用振替先情報チェック
 
-- 引数．費用振替先区分 または 費用振替先コード がブランク以外の場合
+- 引数．費用振替先区分 または 費用振替先コード がブランクの場合
   - エラーコード：'ld.E.LDP10092'
   - エラーメッセージ：'Enter the value for Charged Section Classification and Code.'
     - (費用振替先区分、コードに値を入力してください。)
 
 ###### 2.3.5.2.2. 品目クラスチェック
 
-- 2.3.1で取得.品目クラスが'0'（梱包資材）、'1'（原材料）、'2'（部品）以外の場合
+- 2.3.1で取得.品目クラスが'1'（原材料）、'2'（部品）、'6'（梱包資材）以外の場合
   - エラーコード：'ld.E.LDP10022'
-  - エラーメッセージ：'You can specify only the item of which Item Cl. is 0(Packing Materials) or 1(Raw Materials) or 2(Parts).'
-    - (品目クラス＝０（梱包資材）、１（原材料）、２（部品）の品目のみ指定可能です。)
+  - エラーメッセージ：'You can specify only the item of which Item Cl. is 1(Raw Materials) or 2(Parts) or 6(Packing Materials).'
+    - (品目クラス＝１（原材料）、２（部品）、6（梱包資材）の品目のみ指定可能です。)
 
 ###### 2.3.5.2.3. 品目ステータスチェック
 
@@ -368,7 +368,7 @@ IF EXIST(SELECT 1
 
 ###### 2.3.5.3.1. 必須入力チェック
 
-- 引数.独立需要送り先区分が空白 または 引数.独立需要送り先コード が空白の場合
+- 引数.独立需要送り先区分 または 引数.独立需要送り先コード がブランクの場合
   - エラーコード：'ld.E.LDP10093'
   - エラーメッセージ：'Enter the value for Independent Requirements Destination Classification and Code.'
     - (独立需要送り先区分、コードに値を入力してください。)
@@ -432,54 +432,51 @@ IF EXISTS(SELECT 1
 
 SUマスタ・PFマスタの両方にデータが存在しない場合：
 
-- エラーコード：'ld.E.LDP10004'
+- エラーコード：'ld.E.LDP10097
 - エラーメッセージ：'Receiver Code of independent demand does not exist in the organization master.'
   - (独立需要送り先コードが組織マスタに存在しません。)
 
-SUマスタで存在する場合（変数.存在するクラス1 = 1）、以下のエリア構成チェックを実行：
+SUマスタで存在する場合（変数.存在するクラス1 = 1 かつ （2.3.5.4.2で取得.エリアコード（SUマスタ） = '06' または 2.3.5.4.2で取得.エリアコード（SUマスタ） = '56'））、以下のエリア構成チェックを実行：
 
 ```sql
 IF EXISTS(SELECT 1
 　　　　    FROM la_area_master_su su                        --SUマスタ
        　　 JOIN la_areastrc area                            --GIMACエリア構成
-  　　　      ON su.area_category = area.child_area_code     --子エリアコード
+  　　　      ON su.area_code = area.child_area_code         --子エリアコード
 　　　　   WHERE su.su_code = ps_ind_user_code　             --独立需要送り先コード
 　　　　     AND area.area_strc_type_code = 'X'
-　　　　     AND su.area_category = area.child_area_code 
-　　　　     AND  area.in_effective_ymd  <= 変数.ic_slip_date -- 2.3.4.で取得
-　　　　     AND area.exp_out_eff_ymd   > 変数.ic_slip_date   -- 2.3.4.で取得
+　　　　     AND su.area_code = area.child_area_code 
+　　　　     AND area.in_effective_ymd  <= 変数.ic_slip_date   -- 2.3.4.で取得
+　　　　     AND area.out_effective_ymd  > 変数.ic_slip_date   -- 2.3.4.で取得
 　　　       AND (area.parent_area_category = '02'
 　　　　      OR area.parent_area_category = '51'))THEN
 　　　　
        変数.取引フラグ = 1
 ```
 
-- 条件に該当しない場合：エラー処理（ld.E.LDP10096）
+- SQL文条件に該当しない場合：エラー処理（ld.E.LDP10096）
+- 2.3.5.4.2で取得.エリアコード（SUマスタ） が '06' または '56' 以外の場合：エラー処理（ld.E.LDP10097）
 
-取得したエリアカテゴリに基づく判定：
-
-- 取得した.エリアカテゴリ = '03' または '53' の場合：処理を続行
-- 取得した.エリアカテゴリ が '03' または '53' 以外の場合：エラー処理（ld.E.LDP10097）
-
-PFマスタで存在する場合（変数.存在するクラス2 = 1）、以下のエリア構成チェックを実行：
+PFマスタで存在する場合（変数.存在するクラス2 = 1 かつ （2.3.5.4.2で取得.エリアコード（PFマスタ） = '03' または 2.3.5.4.2で取得.エリアコード（PFマスタ） = '53'））、以下のエリア構成チェックを実行：
 
 ```sql
 IF EXISTS(SELECT 1
 　　　　    FROM la_area_master_pf pf                         --PFマスタ
             JOIN la_areastrc area                            --GIMACエリア構成
-  　　　      ON pf.area_category = area.child_area_code     --子エリアコード
+  　　　      ON pf.area_code = area.child_area_code         --子エリアコード
 　　　　   WHERE pf.pf_code = ps_ind_user_code　             --独立需要送り先コード
 　　　　     AND area.area_strc_type_code = 'X'
-　　　　     AND pf.area_category = area.child_area_code 
-　　　　     AND  area.in_effective_ymd  <= 変数.ic_slip_date --2.3.4.で取得
-　　　　     AND area.exp_out_eff_ymd   > 変数.ic_slip_date   --2.3.4.で取得
+　　　　     AND pf.area_code = area.child_area_code 
+　　　　     AND area.in_effective_ymd  <= 変数.ic_slip_date   --2.3.4.で取得
+　　　　     AND area.out_effective_ymd  > 変数.ic_slip_date   --2.3.4.で取得
 　　　       AND (area.parent_area_category = '02'
 　　　　      OR area.parent_area_category = '51'))THEN
 
 　　　　変数.取引フラグ = 1
 ```
 
-- 条件に該当しない場合：エラー処理（ld.E.LDP10096）
+- SQL文条件に該当しない場合：エラー処理（ld.E.LDP10096）
+- 2.3.5.4.2で取得.エリアコード（PFマスタ） が '03' または '53' 以外の場合：エラー処理（ld.E.LDP10097）
 
 ##### 2.3.6. 着手日チェック
 
@@ -634,26 +631,15 @@ SELECT *
 
 引数.所要量区分が'0'（通常）で、ps_supplierと使用者が異なる場合：
 
-##### 2.3.12.1. SUマスタ存在チェック
+##### 2.3.12.1. Ｓ/Ｕ（社外）チェック
 
 ```sql
-IF EXISTS(SELECT 1
-　　　　    FROM la_area_master_su --SUマスタ
-　　　　   WHERE su_code = ps_usercd )THEN
-          SELECT area_category              --エリアカテゴリ
-           FROM la_area_master_su          --SUマスタ
-          WHERE su_code = ps_usercd;
+ SELECT area_category              --エリアカテゴリ
+  FROM la_area_master_su          --SUマスタ
+ WHERE su_code = ps_usercd;
 ```
 
-データが存在しない場合：
-
-- エラーコード：'ld.E.LDP10105'
-- エラーメッセージ：'Data does not exist in the organization master.'
-  - (組織マスターに登録されていません。)
-
-##### 2.3.12.2. Ｓ/Ｕ（社外）チェック
-
-2.3.12.1の存在チェックで存在し、取得.エリアカテゴリが'56'の場合：
+取得.エリアカテゴリが'56'の場合:
 
 - エラーコード：'ld.E.LDP10104'
 - エラーメッセージ：'In case User is vendor, you cannot register the item of "S#U."'

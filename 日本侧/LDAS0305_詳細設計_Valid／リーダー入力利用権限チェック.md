@@ -123,43 +123,43 @@ flowchart LR
 ### 2.3. 主処理
 #### 2.3.1. カード種類チェック
 - 社外報告時のカード限定チェック
-- TRIM(引数.カード識別) が（'Y0B','Y0','Y0','Y0','Y0','Y0'）以外の場合、エラーメッセージを出力し処理終了。
-  - エラーコード : E.LDP10011
+- TRIM(引数.カード識別) が（'11','22','33','44','55','T'）以外の場合、エラーメッセージを出力し処理終了。
+  - エラーコード : ld.E.LDP10011
   - エラーメッセージ : 'Subtraction value error has occurred in the internal processing. Contact the staff in charge of the system.　Argument Error : [引数.カード識別] = ' || COALESCE(引数.カード識別, 'NULL');
     - (処理内部にて引数値エラーが発生しました  システム管理者に連絡してください)
   - エラー位置： 'LDAS0305';
 
 - 【品目番号チェック】
 - 引数.品目番号が　NULL　または　 ブランク 　の場合、エラーメッセージを出力し処理終了
-  - エラーコード : E.LDP10011
+  - エラーコード : ld.E.LDP10011
   - エラーメッセージ : 'Subtraction value error has occurred in the internal processing. Contact the staff in charge of the system.　Argument Error : [引数.品目番号] = ' || COALESCE(引数.品目番号, 'NULL');
   - (処理内部にて引数値エラーが発生しました  システム管理者に連絡してください)
   - エラー位置： 'LDAS0305';（品目番号）
 
 - 【供給者チェック】
 - 引数.供給者が　NULL　または　 ブランク 　の場合、エラーメッセージを出力し処理終了
-  - エラーコード : E.LDP10011
+  - エラーコード : ld.E.LDP10011
   - エラーメッセージ : 'Subtraction value error has occurred in the internal processing. Contact the staff in charge of the system.　Argument Error : [引数.供給者] = ' || COALESCE(引数.供給者, 'NULL');
   - (処理内部にて引数値エラーが発生しました  システム管理者に連絡してください)
   - エラー位置： 'LDAS0305';（供給者）
 
 - 【使用者チェック】
 - 引数.使用者が　NULL　または　 ブランク 　の場合、エラーメッセージを出力し処理終了
-  - エラーコード : E.LDP10011
+  - エラーコード : ld.E.LDP10011
   - エラーメッセージ : 'Subtraction value error has occurred in the internal processing. Contact the staff in charge of the system.　Argument Error : [引数.使用者] = ' || COALESCE(引数.使用者, 'NULL');
   - (処理内部にて引数値エラーが発生しました  システム管理者に連絡してください)
   - エラー位置： 'LDAS0305';（使用者）
 
 - 【特殊権限サインチェック】
 - 引数.特殊権限サインが　NULL　または　 ブランク 　の場合、エラーメッセージを出力し処理終了
-  - エラーコード : E.LDP10011
+  - エラーコード : ld.E.LDP10011
   - エラーメッセージ : 'Subtraction value error has occurred in the internal processing. Contact the staff in charge of the system.　Argument Error : [引数.特殊権限サイン] = ' || COALESCE(引数.特殊権限サイン, 'NULL');
   - (処理内部にて引数値エラーが発生しました  システム管理者に連絡してください) 
   - エラー位置： 'LDAS0305';
 
 - 【取引先代表コード】
 - 引数.取引先代表コードが　NULL　または　 ブランク 　の場合、エラーメッセージを出力し処理終了
-  - エラーコード : E.LDP10011
+  - エラーコード : ld.E.LDP10011
   - エラーメッセージ : 'Subtraction value error has occurred in the internal processing. Contact the staff in charge of the system.　Argument Error : [引数.取引先代表コード] = ' || COALESCE(引数.取引先代表コード, 'NULL');
   - (処理内部にて引数値エラーが発生しました  システム管理者に連絡してください)
   - エラー位置： 'LDAS0305';
@@ -177,7 +177,7 @@ IF EXISTS( SELECT 1
             AND 削除日 = ' ')THEN
  ```
   - 存在しない場合、エラーメッセージを出力し処理終了する。
-    - エラーコード : E.LDP10012
+    - エラーコード : ld.E.LDP10012
     - エラーメッセージ : 'Not an object of the input. Existence Check Error: ' || '[ 引数.品目番号  ] = ' ||
                             COALESCE( 引数.品目番号 , 'NULL' ) || ' [ 引数.供給者  ] = ' ||
                             COALESCE( 引数.供給者 , 'NULL' )|| ' [ 引数.使用者  ] = ' ||
@@ -207,7 +207,7 @@ IF EXISTS( SELECT 1
               AND 制御キー1 = 引数.費用振替先コード)THEN
   ```
   - 存在する場合、エラーメッセージを出力し処理終了
-    - エラーコード : E.LDP10012
+    - エラーコード : ld.E.LDP10012
       - エラーメッセージ : 'Not an object of the input. Existence Check Error: ' || ' [ 費用振替先コード  ] = ' || 
         COALESCE( 費用振替先コード , 'NULL' );
       - (入力対象ではありません)  
@@ -234,7 +234,7 @@ IF EXISTS( SELECT 1
                 AND 置換内容1 = 独立所要量明細.相手先システム識別コード)THEN
     ```
     - 上記２つが存在する場合
-      - エラーコード : E.LDP10012
+      - エラーコード : ld.E.LDP10012
         - エラーメッセージ : 'Not an object of the input.　Existence Check Error: ' || ' [ 独立所要量明細.相手先システム識別コード  ] = ' || COALESCE(独立所要量明細.相手先システム識別コード , 'NULL');
         - (入力対象ではありません)
         - エラー位置： 'LDAS0305'
@@ -277,7 +277,7 @@ IF EXISTS( SELECT 1
               --      AND flt.bottom_org_category ='56') THEN
     ```
     - 存在する場合、エラーメッセージを出力し処理終了
-      -  エラーコード : E.LDP10012
+      -  エラーコード : ld.E.LDP10012
       - エラーメッセージ : 'Not an object of the input. Existence Check Error: ' ||
                           ' [ 引数.組織代表タイプ  ] = ' ||
                           COALESCE(引数.組織代表タイプ , 'NULL') ||
@@ -306,7 +306,7 @@ IF EXISTS( SELECT 1
                             AND SUコード = 引数.使用者) THEN
           ```        
           - 存在しないエラーメッセージを出力し処理を終了
-            - エラーコード : E.LDP10012
+            - エラーコード : ld.E.LDP10012
             - エラーメッセージ : 'Not an object of the input.  Existence Check Error: ' || ' [ 費用振替先コード  ] = ' || 
             COALESCE( 費用振替先コード , 'NULL' );
             - (入力対象ではありません)  

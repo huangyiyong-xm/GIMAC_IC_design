@@ -100,23 +100,23 @@ flowchart LR
 
 ### 2.1. 引数の取得とチェック
 - カード識別が　NULL　または　("22","33","T","11","44","55","Z")以外の時、エラーメッセージを出力し処理終了
-  - エラーコード：E.LDP10011
+  - エラーコード：ld.E.LDP10011
   - エラーメッセージ："Subtraction value error has occurred in the internal processing. Contact the staff in charge of the system."
   - (処理内部にて引数値エラーが発生しました  システム管理者に連絡してください)
   - エラー位置：'LDAS0306'
   
 - 処理数量が NULL の場合
-  - エラーコード：E.LDP10011
+  - エラーコード：ld.E.LDP10011
   - エラーメッセージ："Subtraction value error has occurred in the internal processing. Contact the staff in charge of the system."
   - (処理内部にて引数値エラーが発生しました  システム管理者に連絡してください)
 
 - 入力数量/バーコード数量が NULL の場合
-  - エラーコード：E.LDP10011
+  - エラーコード：ld.E.LDP10011
   - エラーメッセージ："Subtraction value error has occurred in the internal processing. Contact the staff in charge of the system."
   - (処理内部にて引数値エラーが発生しました  システム管理者に連絡してください)
 
 - 処理区分が NULL または ("0"(完納),"1"(分納),"2"(+訂正),"3"(-訂正))ではない時　
-  - エラーコード：E.LDP10011
+  - エラーコード：ld.E.LDP10011
   - エラーメッセージ："Subtraction value error has occurred in the internal processing. Contact the staff in charge of the system."
   - (処理内部にて引数値エラーが発生しました  システム管理者に連絡してください)
   - エラー位置：'LDAS0306'
@@ -128,13 +128,13 @@ flowchart LR
 - 引数.処理区分が"0"(完納)の場合
   - 引数.カード識別が("22","33","44")の時
     - 引数.処理数量が0でなければ、エラーメッセージを出力し処理終了
-      - エラーコード：E.LDP10008
+      - エラーコード：ld.E.LDP10008
       - エラーメッセージ："Excess report"
       - (過剰報告です)
       - エラー位置：'LDAS0306'
     - 引数.カード識別が"T"(ピッキング)の時
       - 引数.処理数量 より 引数.入力数量/バーコード数量　が多い場合、エラーメッセージを出力し処理終了
-        - エラーコード：E.LDP10008
+        - エラーコード：ld.E.LDP10008
         - エラーメッセージ："Excess report"
         - (過剰報告です)
         - エラー位置：'LDAS0306'
@@ -143,7 +143,7 @@ flowchart LR
 - 引数.処理区分が"1"(分納)の場合
   - 引数.カード識別が("22","33","44","T")の時
     - 引数.処理数量 より 引数.入力数量/バーコード数量　が多い場合、エラーメッセージを出力し処理終了
-      - エラーコード：E.LDP10008
+      - エラーコード：ld.E.LDP10008
       - エラーメッセージ："Excess report"
       - (過剰報告です)
       - エラー位置：'LDAS0306' 
@@ -152,14 +152,14 @@ flowchart LR
 - 引数.処理区分が"2"(+訂正)の場合
   - 引数.カード識別が("22","33","44","T")の時
     - 引数.処理数量 より 引数.入力数量/バーコード数量　が多い場合、エラーメッセージを出力し処理終了
-      - エラーコード：E.LDP10009
+      - エラーコード：ld.E.LDP10009
       - エラーメッセージ："Correction quantity is not proper(Correction quantity is more than order remain quantity)."
       - (訂正数が不正です（発注残＜訂正数）)
       - エラー位置：'LDAS0306' 
 ### 2.3.4. -訂正処理
 - 引数.処理区分が"3"(-訂正)の場合
   - 引数.処理数量 より 引数.入力数量/バーコード数量　が多い場合、エラーメッセージを出力し処理終了
-    - エラーコード：E.LDP10010
+    - エラーコード：ld.E.LDP10010
     - エラーメッセージ："Correction quantity is not proper(Correction quantity is more than receipt quantity)."
     - (訂正数が不正です（受領数＜訂正数）)
     - エラー位置：'LDAS0306' 
