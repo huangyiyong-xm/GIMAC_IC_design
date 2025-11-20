@@ -15,7 +15,7 @@
 --  < INPUT Parameter >
 --    @ps_user_id                <I/ > VARCHAR    : Usr Id
 --    @ps_log_sign               <I/ > VARCHAR    : Log Sign
---    @ps_receive_id             <I/ > VARCHAR    : Recieve Id
+--    @ps_receive_id             <I/ > VARCHAR    : Receive Id
 --    @ps_request_system_code    <I/ > VARCHAR    : Request System Code
 --    @ps_itemno                 <I/ > VARCHAR    : Itemno
 --    @ps_supplier               <I/ > VARCHAR    : Supplier
