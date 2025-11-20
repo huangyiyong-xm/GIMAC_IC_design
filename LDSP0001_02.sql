@@ -272,7 +272,7 @@ BEGIN
     --------------------------------------------------
     --  < STEP2.5 : Design change requirement update log registration >
     --------------------------------------------------
-    IF ps_order_status IN ('1', '2') THEN
+    IF ps_order_status = '2' THEN
       SELECT 
              b.area_section_code
             ,b.area_person_code
