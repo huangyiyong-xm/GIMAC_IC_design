@@ -635,6 +635,8 @@ BEGIN
 
             RAISE EXCEPTION ' ';
         ELSIF rec_transfer_account.rn_status = 1 THEN
+            rn_status    := rec_transfer_account.rn_status;
+            rs_err_focus := cs_pgmid;
 
             RETURN NEXT;
         END IF;
