@@ -144,7 +144,7 @@ BEGIN
         ln_counter := ln_counter + 1;
     END LOOP;
 
-    IF ls_char2 = cs_space THEN
+    IF ls_char2 = '0' THEN
         ln_is_operationday := 0;
     ELSIF ls_char2 = '1' THEN
         ln_is_operationday := 1;

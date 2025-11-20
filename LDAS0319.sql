@@ -12,8 +12,6 @@
 --    @Version : 1.0.0
 --
 ----------------------------------------------------------------------------
---@SEE << Raw Materials Price Copy >>
-----------------------------------------------------------------------------
 --  < INPUT Parameter >
 --    @ps_user_id                     <I/ > VARCHAR       : User Id
 --    @ps_log_sign                    <I/ > VARCHAR       : Supplier
@@ -120,12 +118,12 @@ BEGIN
            AND calendar_ymd  = ps_delete_ymd;
 
         IF ls_day_type <> '0' THEN
-            rs_err_code := 'ld.E.LDP10064';
+            rs_err_code := 'ld.E.LDP10090';
             rs_err_msg  := 'The day you specified is not a working-day.';
             RAISE EXCEPTION ' ';
         END IF;
     ELSE
-        rs_err_code := 'ld.E.LDP10106';
+        rs_err_code := 'ld.E.LDP10064';
         rs_err_msg  := 'Day String does not exist in the common calendar.';
         RAISE EXCEPTION ' ';
     END IF;
@@ -339,20 +337,20 @@ EXCEPTION
                                 ,cs_space                             --72
                         );
 
-            IF rec_sp_ldas0409.rn_status <> 0 THEN
-                rn_status   := rec_sp_ldas0409.rn_status;
-                rs_sql_code := rec_sp_ldas0409.rs_sql_code;
-                rs_err_code := rec_sp_ldas0409.rs_err_code;
-                rs_err_msg  := rec_sp_ldas0409.rs_err_msg ;
+                IF rec_sp_ldas0409.rn_status <> 0 THEN
+                    rn_status   := rec_sp_ldas0409.rn_status;
+                    rs_sql_code := rec_sp_ldas0409.rs_sql_code;
+                    rs_err_code := rec_sp_ldas0409.rs_err_code;
+                    rs_err_msg  := rec_sp_ldas0409.rs_err_msg ;
 
-                RETURN NEXT;
-                RETURN;
+                    RETURN NEXT;
+                    RETURN;
+                END IF;
             END IF;
         END IF;
-    END IF;
 
-    RETURN NEXT;
-    RETURN;
+        RETURN NEXT;
+        RETURN;
 
     WHEN OTHERS THEN
         rn_status         := -1;
