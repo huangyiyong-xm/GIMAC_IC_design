@@ -131,7 +131,7 @@ reqchg_log_retent_days = g_now_trn_proc_time - reqchg_log_holding_days
 
 ```sql
    DELETE FROM ld_trn_reqchg_log
-         WHERE ic_slip_date< :reqchg_log_retent_days
+         WHERE maintenance_datetime < :reqchg_log_retent_days
 ```
 
 - 設計変更所要量更新ログの削除件数を取得する
@@ -140,7 +140,7 @@ reqchg_log_retent_days = g_now_trn_proc_time - reqchg_log_holding_days
 
 ```sql
    DELETE FROM ld_trn_fluct_log
-         WHERE ic_slip_date< :ohlog_retent_days
+         WHERE ic_slip_date < :ohlog_retent_days
 ```
 
 - 手持在庫変動ログの削除件数を取得する
