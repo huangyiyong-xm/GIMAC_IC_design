@@ -253,6 +253,8 @@ BEGIN
                     END IF;
                 END IF;
             END IF;
+        ELSE
+            rs_order_no := ls_order_no;
         END IF;
 
         IF ls_carry_flg = '1' THEN
